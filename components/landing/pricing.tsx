@@ -72,8 +72,8 @@ export function Pricing() {
   };
 
   return (
-    <section id="pricing" className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#0b0b0b] text-white">
-      <div className="container mx-auto max-w-7xl">
+    <section id="pricing" className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#0b0b0b] text-white min-h-[600px] sm:min-h-[700px] flex items-center">
+      <div className="container mx-auto max-w-7xl w-full">
         <div className="text-center mb-12 sm:mb-16 lg:mb-20 px-4">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 tracking-tight">
             Simple, Transparent Pricing

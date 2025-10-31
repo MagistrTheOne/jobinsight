@@ -61,8 +61,8 @@ export function ResumeDemo() {
   };
 
   return (
-    <section className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#0b0b0b] text-white">
-      <div className="container mx-auto max-w-3xl">
+    <section className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#0b0b0b] text-white min-h-[600px] sm:min-h-[700px] flex items-center">
+      <div className="container mx-auto max-w-3xl w-full">
         <div className="text-center mb-8 sm:mb-10 px-4">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-900/80 backdrop-blur-sm border border-neutral-700/50 mb-3 sm:mb-4">
             <Sparkles className="h-3.5 w-3.5 text-yellow-400" />

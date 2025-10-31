@@ -18,6 +18,7 @@ import { JobAnalysis, ResumeAnalysis, UserInfo } from '@/lib/types';
 import { useAnalysisStore } from '@/store/analysis-store';
 import { useAuthStore } from '@/store/auth-store';
 import { HistoryPanel } from '@/components/analysis/history-panel';
+import { AIChat } from '@/components/chat/ai-chat';
 import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
@@ -290,11 +291,12 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
                 <Tabs defaultValue="job-analysis" className="w-full">
-                  <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto mb-8">
+                  <TabsList className="grid w-full grid-cols-5 max-w-3xl mx-auto mb-8">
                     <TabsTrigger value="job-analysis">Job Analysis</TabsTrigger>
                     <TabsTrigger value="job-content">Job Content</TabsTrigger>
                     <TabsTrigger value="resume-analysis">Resume</TabsTrigger>
                     <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
+                    <TabsTrigger value="ai-chat">AI Assistant</TabsTrigger>
                   </TabsList>
 
                   {/* Job URL Analysis Tab */}
@@ -375,6 +377,11 @@ export default function DashboardPage() {
                         userInfo={coverLetterUserInfo}
                       />
                     )}
+                  </TabsContent>
+
+                  {/* AI Chat Assistant Tab */}
+                  <TabsContent value="ai-chat" className="space-y-6">
+                    <AIChat />
                   </TabsContent>
                 </Tabs>
           </div>

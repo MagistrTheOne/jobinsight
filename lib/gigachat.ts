@@ -531,3 +531,31 @@ ${processedResumeContent}
 }
 
 export const gigachatAPI = new GigaChatAPI();
+
+// Helper function for chat messages with system prompt
+export async function sendChatMessage(
+  userMessages: Array<{ role: 'user' | 'assistant'; content: string }>,
+  systemPrompt?: string
+): Promise<string> {
+  const defaultSystemPrompt = "Ты профессиональный помощник по составлению резюме и поиску работы. Помогай пользователям создавать эффективные резюме, готовиться к собеседованиям, искать вакансии. Отвечай дружелюбно и профессионально.";
+  
+  const messages: GigaChatMessage[] = [];
+  
+  // Add system message if provided or use default
+  if (systemPrompt || defaultSystemPrompt) {
+    messages.push({
+      role: 'system',
+      content: systemPrompt || defaultSystemPrompt,
+    });
+  }
+  
+  // Add user messages
+  userMessages.forEach(msg => {
+    messages.push({
+      role: msg.role,
+      content: msg.content,
+    });
+  });
+  
+  return await gigachatAPI.sendMessage(messages);
+}

@@ -1,0 +1,12 @@
+{
+  "model": "GigaChat",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Привет! Ответь кратко: что такое искусственный интеллект?"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 100
+}
+

@@ -4,10 +4,14 @@ import {
   analysisHistory, 
   subscriptions, 
   usageLimits,
+  chats,
+  chatMessages,
   type NewUser, 
   type NewAnalysisHistory,
   type NewSubscription,
   type NewUsageLimits,
+  type NewChat,
+  type NewChatMessage,
 } from './schema';
 import { eq, desc, and } from 'drizzle-orm';
 
@@ -190,5 +194,97 @@ export async function resetUsageLimits(userId: string, newPeriodStart: Date) {
   
   // Old records will be kept for historical purposes
   // Monthly reset is done by creating a new period record
+}
+
+// Chat queries
+export async function getUserChats(userId: string) {
+  return await db
+    .select()
+    .from(chats)
+    .where(eq(chats.userId, userId))
+    .orderBy(desc(chats.updatedAt));
+}
+
+export async function getChatById(chatId: string, userId: string) {
+  // Verify chat belongs to user
+  const [chat] = await db
+    .select()
+    .from(chats)
+    .where(
+      and(
+        eq(chats.id, chatId),
+        eq(chats.userId, userId)
+      )
+    )
+    .limit(1);
+
+  if (!chat) {
+    return null;
+  }
+
+  // Get messages for this chat
+  const messages = await db
+    .select()
+    .from(chatMessages)
+    .where(eq(chatMessages.chatId, chatId))
+    .orderBy(chatMessages.createdAt);
+
+  return {
+    ...chat,
+    messages,
+  };
+}
+
+export async function createChat(userId: string, title: string) {
+  const [chat] = await db
+    .insert(chats)
+    .values({
+      id: crypto.randomUUID(),
+      userId,
+      title,
+    })
+    .returning();
+  return chat;
+}
+
+export async function addChatMessage(chatId: string, role: 'user' | 'assistant' | 'system', content: string) {
+  const [message] = await db
+    .insert(chatMessages)
+    .values({
+      id: crypto.randomUUID(),
+      chatId,
+      role,
+      content,
+    })
+    .returning();
+  
+  // Update chat's updatedAt timestamp
+  await db
+    .update(chats)
+    .set({ updatedAt: new Date() })
+    .where(eq(chats.id, chatId));
+
+  return message;
+}
+
+export async function deleteChat(chatId: string, userId: string) {
+  // Verify ownership and delete (cascade will delete messages)
+  await db
+    .delete(chats)
+    .where(
+      and(
+        eq(chats.id, chatId),
+        eq(chats.userId, userId)
+      )
+    );
+}
+
+export async function updateChatTitle(chatId: string, title: string) {
+  const [updated] = await db
+    .update(chats)
+    .set({ title, updatedAt: new Date() })
+    .where(eq(chats.id, chatId))
+    .returning();
+  return updated;
 }
 

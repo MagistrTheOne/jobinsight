@@ -109,3 +109,30 @@ export type NewSubscription = typeof subscriptions.$inferInsert;
 export type UsageLimits = typeof usageLimits.$inferSelect;
 export type NewUsageLimits = typeof usageLimits.$inferInsert;
 
+export const chats = pgTable("chats", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  title: text("title").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("chats_user_id_idx").on(table.userId),
+  createdAtIdx: index("chats_created_at_idx").on(table.createdAt),
+}));
+
+export const chatMessages = pgTable("chat_messages", {
+  id: text("id").primaryKey(),
+  chatId: text("chat_id").references(() => chats.id, { onDelete: "cascade" }).notNull(),
+  role: text("role").$type<"user" | "assistant" | "system">().notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  chatIdIdx: index("chat_messages_chat_id_idx").on(table.chatId),
+  createdAtIdx: index("chat_messages_created_at_idx").on(table.createdAt),
+}));
+
+export type Chat = typeof chats.$inferSelect;
+export type NewChat = typeof chats.$inferInsert;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type NewChatMessage = typeof chatMessages.$inferInsert;
+
