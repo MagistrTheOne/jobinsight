@@ -1,6 +1,7 @@
 import { pgTable, text, timestamp, jsonb, index, integer } from "drizzle-orm/pg-core";
 
 // Users table (Better Auth compatible - using existing plural table name)
+// Better Auth adapter should exclude createdAt/updatedAt during insert if they have defaultNow()
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
   email: text("email").notNull().unique(),
@@ -8,7 +9,7 @@ export const users = pgTable("users", {
   name: text("name"),
   image: text("image"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
 }, (table) => ({
   emailIdx: index("email_idx").on(table.email),
 }));
@@ -25,7 +26,7 @@ export const accounts = pgTable("accounts", {
   expiresAt: timestamp("expires_at"),
   password: text("password"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
 }, (table) => ({
   userIdIdx: index("accounts_user_id_idx").on(table.userId),
   providerIdx: index("accounts_provider_idx").on(table.providerId, table.accountId),
@@ -40,13 +41,26 @@ export const sessions = pgTable("sessions", {
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
 }, (table) => ({
   tokenIdx: index("sessions_token_idx").on(table.token),
   userIdIdx: index("sessions_user_id_idx").on(table.userId),
 }));
 
-// NextAuth verification tokens
+// Better Auth verification table (for email verification, password reset, etc.)
+export const verifications = pgTable("verifications", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
+}, (table) => ({
+  identifierIdx: index("verifications_identifier_idx").on(table.identifier),
+  valueIdx: index("verifications_value_idx").on(table.value),
+}));
+
+// NextAuth verification tokens (legacy, kept for backward compatibility)
 export const verificationTokens = pgTable("verification_tokens", {
   identifier: text("identifier").notNull(),
   token: text("token").notNull(),

@@ -10,7 +10,7 @@ interface User {
 
 interface Session {
   user: User;
-  expires: string;
+  expiresAt: Date;
 }
 
 interface AuthState {

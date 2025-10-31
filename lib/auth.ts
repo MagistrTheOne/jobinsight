@@ -1,21 +1,85 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./db";
-import { users, sessions, accounts } from "./db/schema";
+import { users, sessions, accounts, verifications } from "./db/schema";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
-      user: users,
-      session: sessions,
-      account: accounts,
+      users: users,
+      sessions: sessions,
+      accounts: accounts,
+      verifications: verifications,
     },
     usePlural: true,
   }),
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user, ctx) => {
+          // Exclude createdAt and updatedAt - let DB handle with defaultNow()
+          const { createdAt, updatedAt, ...userData } = user as any;
+          return {
+            data: userData,
+          };
+        },
+      },
+    },
+    account: {
+      create: {
+        before: async (account, ctx) => {
+          // Exclude createdAt and updatedAt - let DB handle with defaultNow()
+          const { createdAt, updatedAt, ...accountData } = account as any;
+          return {
+            data: accountData,
+          };
+        },
+      },
+    },
+    session: {
+      create: {
+        before: async (session, ctx) => {
+          // Exclude createdAt and updatedAt - let DB handle with defaultNow()
+          const { createdAt, updatedAt, ...sessionData } = session as any;
+          return {
+            data: sessionData,
+          };
+        },
+      },
+    },
+    verification: {
+      create: {
+        before: async (verification, ctx) => {
+          // Exclude createdAt and updatedAt - let DB handle with defaultNow()
+          const { createdAt, updatedAt, ...verificationData } = verification as any;
+          return {
+            data: verificationData,
+          };
+        },
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
+    sendResetPassword: async ({ user, url, token }, request) => {
+      // TODO: Implement email sending service (e.g., Resend, SendGrid, etc.)
+      // For now, log the reset link (in production, send via email service)
+      console.log(`Password reset for ${user.email}`);
+      console.log(`Reset URL: ${url}`);
+      console.log(`Token: ${token}`);
+      
+      // In production, you should use an email service:
+      // await sendEmail({
+      //   to: user.email,
+      //   subject: "Reset your password",
+      //   html: `<p>Click the link to reset your password: <a href="${url}">${url}</a></p>`,
+      // });
+    },
+    onPasswordReset: async ({ user }, request) => {
+      console.log(`Password reset successful for user: ${user.email}`);
+    },
   },
   socialProviders: {
     google: {
@@ -33,4 +97,3 @@ export const auth = betterAuth({
 });
 
 export type Session = typeof auth.$Infer.Session;
-

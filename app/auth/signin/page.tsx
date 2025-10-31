@@ -26,15 +26,15 @@ export default function SignInPage() {
     setError('');
 
     try {
-      const result = await authClient.signIn.email({
+      const { data, error } = await authClient.signIn.email({
         email,
         password,
       });
 
-      if (result.error) {
-        setError(result.error.message || 'Invalid email or password');
+      if (error) {
+        setError(error.message || 'Invalid email or password');
         setIsLoading(false);
-      } else {
+      } else if (data) {
         // Успешный вход - делаем редирект
         window.location.href = callbackUrl;
       }
@@ -47,24 +47,33 @@ export default function SignInPage() {
   const handleOAuthSignIn = async (provider: 'google' | 'github') => {
     setIsLoading(true);
     setError('');
+    
+    // OAuth редирект происходит автоматически, поэтому обрабатываем через callbacks
     try {
       await authClient.signIn.social({
         provider,
         callbackURL: callbackUrl,
+      }, {
+        onError: (ctx) => {
+          setError(ctx.error.message || 'OAuth sign in failed');
+          setIsLoading(false);
+        },
       });
+      // Редирект произойдет автоматически при успехе
     } catch (err: any) {
+      // Эта ошибка может не сработать, если произошел редирект
       setError(err.message || 'OAuth sign in failed');
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
       <GlassCard className="w-full max-w-md">
         <div className="space-y-6">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-            <p className="text-gray-400">Sign in to your JobInsight AI account</p>
+            <p className="text-gray-300">Sign in to your JobInsight AI account</p>
           </div>
 
           {error && (
@@ -89,7 +98,7 @@ export default function SignInPage() {
               type="button"
               onClick={() => handleOAuthSignIn('github')}
               disabled={isLoading}
-              className="w-full bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+              className="w-full bg-gray-900 text-white hover:bg-gray-800 border border-gray-700"
             >
               <Github className="mr-2 h-4 w-4" />
               Continue with GitHub
@@ -98,17 +107,17 @@ export default function SignInPage() {
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-700" />
+              <span className="w-full border-t border-gray-800" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-gray-900 px-2 text-gray-400">Or continue with</span>
+              <span className="bg-black px-2 text-gray-300">Or continue with</span>
             </div>
           </div>
 
           {/* Credentials Form */}
           <form onSubmit={handleCredentialsSignIn} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-200">Email</Label>
+              <Label htmlFor="email" className="text-white">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -117,13 +126,21 @@ export default function SignInPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
+                className="bg-gray-900/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:border-white/50"
                 disabled={isLoading}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-200">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-white">Password</Label>
+                <a
+                  href="/auth/forgot-password"
+                  className="text-sm text-blue-400 hover:text-blue-300 underline"
+                >
+                  Forgot password?
+                </a>
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -132,7 +149,7 @@ export default function SignInPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
+                className="bg-gray-900/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:border-white/50"
                 disabled={isLoading}
               />
             </div>
@@ -153,9 +170,9 @@ export default function SignInPage() {
             </Button>
           </form>
 
-          <div className="text-center text-sm text-gray-400">
+          <div className="text-center text-sm text-gray-300">
             Don't have an account?{' '}
-            <a href="/auth/signup" className="text-blue-400 hover:text-blue-300 underline">
+            <a href="/auth/signup" className="text-white hover:text-gray-200 underline font-medium">
               Sign up
             </a>
           </div>
