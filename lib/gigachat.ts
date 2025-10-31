@@ -148,11 +148,25 @@ class GigaChatAPI {
     const response = await this.sendMessage(messages);
     
     try {
-      return JSON.parse(response);
-    } catch {
-      // If JSON parsing fails, return a structured response
+      // Try to extract JSON from response if it's wrapped in text
+      let jsonString = response.trim();
+      const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        jsonString = jsonMatch[0];
+      }
+      return JSON.parse(jsonString);
+    } catch (error) {
+      // If JSON parsing fails, try to return a structured response with fallback
+      console.error('Failed to parse job analysis JSON:', error);
       return {
-        error: 'Failed to parse analysis',
+        redFlags: [],
+        requirements: { realistic: [], unrealistic: [] },
+        salaryInsight: 'Не удалось проанализировать зарплатные ожидания',
+        workLifeBalance: 'Не удалось оценить work-life balance',
+        companyInsights: 'Не удалось получить инсайты о компании',
+        atsKeywords: [],
+        recommendedSkills: [],
+        overallScore: 'Не удалось оценить (0/10)',
         rawResponse: response
       };
     }
@@ -207,10 +221,24 @@ class GigaChatAPI {
     const response = await this.sendMessage(messages);
     
     try {
-      return JSON.parse(response);
-    } catch {
+      // Try to extract JSON from response if it's wrapped in text
+      let jsonString = response.trim();
+      const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        jsonString = jsonMatch[0];
+      }
+      return JSON.parse(jsonString);
+    } catch (error) {
+      // If JSON parsing fails, try to return a structured response with fallback
+      console.error('Failed to parse resume analysis JSON:', error);
       return {
-        error: 'Failed to parse analysis',
+        atsCompatibility: 'Не удалось оценить совместимость с ATS',
+        strengths: [],
+        improvements: [],
+        missingKeywords: [],
+        formatting: 'Не удалось оценить форматирование',
+        skillsGap: [],
+        overallScore: 'Не удалось оценить (0/10)',
         rawResponse: response
       };
     }
