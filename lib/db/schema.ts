@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, jsonb, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, jsonb, index, integer } from "drizzle-orm/pg-core";
 
 // Users table (compatible with NextAuth)
 export const users = pgTable("users", {
@@ -69,8 +69,43 @@ export const analysisHistory = pgTable("analysis_history", {
   typeIdx: index("type_idx").on(table.type),
 }));
 
+export const subscriptions = pgTable("subscriptions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
+  plan: text("plan").$type<"free" | "pro">().notNull().default("free"),
+  polarCustomerId: text("polar_customer_id"),
+  polarSubscriptionId: text("polar_subscription_id"),
+  status: text("status").$type<"active" | "cancelled" | "expired">().notNull().default("active"),
+  currentPeriodStart: timestamp("current_period_start"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("subscriptions_user_id_idx").on(table.userId),
+  statusIdx: index("subscriptions_status_idx").on(table.status),
+}));
+
+export const usageLimits = pgTable("usage_limits", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  periodStart: timestamp("period_start").notNull(),
+  resumeCount: integer("resume_count").notNull().default(0),
+  jobCount: integer("job_count").notNull().default(0),
+  coverLetterCount: integer("cover_letter_count").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("usage_limits_user_id_idx").on(table.userId),
+  periodStartIdx: index("usage_limits_period_start_idx").on(table.periodStart),
+  userPeriodIdx: index("usage_limits_user_period_idx").on(table.userId, table.periodStart),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type AnalysisHistory = typeof analysisHistory.$inferSelect;
 export type NewAnalysisHistory = typeof analysisHistory.$inferInsert;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type NewSubscription = typeof subscriptions.$inferInsert;
+export type UsageLimits = typeof usageLimits.$inferSelect;
+export type NewUsageLimits = typeof usageLimits.$inferInsert;
 

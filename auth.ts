@@ -6,7 +6,7 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { compare, hash } from "bcryptjs";
 import { db } from "@/lib/db";
 import { users, accounts, sessions, verificationTokens } from "@/lib/db/schema";
-import { getUserByEmail, createUser } from "@/lib/db/queries";
+import { getUserByEmail, createUser, createOrUpdateSubscription, getUserSubscription } from "@/lib/db/queries";
 
 export const authOptions: NextAuthOptions = {
   adapter: DrizzleAdapter(db, {
@@ -62,6 +62,26 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/error',
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // При первом входе через OAuth создаем Free подписку если её нет
+      if (account?.provider === 'google' || account?.provider === 'github') {
+        try {
+          const subscription = await getUserSubscription(user.id!);
+          if (!subscription) {
+            await createOrUpdateSubscription({
+              id: crypto.randomUUID(),
+              userId: user.id!,
+              plan: 'free',
+              status: 'active',
+            });
+          }
+        } catch (error) {
+          console.error('Failed to create subscription for OAuth user:', error);
+          // Не блокируем вход, если не удалось создать подписку
+        }
+      }
+      return true;
+    },
     async session({ session, user }) {
       // Для database strategy, user передается в session callback
       if (session.user && user) {
@@ -91,6 +111,14 @@ export async function registerUser(email: string, name: string, password: string
     email,
     name,
     password: hashedPassword,
+  });
+
+  // Create Free subscription for new user
+  await createOrUpdateSubscription({
+    id: crypto.randomUUID(),
+    userId: newUser.id,
+    plan: 'free',
+    status: 'active',
   });
 
   return newUser;

@@ -1,5 +1,14 @@
 import { db } from '../db';
-import { users, analysisHistory, type NewUser, type NewAnalysisHistory } from './schema';
+import { 
+  users, 
+  analysisHistory, 
+  subscriptions, 
+  usageLimits,
+  type NewUser, 
+  type NewAnalysisHistory,
+  type NewSubscription,
+  type NewUsageLimits,
+} from './schema';
 import { eq, desc, and } from 'drizzle-orm';
 
 // User queries
@@ -65,5 +74,121 @@ export async function getAnalysisById(id: string, userId: string) {
     )
     .limit(1);
   return analysis;
+}
+
+// Subscription queries
+export async function getUserSubscription(userId: string) {
+  const [subscription] = await db
+    .select()
+    .from(subscriptions)
+    .where(eq(subscriptions.userId, userId))
+    .limit(1);
+  return subscription;
+}
+
+export async function getSubscriptionByPolarCustomerId(polarCustomerId: string) {
+  const [subscription] = await db
+    .select()
+    .from(subscriptions)
+    .where(eq(subscriptions.polarCustomerId, polarCustomerId))
+    .limit(1);
+  return subscription;
+}
+
+export async function createOrUpdateSubscription(subscriptionData: NewSubscription) {
+  const existing = await getUserSubscription(subscriptionData.userId);
+  
+  if (existing) {
+    const [updated] = await db
+      .update(subscriptions)
+      .set({ ...subscriptionData, updatedAt: new Date() })
+      .where(eq(subscriptions.userId, subscriptionData.userId))
+      .returning();
+    return updated;
+  } else {
+    const [created] = await db
+      .insert(subscriptions)
+      .values(subscriptionData)
+      .returning();
+    return created;
+  }
+}
+
+// Usage limits queries
+export async function getUsageLimits(userId: string, periodStart: Date) {
+  const [limits] = await db
+    .select()
+    .from(usageLimits)
+    .where(
+      and(
+        eq(usageLimits.userId, userId),
+        eq(usageLimits.periodStart, periodStart)
+      )
+    )
+    .limit(1);
+  return limits;
+}
+
+export async function createOrGetUsageLimits(userId: string, periodStart: Date): Promise<UsageLimits> {
+  let limits = await getUsageLimits(userId, periodStart);
+  
+  if (!limits) {
+    const [created] = await db
+      .insert(usageLimits)
+      .values({
+        id: crypto.randomUUID(),
+        userId,
+        periodStart,
+        resumeCount: 0,
+        jobCount: 0,
+        coverLetterCount: 0,
+      })
+      .returning();
+    return created;
+  }
+  
+  return limits;
+}
+
+export async function incrementUsageLimit(
+  userId: string, 
+  type: 'resume' | 'job' | 'coverLetter',
+  periodStart: Date
+) {
+  // Ensure limits record exists
+  const current = await createOrGetUsageLimits(userId, periodStart);
+  
+  const updateData: any = {
+    updatedAt: new Date(),
+  };
+  
+  if (type === 'resume') {
+    updateData.resumeCount = current.resumeCount + 1;
+  } else if (type === 'job') {
+    updateData.jobCount = current.jobCount + 1;
+  } else {
+    updateData.coverLetterCount = current.coverLetterCount + 1;
+  }
+  
+  const [updated] = await db
+    .update(usageLimits)
+    .set(updateData)
+    .where(
+      and(
+        eq(usageLimits.userId, userId),
+        eq(usageLimits.periodStart, periodStart)
+      )
+    )
+    .returning();
+  
+  return updated;
+}
+
+export async function resetUsageLimits(userId: string, newPeriodStart: Date) {
+  // Create new period record
+  await createOrGetUsageLimits(userId, newPeriodStart);
+  
+  // Old records will be kept for historical purposes
+  // Monthly reset is done by creating a new period record
 }
 

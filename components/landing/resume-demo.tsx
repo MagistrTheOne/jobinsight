@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,10 +38,10 @@ const sampleResults: DemoResult[] = [
 ];
 
 export function ResumeDemo() {
+  const router = useRouter();
   const [resumeText, setResumeText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<DemoResult | null>(null);
-  const [showDemo, setShowDemo] = useState(true);
 
   const handleDemoAnalysis = async () => {
     if (!resumeText.trim() || resumeText.trim().length < 50) {
@@ -58,8 +59,6 @@ export function ResumeDemo() {
     setResult(randomResult);
     setIsAnalyzing(false);
   };
-
-  if (!showDemo) return null;
 
   return (
     <section className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#0b0b0b] text-white">
@@ -192,7 +191,7 @@ export function ResumeDemo() {
               <p className="text-xs text-neutral-500 text-center leading-relaxed">
                 This is a demo preview. For full AI-powered analysis with detailed insights,{' '}
                 <button
-                  onClick={() => setShowDemo(false)}
+                  onClick={() => router.push('/auth/signup')}
                   className="text-neutral-300 hover:text-white underline underline-offset-2 font-medium"
                 >
                   sign up

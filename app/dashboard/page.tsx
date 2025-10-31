@@ -10,6 +10,8 @@ import { ResumeAnalysisResults } from '@/components/resume-analysis';
 import { ATSCompatibilityChecker } from '@/components/ats-compatibility-checker';
 import { JobResponseOptimizer } from '@/components/job-response-optimizer';
 import { UserButton } from '@/components/auth/user-button';
+import { UsageLimits } from '@/components/usage/usage-limits';
+import { UpgradeModal } from '@/components/usage/upgrade-modal';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CircleAlert as AlertCircle, Briefcase } from 'lucide-react';
 import { JobAnalysis, ResumeAnalysis, UserInfo } from '@/lib/types';
@@ -63,6 +65,14 @@ export default function DashboardPage() {
   
   // Cover Letter State (локальный, не сохраняем в store)
   const [coverLetterUserInfo, setCoverLetterUserInfo] = useState<UserInfo | null>(null);
+  
+  // Upgrade modal state
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [upgradeModalData, setUpgradeModalData] = useState<{
+    type?: 'resume' | 'job' | 'cover-letter';
+    used?: number;
+    limit?: number;
+  }>({});
 
   const handleJobAnalysis = async (url: string) => {
     if (!isAuthenticated) {
@@ -87,10 +97,20 @@ export default function DashboardPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.upgradeRequired) {
+          setUpgradeModalData({
+            type: data.type || 'job',
+            used: data.used,
+            limit: data.limit,
+          });
+          setUpgradeModalOpen(true);
+        }
         throw new Error(data.error || 'Analysis failed');
       }
 
       setJobAnalysis(data.analysis);
+      // Refresh usage limits after successful analysis
+      window.dispatchEvent(new Event('usage-refresh'));
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {
@@ -121,6 +141,14 @@ export default function DashboardPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.upgradeRequired) {
+          setUpgradeModalData({
+            type: data.type || 'resume',
+            used: data.used,
+            limit: data.limit,
+          });
+          setUpgradeModalOpen(true);
+        }
         throw new Error(data.error || 'Resume analysis failed');
       }
 
@@ -151,10 +179,20 @@ export default function DashboardPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.upgradeRequired) {
+          setUpgradeModalData({
+            type: data.type || 'job',
+            used: data.used,
+            limit: data.limit,
+          });
+          setUpgradeModalOpen(true);
+        }
         throw new Error(data.error || 'Analysis failed');
       }
 
       setJobAnalysis(data.analysis);
+      // Refresh usage limits after successful analysis
+      window.dispatchEvent(new Event('usage-refresh'));
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {
@@ -188,10 +226,20 @@ export default function DashboardPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.upgradeRequired) {
+          setUpgradeModalData({
+            type: data.type || 'cover-letter',
+            used: data.used,
+            limit: data.limit,
+          });
+          setUpgradeModalOpen(true);
+        }
         throw new Error(data.error || 'Cover letter generation failed');
       }
 
       setCoverLetter(data.coverLetter);
+      // Refresh usage limits after successful generation
+      window.dispatchEvent(new Event('usage-refresh'));
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {
@@ -204,17 +252,18 @@ export default function DashboardPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex-1"></div>
-            <div className="flex items-center justify-center flex-1">
-              <Briefcase className="h-8 w-8 text-blue-600 mr-3" />
-              <h1 className="text-4xl font-bold text-white">
-                JobInsight AI
-              </h1>
-            </div>
-            <div className="flex-1 flex justify-end">
-              <UserButton />
-            </div>
+                <div className="flex items-center justify-between mb-4 gap-4">
+                    <div className="flex-1"></div>
+                    <div className="flex items-center justify-center flex-1">
+                      <Briefcase className="h-8 w-8 text-blue-600 mr-3" />
+                      <h1 className="text-4xl font-bold text-white">
+                        JobInsight AI
+                      </h1>
+                    </div>
+                    <div className="flex-1 flex items-center justify-end gap-3">
+                      <UsageLimits />
+                      <UserButton />
+                    </div>
             {isAuthenticated && user && (
               <div className="absolute top-4 right-4 text-xs text-gray-500">
                 Logged in as {user.name}
@@ -335,6 +384,15 @@ export default function DashboardPage() {
             <HistoryPanel />
           </div>
         </div>
+
+        {/* Upgrade Modal */}
+        <UpgradeModal
+          open={upgradeModalOpen}
+          onOpenChange={setUpgradeModalOpen}
+          limitType={upgradeModalData.type}
+          used={upgradeModalData.used}
+          limit={upgradeModalData.limit}
+        />
       </div>
     </div>
   );
