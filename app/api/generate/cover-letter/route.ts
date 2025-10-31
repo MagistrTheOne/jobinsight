@@ -1,0 +1,68 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { gigachatAPI } from '@/lib/gigachat';
+import { scrapeJobPosting } from '@/lib/scraper';
+import { rateLimit } from '@/lib/rate-limit';
+
+export async function POST(request: NextRequest) {
+  try {
+    const identifier = request.ip || 'anonymous';
+    const rateLimitResult = await rateLimit(identifier, 3, 60000); // 3 requests per minute
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
+    const body = await request.json();
+    const { url, jobContent, userInfo } = body;
+
+    if (!url && !jobContent) {
+      return NextResponse.json(
+        { error: 'Either URL or job content is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!userInfo || !userInfo.name) {
+      return NextResponse.json(
+        { error: 'User information with at least a name is required' },
+        { status: 400 }
+      );
+    }
+
+    let contentToUse = jobContent;
+
+    if (url && !jobContent) {
+      try {
+        const scrapedData = await scrapeJobPosting(url);
+        contentToUse = `${scrapedData.title}\n\nКомпания: ${scrapedData.company}\n\nОписание: ${scrapedData.description}\n\nТребования: ${scrapedData.requirements}`;
+      } catch (scrapeError) {
+        return NextResponse.json(
+          { error: 'Failed to fetch job posting content from URL' },
+          { status: 400 }
+        );
+      }
+    }
+
+    const coverLetter = await gigachatAPI.generateCoverLetter(contentToUse, userInfo);
+
+    return NextResponse.json({
+      success: true,
+      coverLetter,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error: any) {
+    console.error('Cover letter generation error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Cover letter generation failed',
+        message: error.message || 'Unknown error occurred'
+      },
+      { status: 500 }
+    );
+  }
+}
