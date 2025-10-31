@@ -133,7 +133,7 @@ export async function getUsageLimits(userId: string, periodStart: Date) {
   return limits;
 }
 
-export async function createOrGetUsageLimits(userId: string, periodStart: Date): Promise<UsageLimits> {
+export async function createOrGetUsageLimits(userId: string, periodStart: Date) {
   let limits = await getUsageLimits(userId, periodStart);
   
   if (!limits) {

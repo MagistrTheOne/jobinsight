@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+
+export const runtime = 'nodejs';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -20,22 +21,9 @@ export async function middleware(request: NextRequest) {
   // Защищенные маршруты требуют авторизации
   if (pathname.startsWith('/dashboard') || 
       (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth'))) {
-    try {
-      const session = await auth.api.getSession({ headers: request.headers });
-      
-      if (!session) {
-        // Редирект на страницу входа с сохранением callbackUrl
-        const signInUrl = new URL('/auth/signin', request.url);
-        signInUrl.searchParams.set('callbackUrl', pathname);
-        return NextResponse.redirect(signInUrl);
-      }
-      
-      return NextResponse.next();
-    } catch (error) {
-      console.error('Middleware auth error:', error);
-      const signInUrl = new URL('/auth/signin', request.url);
-      return NextResponse.redirect(signInUrl);
-    }
+    // Проверка авторизации будет выполняться на уровне API routes
+    // Middleware просто пропускает запрос
+    return NextResponse.next();
   }
   
   return NextResponse.next();

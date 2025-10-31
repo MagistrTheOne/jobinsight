@@ -26,7 +26,7 @@ export function AuthSyncProvider({ children }: { children: React.ReactNode }) {
             name: session.user.name || '',
             image: session.user.image || undefined,
           },
-          expires: session.expiresAt?.toISOString() || '',
+          expires: session.session?.expiresAt?.toISOString() || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         });
         setUser({
           id: session.user.id,

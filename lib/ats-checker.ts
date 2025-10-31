@@ -347,7 +347,16 @@ function extractKeywordsFromJobDescription(jobDesc: string): string[] {
     }
   });
 
-  return [...new Set(keywords)]; // Убираем дубликаты
+  // Убираем дубликаты
+  const uniqueKeywords: string[] = [];
+  const seen = new Set<string>();
+  for (const keyword of keywords) {
+    if (!seen.has(keyword)) {
+      seen.add(keyword);
+      uniqueKeywords.push(keyword);
+    }
+  }
+  return uniqueKeywords;
 }
 
 function calculateScore(issues: ATSIssue[]): number {
