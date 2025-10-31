@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/auth';
+import { auth } from '@/lib/auth';
 import { getChatById, deleteChat } from '@/lib/db/queries';
 
 export async function GET(
@@ -8,7 +7,7 @@ export async function GET(
   { params }: { params: { chatId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth.api.getSession({ headers: request.headers });
     
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -48,7 +47,7 @@ export async function DELETE(
   { params }: { params: { chatId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth.api.getSession({ headers: request.headers });
     
     if (!session?.user?.id) {
       return NextResponse.json(

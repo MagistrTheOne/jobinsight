@@ -1,44 +1,45 @@
 "use client";
 
 import { useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { authClient } from '@/lib/auth-client';
 import { useAuthStore } from '@/store/auth-store';
 
 /**
- * Компонент для синхронизации NextAuth session с Zustand store в реальном времени
- * Автоматически обновляет store при изменении сессии NextAuth
+ * Компонент для синхронизации Better Auth session с Zustand store в реальном времени
+ * Автоматически обновляет store при изменении сессии Better Auth
  */
 export function AuthSyncProvider({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession();
-  const { setSession, setLoading, clearAuth } = useAuthStore();
+  const { setSession, setLoading, clearAuth, setUser } = useAuthStore();
+  const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
     // Устанавливаем состояние загрузки
-    setLoading(status === 'loading');
+    setLoading(isPending);
 
     // Синхронизируем сессию с store в реальном времени
-    if (status !== 'loading') {
-      if (session) {
-        setSession(session);
+    if (!isPending) {
+      if (session?.user) {
+        setSession({
+          user: {
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.name || '',
+            image: session.user.image || undefined,
+          },
+          expires: session.expiresAt?.toISOString() || '',
+        });
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.name || '',
+          image: session.user.image || undefined,
+        });
       } else {
         // Если сессии нет, очищаем store
         clearAuth();
       }
     }
-  }, [session, status, setSession, setLoading, clearAuth]);
-
-  // Дополнительная проверка при монтировании компонента
-  useEffect(() => {
-    // Периодическая синхронизация (каждые 30 секунд) для проверки истечения сессии
-    const syncInterval = setInterval(() => {
-      if (status === 'unauthenticated' && session === null) {
-        clearAuth();
-      }
-    }, 30000);
-
-    return () => clearInterval(syncInterval);
-  }, [status, session, clearAuth]);
+  }, [session, isPending, setSession, setLoading, clearAuth, setUser]);
 
   return <>{children}</>;
 }
-

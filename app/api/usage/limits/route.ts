@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/auth';
+import { auth } from '@/lib/auth';
 import { checkUsageLimit, getCurrentPeriodStart } from '@/lib/usage-limits';
 import { getUserSubscription } from '@/lib/db/queries';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth.api.getSession({ headers: request.headers });
     
     if (!session?.user?.id) {
       return NextResponse.json(

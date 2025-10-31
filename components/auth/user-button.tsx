@@ -1,6 +1,6 @@
 "use client";
 
-import { signOut } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -72,7 +72,8 @@ export function UserButton() {
           onClick={async () => {
             clearAuth();
             clearCurrent();
-            await signOut({ callbackUrl: "/landing" });
+            await authClient.signOut();
+            window.location.href = "/landing";
           }}
         >
           <LogOut className="mr-2 h-4 w-4" />

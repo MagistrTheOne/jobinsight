@@ -1,12 +1,16 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Session } from 'next-auth';
 
 interface User {
   id: string;
   email: string;
   name: string;
   image?: string;
+}
+
+interface Session {
+  user: User;
+  expires: string;
 }
 
 interface AuthState {
@@ -31,14 +35,7 @@ export const useAuthStore = create<AuthState>()(
       setSession: (session) => {
         set({
           session,
-          user: session?.user
-            ? {
-                id: (session.user as any).id || session.user?.email || '',
-                email: session.user.email || '',
-                name: session.user.name || '',
-                image: session.user.image || undefined,
-              }
-            : null,
+          user: session?.user || null,
           isAuthenticated: !!session,
           isLoading: false,
         });
@@ -71,4 +68,3 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
-

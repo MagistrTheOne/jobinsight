@@ -14,7 +14,6 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@auth/drizzle-adapter": "^1.11.1",
     "@hookform/resolvers": "^3.9.0",
     "@neondatabase/serverless": "^1.0.2",
     "@next/swc-wasm-nodejs": "13.5.1",
@@ -53,6 +52,7 @@
     "autoprefixer": "10.4.15",
     "axios": "^1.13.1",
     "bcryptjs": "^3.0.2",
+    "better-auth": "^1.3.34",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
@@ -66,7 +66,6 @@
     "input-otp": "^1.2.4",
     "lucide-react": "^0.446.0",
     "next": "^13.5.11",
-    "next-auth": "^4.24.13",
     "next-themes": "^0.3.0",
     "postcss": "8.4.30",
     "react": "18.2.0",

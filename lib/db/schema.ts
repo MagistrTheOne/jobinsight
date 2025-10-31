@@ -1,46 +1,48 @@
 import { pgTable, text, timestamp, jsonb, index, integer } from "drizzle-orm/pg-core";
 
-// Users table (compatible with NextAuth)
+// Users table (Better Auth compatible - using existing plural table name)
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
   email: text("email").notNull().unique(),
   emailVerified: timestamp("email_verified"),
   name: text("name"),
   image: text("image"),
-  password: text("password"), // Only for credentials provider (hashed with bcrypt)
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
   emailIdx: index("email_idx").on(table.email),
 }));
 
-// NextAuth accounts table (for OAuth providers)
+// Better Auth accounts table (for OAuth providers - using existing plural table name)
 export const accounts = pgTable("accounts", {
   id: text("id").primaryKey(),
   userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  type: text("type").notNull(), // oauth, credentials, etc.
-  provider: text("provider").notNull(),
-  providerAccountId: text("provider_account_id").notNull(),
-  refreshToken: text("refresh_token"),
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
   accessToken: text("access_token"),
-  expiresAt: timestamp("expires_at"),
-  tokenType: text("token_type"),
-  scope: text("scope"),
+  refreshToken: text("refresh_token"),
   idToken: text("id_token"),
-  sessionState: text("session_state"),
+  expiresAt: timestamp("expires_at"),
+  password: text("password"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
   userIdIdx: index("accounts_user_id_idx").on(table.userId),
-  providerIdx: index("accounts_provider_idx").on(table.provider, table.providerAccountId),
+  providerIdx: index("accounts_provider_idx").on(table.providerId, table.accountId),
 }));
 
-// NextAuth sessions table
+// Better Auth sessions table (using existing plural table name)
 export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(),
-  sessionToken: text("session_token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  token: text("token").notNull().unique(),
   userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  expires: timestamp("expires").notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
-  sessionTokenIdx: index("sessions_session_token_idx").on(table.sessionToken),
+  tokenIdx: index("sessions_token_idx").on(table.token),
   userIdIdx: index("sessions_user_id_idx").on(table.userId),
 }));
 

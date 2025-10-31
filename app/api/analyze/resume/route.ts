@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/auth';
+import { auth } from '@/lib/auth';
 import { gigachatAPI } from '@/lib/gigachat';
 import { rateLimit } from '@/lib/rate-limit';
 import { checkUsageLimit, getCurrentPeriodStart } from '@/lib/usage-limits';
@@ -9,7 +8,7 @@ import { incrementUsageLimit } from '@/lib/db/queries';
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },

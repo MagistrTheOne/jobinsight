@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/auth';
+import { auth } from '@/lib/auth';
 import { getAnalysisHistory, createAnalysisHistory, deleteAnalysisHistory, getAnalysisById } from '@/lib/db/queries';
 import { rateLimit } from '@/lib/rate-limit';
 
 // GET - получить историю анализов пользователя
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth.api.getSession({ headers: request.headers });
     
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -55,7 +54,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const session = await getServerSession(authOptions);
+    const session = await auth.api.getSession({ headers: request.headers });
     
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -107,7 +106,7 @@ export async function POST(request: NextRequest) {
 // DELETE - удалить элемент истории
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth.api.getSession({ headers: request.headers });
     
     if (!session?.user?.id) {
       return NextResponse.json(

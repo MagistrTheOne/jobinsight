@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { authClient } from '@/lib/auth-client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ import { Loader2, Mail, Github } from 'lucide-react';
 export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/';
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,21 +26,20 @@ export default function SignInPage() {
     setError('');
 
     try {
-      const result = await signIn('credentials', {
+      const result = await authClient.signIn.email({
         email,
         password,
-        redirect: false,
       });
 
-      if (result?.error) {
-        setError('Invalid email or password');
+      if (result.error) {
+        setError(result.error.message || 'Invalid email or password');
+        setIsLoading(false);
       } else {
-        router.push(callbackUrl);
-        router.refresh();
+        // Успешный вход - делаем редирект
+        window.location.href = callbackUrl;
       }
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -49,7 +48,10 @@ export default function SignInPage() {
     setIsLoading(true);
     setError('');
     try {
-      await signIn(provider, { callbackUrl });
+      await authClient.signIn.social({
+        provider,
+        callbackURL: callbackUrl,
+      });
     } catch (err: any) {
       setError(err.message || 'OAuth sign in failed');
       setIsLoading(false);
@@ -114,6 +116,7 @@ export default function SignInPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
                 className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
                 disabled={isLoading}
               />
@@ -128,6 +131,7 @@ export default function SignInPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
                 className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
                 disabled={isLoading}
               />
@@ -160,4 +164,3 @@ export default function SignInPage() {
     </div>
   );
 }
-

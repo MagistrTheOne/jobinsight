@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { authClient } from '@/lib/auth-client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,44 +41,43 @@ export default function SignUpPage() {
     }
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Registration failed');
-      }
-
-      setSuccess(true);
-      
-      // Автоматически входим после регистрации
-      const result = await signIn('credentials', {
+      const result = await authClient.signUp.email({
         email,
         password,
-        redirect: false,
+        name,
       });
 
-      if (result?.error) {
-        router.push('/auth/signin');
+      if (result.error) {
+        setError(result.error.message || 'Registration failed');
+        setIsLoading(false);
       } else {
-        // Redirect to checkout if coming from pricing page
-        if (redirect === 'checkout') {
-          const productId = process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID || 'f61ce25c-5122-429f-8b2e-8c77d9380a84';
-          window.location.href = `/api/checkout?products=${productId}`;
+        setSuccess(true);
+        
+        // После регистрации автоматически входим
+        const signInResult = await authClient.signIn.email({
+          email,
+          password,
+        });
+
+        if (signInResult.error) {
+          setError('Account created but sign in failed. Please sign in manually.');
+          setIsLoading(false);
+          setTimeout(() => {
+            window.location.href = '/auth/signin';
+          }, 2000);
         } else {
-          router.push('/dashboard');
-          router.refresh();
+          // Redirect to checkout if coming from pricing page
+          if (redirect === 'checkout') {
+            const productId = process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID || 'f61ce25c-5122-429f-8b2e-8c77d9380a84';
+            window.location.href = `/api/checkout?products=${productId}`;
+          } else {
+            // Успешная регистрация и вход - редирект на dashboard
+            window.location.href = '/dashboard';
+          }
         }
       }
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -87,7 +86,10 @@ export default function SignUpPage() {
     setIsLoading(true);
     setError('');
     try {
-      await signIn(provider, { callbackUrl: '/' });
+      await authClient.signIn.social({
+        provider,
+        callbackURL: redirect === 'checkout' ? '/api/checkout' : '/dashboard',
+      });
     } catch (err: any) {
       setError(err.message || 'OAuth sign in failed');
       setIsLoading(false);
@@ -160,6 +162,7 @@ export default function SignUpPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                autoComplete="name"
                 className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
                 disabled={isLoading}
               />
@@ -174,6 +177,7 @@ export default function SignUpPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
                 className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
                 disabled={isLoading}
               />
@@ -189,6 +193,7 @@ export default function SignUpPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
+                autoComplete="new-password"
                 className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
                 disabled={isLoading}
               />
@@ -204,6 +209,7 @@ export default function SignUpPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
+                autoComplete="new-password"
                 className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
                 disabled={isLoading}
               />
@@ -236,4 +242,3 @@ export default function SignUpPage() {
     </div>
   );
 }
-
