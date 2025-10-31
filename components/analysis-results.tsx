@@ -4,7 +4,7 @@ import { GlassCard } from '@/components/ui/glass-card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, TrendingUp, Users, DollarSign, Clock, Target, Award } from 'lucide-react';
+import { TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, TrendingUp, Users, DollarSign, Clock, Target, Award, BarChart3 } from 'lucide-react';
 import { JobAnalysis } from '@/lib/types';
 
 interface AnalysisResultsProps {
@@ -31,6 +31,46 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
         <Progress value={scoreValue * 10} className="mb-3" />
         <p className="text-gray-300">{analysis.overallScore}</p>
       </GlassCard>
+
+      {/* Job Grade Assessment */}
+      {analysis.jobGrade && (
+        <GlassCard variant="accent">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold text-white flex items-center mb-2">
+                <BarChart3 className="mr-2 h-5 w-5 text-purple-600" />
+                Job Level Assessment
+              </h3>
+              <div className="flex items-center gap-4">
+                <div>
+                  <div className="text-3xl font-bold text-purple-600">
+                    {analysis.jobGrade.level}
+                  </div>
+                  <div className="text-sm text-gray-400">Level</div>
+                </div>
+                <div className="h-12 w-px bg-gray-600" />
+                <div>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {analysis.jobGrade.score}/5
+                  </div>
+                  <div className="text-sm text-gray-400">Score</div>
+                </div>
+                <div className="h-12 w-px bg-gray-600" />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm text-gray-400">Confidence</span>
+                    <span className="text-sm font-medium text-gray-300">{analysis.jobGrade.confidence}%</span>
+                  </div>
+                  <Progress value={analysis.jobGrade.confidence} className="h-2" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-700/50">
+            <p className="text-sm text-gray-300">{analysis.jobGrade.reasoning}</p>
+          </div>
+        </GlassCard>
+      )}
 
       {/* Red Flags */}
       {analysis.redFlags && analysis.redFlags.length > 0 && (

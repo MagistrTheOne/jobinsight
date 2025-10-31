@@ -141,41 +141,169 @@ class GigaChatAPI {
     }
   }
 
-  async sendMessage(messages: GigaChatMessage[], model: string = 'GigaChat'): Promise<string> {
-    try {
-      const accessToken = await this.getAccessToken();
+  async sendMessage(messages: GigaChatMessage[], model: string = 'GigaChat', retries: number = 2): Promise<string> {
+    let lastError: any = null;
+    
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const accessToken = await this.getAccessToken();
 
-      // Используем axios с кастомным HTTPS agent
-      const response = await this.axiosInstance.post<GigaChatResponse>(
-        `${this.apiUrl}/chat/completions`,
-        {
-          model,
-          messages,
-          temperature: 0.7,
-          max_tokens: 2048
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
+        // Валидация размера сообщений перед отправкой
+        const totalContentLength = messages.reduce((sum, msg) => sum + msg.content.length, 0);
+        if (totalContentLength > 32000) {
+          console.warn(`⚠️  Content length (${totalContentLength}) exceeds recommended limit (32000). Truncating...`);
+          
+          // Обрезаем самое длинное user сообщение, если оно слишком большое
+          const userMessages = messages.filter(m => m.role === 'user');
+          if (userMessages.length > 0) {
+            const longestUserMsg = userMessages.reduce((longest, msg) => 
+              msg.content.length > longest.content.length ? msg : longest
+            );
+            const maxUserContentLength = 25000; // Оставляем место для system messages
+            if (longestUserMsg.content.length > maxUserContentLength) {
+              longestUserMsg.content = longestUserMsg.content.substring(0, maxUserContentLength) + '... [truncated]';
+            }
           }
         }
-      );
 
-      const data = response.data;
+        // Логируем информацию о запросе (без полного контента для безопасности)
+        console.log(`📤 GigaChat API request (attempt ${attempt + 1}/${retries + 1}):`, {
+          model,
+          messagesCount: messages.length,
+          totalContentLength: messages.reduce((sum, msg) => sum + msg.content.length, 0),
+          endpoint: `${this.apiUrl}/chat/completions`
+        });
+
+        // Используем axios с кастомным HTTPS agent
+        const response = await this.axiosInstance.post<GigaChatResponse>(
+          `${this.apiUrl}/chat/completions`,
+          {
+            model,
+            messages,
+            temperature: 0.7,
+            max_tokens: 2048
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        const data = response.data;
+        
+        if (!data.choices || data.choices.length === 0) {
+          throw new Error('No response generated');
+        }
+
+        console.log('✅ GigaChat API response received:', {
+          model: data.model,
+          finishReason: data.choices[0].finish_reason,
+          tokens: data.usage?.total_tokens || 'unknown'
+        });
+
+        return data.choices[0].message.content;
+      } catch (error: any) {
+        lastError = error;
+        
+        // Детальное логирование для диагностики
+        console.error(`❌ GigaChat API error (attempt ${attempt + 1}/${retries + 1}):`, {
+          message: error.message,
+          code: error.code,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+        });
+
+        if (error.response) {
+          const errorData = error.response.data;
+          console.error('📋 Full error response data:', JSON.stringify(errorData, null, 2));
+          console.error('📋 Error response headers:', error.response.headers);
+
+          // Для 422 ошибки выводим дополнительную информацию
+          if (error.response.status === 422) {
+            console.error('⚠️  422 Unprocessable Entity - Request validation failed');
+            console.error('📋 Request payload preview:', {
+              model,
+              messagesCount: messages.length,
+              messageLengths: messages.map(m => ({ role: m.role, length: m.content.length })),
+              firstMessagePreview: messages[0]?.content?.substring(0, 200) + '...'
+            });
+          }
+
+          // Retry только для временных ошибок (5xx) или rate limit (429)
+          const isRetryable = error.response.status >= 500 || error.response.status === 429;
+          
+          if (isRetryable && attempt < retries) {
+            const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+            console.log(`⏳ Retrying in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+
+          // Для 422 и других клиентских ошибок не делаем retry
+          throw new Error(`API request failed: ${error.response.status} ${error.response.statusText}. Details: ${JSON.stringify(errorData)}`);
+        }
+
+        // Для сетевых ошибок делаем retry
+        if (attempt < retries && (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.code === 'ENOTFOUND')) {
+          const delay = Math.pow(2, attempt) * 1000;
+          console.log(`⏳ Network error, retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+
+        throw error;
+      }
+    }
+
+    throw lastError || new Error('Failed after retries');
+  }
+
+  async estimateJobGrade(jobContent: string): Promise<any> {
+    const messages: GigaChatMessage[] = [
+      {
+        role: 'system',
+        content: `Ты эксперт по оценке уровня позиций в IT и других сферах. Определяй грейд позиции (Junior, Middle, Senior, Lead) на основе требований, ответственности, опыта и других факторов. Даже если название вакансии неточное, анализируй реальное содержание. Верни оценку в JSON формате:
+        {
+          "level": "Junior" | "Middle" | "Senior" | "Lead" | "Unknown",
+          "score": число от 1 до 5 (1=Junior, 2=Junior+, 3=Middle, 4=Senior, 5=Lead),
+          "confidence": число от 0 до 100 (уверенность в оценке),
+          "reasoning": "краткое обоснование оценки на основе требований, опыта, ответственности, зарплаты"
+        }`
+      },
+      {
+        role: 'user',
+        content: `Определи грейд этой позиции: ${jobContent}`
+      }
+    ];
+
+    const response = await this.sendMessage(messages);
+    
+    try {
+      let jsonString = response.trim();
+      const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        jsonString = jsonMatch[0];
+      }
+      const grade = JSON.parse(jsonString);
       
-      if (!data.choices || data.choices.length === 0) {
-        throw new Error('No response generated');
-      }
-
-      return data.choices[0].message.content;
-    } catch (error: any) {
-      console.error('GigaChat API error:', error);
-      if (error.response) {
-        console.error('API response:', error.response.data);
-        throw new Error(`API request failed: ${error.response.status} ${error.response.statusText}`);
-      }
-      throw error;
+      // Валидация и нормализация данных
+      const validLevels = ['Junior', 'Middle', 'Senior', 'Lead', 'Unknown'];
+      return {
+        level: validLevels.includes(grade.level) ? grade.level : 'Unknown',
+        score: Math.max(1, Math.min(5, parseInt(grade.score) || 3)),
+        confidence: Math.max(0, Math.min(100, parseInt(grade.confidence) || 50)),
+        reasoning: grade.reasoning || 'Оценка на основе анализа требований'
+      };
+    } catch (error) {
+      console.error('Failed to parse job grade JSON:', error);
+      return {
+        level: 'Unknown',
+        score: 3,
+        confidence: 0,
+        reasoning: 'Не удалось определить грейд позиции'
+      };
     }
   }
 
@@ -204,16 +332,26 @@ class GigaChatAPI {
       }
     ];
 
-    const response = await this.sendMessage(messages);
+    // Запускаем анализ и оценку грейда параллельно
+    const [analysisResponse, jobGrade] = await Promise.all([
+      this.sendMessage(messages),
+      this.estimateJobGrade(jobContent)
+    ]);
     
     try {
       // Try to extract JSON from response if it's wrapped in text
-      let jsonString = response.trim();
+      let jsonString = analysisResponse.trim();
       const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         jsonString = jsonMatch[0];
       }
-      return JSON.parse(jsonString);
+      const analysis = JSON.parse(jsonString);
+      
+      // Добавляем оценку грейда к анализу
+      return {
+        ...analysis,
+        jobGrade
+      };
     } catch (error) {
       // If JSON parsing fails, try to return a structured response with fallback
       console.error('Failed to parse job analysis JSON:', error);
@@ -226,28 +364,94 @@ class GigaChatAPI {
         atsKeywords: [],
         recommendedSkills: [],
         overallScore: 'Не удалось оценить (0/10)',
-        rawResponse: response
+        jobGrade,
+        rawResponse: analysisResponse
       };
     }
   }
 
-  async generateCoverLetter(jobContent: string, userInfo: any): Promise<string> {
+  async generateCoverLetter(jobContent: string, userInfo: any, jobAnalysis?: any): Promise<string> {
+    const analysisContext = jobAnalysis ? `
+Дополнительный контекст из анализа вакансии:
+- Грейд позиции: ${jobAnalysis.jobGrade?.level || 'не определен'}
+- ATS ключевые слова: ${jobAnalysis.atsKeywords?.join(', ') || 'нет'}
+- Рекомендуемые навыки: ${jobAnalysis.recommendedSkills?.join(', ') || 'нет'}
+- Красные флаги (избегать упоминания): ${jobAnalysis.redFlags?.join(', ') || 'нет'}
+- Общая оценка вакансии: ${jobAnalysis.overallScore || 'нет'}
+` : '';
+
     const messages: GigaChatMessage[] = [
       {
         role: 'system',
-        content: `Ты профессиональный писатель сопроводительных писем, специализирующийся на ATS-оптимизированных заявлениях. Создавай убедительные, персонализированные сопроводительные письма, которые включают релевантные ключевые слова и подчеркивают сильные стороны кандидата.`
+        content: `Ты профессиональный писатель сопроводительных писем, специализирующийся на ATS-оптимизированных заявлениях. Создавай убедительные, персонализированные сопроводительные письма, которые включают релевантные ключевые слова и подчеркивают сильные стороны кандидата. Используй данные анализа вакансии для оптимизации под конкретную позицию.`
       },
       {
         role: 'user',
         content: `Создай ATS-оптимизированное сопроводительное письмо для этой вакансии: ${jobContent}
 
 Информация о пользователе: ${JSON.stringify(userInfo)}
+${analysisContext}
 
 Пожалуйста, создай профессиональное сопроводительное письмо, которое:
-1. Использует релевантные ключевые слова из вакансии
-2. Подчеркивает релевантный опыт и навыки
-3. Показывает энтузиазм к роли
-4. Дружелюбно к ATS с правильным форматированием`
+1. Использует релевантные ключевые слова из вакансии и анализа
+2. Подчеркивает релевантный опыт и навыки под конкретную позицию
+3. Учитывает грейд позиции (${jobAnalysis?.jobGrade?.level || 'не определен'})
+4. Показывает энтузиазм к роли
+5. Дружелюбно к ATS с правильным форматированием
+6. Избегает упоминания проблемных моментов из красных флагов`
+      }
+    ];
+
+    return await this.sendMessage(messages);
+  }
+
+  async optimizeResumeForJob(resumeContent: string, jobContent: string, jobAnalysis?: any, currentResume?: string): Promise<string> {
+    // Валидация размера
+    const MAX_RESUME_LENGTH = 20000;
+    let processedResumeContent = resumeContent.trim();
+    if (processedResumeContent.length > MAX_RESUME_LENGTH) {
+      processedResumeContent = processedResumeContent.substring(0, MAX_RESUME_LENGTH) + '... [truncated]';
+    }
+
+    const MAX_JOB_CONTENT_LENGTH = 10000;
+    let processedJobContent = jobContent.trim();
+    if (processedJobContent.length > MAX_JOB_CONTENT_LENGTH) {
+      processedJobContent = processedJobContent.substring(0, MAX_JOB_CONTENT_LENGTH) + '... [truncated]';
+    }
+
+    const analysisContext = jobAnalysis ? `
+Дополнительный контекст из анализа вакансии:
+- Грейд позиции: ${jobAnalysis.jobGrade?.level || 'не определен'}
+- ATS ключевые слова (обязательно включить): ${jobAnalysis.atsKeywords?.join(', ') || 'нет'}
+- Рекомендуемые навыки: ${jobAnalysis.recommendedSkills?.join(', ') || 'нет'}
+- Реалистичные требования: ${jobAnalysis.requirements?.realistic?.join(', ') || 'нет'}
+` : '';
+
+    const messages: GigaChatMessage[] = [
+      {
+        role: 'system',
+        content: `Ты эксперт по оптимизации резюме под конкретные вакансии. Создавай оптимизированную версию резюме, которая максимально соответствует требованиям вакансии, используя ATS-оптимизацию и релевантные ключевые слова. Сохраняй структуру и правдивость информации, но адаптируй формулировки под вакансию.`
+      },
+      {
+        role: 'user',
+        content: `Оптимизируй это резюме под конкретную вакансию:
+
+ВАКАНСИЯ:
+${processedJobContent}
+${analysisContext}
+
+ТЕКУЩЕЕ РЕЗЮМЕ:
+${processedResumeContent}
+
+Создай оптимизированную версию резюме, которая:
+1. Сохраняет всю важную информацию из оригинала
+2. Добавляет релевантные ключевые слова из вакансии (ATS-оптимизация)
+3. Переформулирует опыт и навыки под требования вакансии
+4. Подчеркивает соответствие грейду позиции (${jobAnalysis?.jobGrade?.level || 'не определен'})
+5. Сохраняет структуру и читаемость
+6. Делает акцент на релевантном опыте
+
+Верни оптимизированное резюме полностью, готовое к использованию.`
       }
     ];
 
@@ -255,7 +459,23 @@ class GigaChatAPI {
   }
 
   async analyzeResume(resumeContent: string, jobContent?: string): Promise<any> {
-    const jobContext = jobContent ? `\n\nВакансия для сравнения: ${jobContent}` : '';
+    // Валидация и обрезка контента резюме перед отправкой
+    const MAX_RESUME_LENGTH = 25000;
+    const MAX_JOB_CONTENT_LENGTH = 10000;
+    
+    let processedResumeContent = resumeContent.trim();
+    if (processedResumeContent.length > MAX_RESUME_LENGTH) {
+      console.warn(`⚠️  Resume content too long (${processedResumeContent.length} chars), truncating to ${MAX_RESUME_LENGTH} chars`);
+      processedResumeContent = processedResumeContent.substring(0, MAX_RESUME_LENGTH) + '... [truncated]';
+    }
+
+    let processedJobContent = jobContent?.trim();
+    if (processedJobContent && processedJobContent.length > MAX_JOB_CONTENT_LENGTH) {
+      console.warn(`⚠️  Job content too long (${processedJobContent.length} chars), truncating to ${MAX_JOB_CONTENT_LENGTH} chars`);
+      processedJobContent = processedJobContent.substring(0, MAX_JOB_CONTENT_LENGTH) + '... [truncated]';
+    }
+
+    const jobContext = processedJobContent ? `\n\nВакансия для сравнения: ${processedJobContent}` : '';
     
     const messages: GigaChatMessage[] = [
       {
@@ -273,33 +493,39 @@ class GigaChatAPI {
       },
       {
         role: 'user',
-        content: `Проанализируй это резюме: ${resumeContent}${jobContext}`
+        content: `Проанализируй это резюме: ${processedResumeContent}${jobContext}`
       }
     ];
 
-    const response = await this.sendMessage(messages);
-    
     try {
-      // Try to extract JSON from response if it's wrapped in text
-      let jsonString = response.trim();
-      const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        jsonString = jsonMatch[0];
+      const response = await this.sendMessage(messages);
+      
+      try {
+        // Try to extract JSON from response if it's wrapped in text
+        let jsonString = response.trim();
+        const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          jsonString = jsonMatch[0];
+        }
+        return JSON.parse(jsonString);
+      } catch (error) {
+        // If JSON parsing fails, try to return a structured response with fallback
+        console.error('Failed to parse resume analysis JSON:', error);
+        console.error('Raw response:', response.substring(0, 500));
+        return {
+          atsCompatibility: 'Не удалось оценить совместимость с ATS',
+          strengths: [],
+          improvements: [],
+          missingKeywords: [],
+          formatting: 'Не удалось оценить форматирование',
+          skillsGap: [],
+          overallScore: 'Не удалось оценить (0/10)',
+          rawResponse: response
+        };
       }
-      return JSON.parse(jsonString);
-    } catch (error) {
-      // If JSON parsing fails, try to return a structured response with fallback
-      console.error('Failed to parse resume analysis JSON:', error);
-      return {
-        atsCompatibility: 'Не удалось оценить совместимость с ATS',
-        strengths: [],
-        improvements: [],
-        missingKeywords: [],
-        formatting: 'Не удалось оценить форматирование',
-        skillsGap: [],
-        overallScore: 'Не удалось оценить (0/10)',
-        rawResponse: response
-      };
+    } catch (error: any) {
+      console.error('Resume analysis failed:', error);
+      throw error;
     }
   }
 }

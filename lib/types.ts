@@ -1,3 +1,10 @@
+export interface JobGrade {
+  level: 'Junior' | 'Middle' | 'Senior' | 'Lead' | 'Unknown';
+  score: number; // 1-5
+  confidence: number; // 0-100
+  reasoning: string;
+}
+
 export interface JobAnalysis {
   redFlags: string[];
   requirements: {
@@ -10,6 +17,7 @@ export interface JobAnalysis {
   atsKeywords: string[];
   recommendedSkills: string[];
   overallScore: string;
+  jobGrade?: JobGrade;
 }
 
 export interface ResumeAnalysis {
@@ -36,4 +44,12 @@ export interface AnalysisResult {
   data: JobAnalysis | ResumeAnalysis | string;
   timestamp: Date;
   id: string;
+}
+
+export interface OptimizedContent {
+  original: string;
+  optimized: string;
+  improvements: string[];
+  keywordsAdded: string[];
+  type: 'cover-letter' | 'resume';
 }

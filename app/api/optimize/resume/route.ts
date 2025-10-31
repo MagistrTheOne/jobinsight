@@ -6,7 +6,7 @@ import { rateLimit } from '@/lib/rate-limit';
 export async function POST(request: NextRequest) {
   try {
     const identifier = request.ip || 'anonymous';
-    const rateLimitResult = await rateLimit(identifier, 3, 60000); // 3 requests per minute
+    const rateLimitResult = await rateLimit(identifier, 3, 60000);
     
     if (!rateLimitResult.success) {
       return NextResponse.json(
@@ -16,18 +16,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { url, jobContent, userInfo, jobAnalysis } = body;
+    const { resumeContent, url, jobContent, jobAnalysis } = body;
 
-    if (!url && !jobContent) {
+    if (!resumeContent || resumeContent.trim().length < 100) {
       return NextResponse.json(
-        { error: 'Either URL or job content is required' },
+        { error: 'Resume content is required and must be substantial' },
         { status: 400 }
       );
     }
 
-    if (!userInfo || !userInfo.name) {
+    if (!url && !jobContent) {
       return NextResponse.json(
-        { error: 'User information with at least a name is required' },
+        { error: 'Either URL or job content is required' },
         { status: 400 }
       );
     }
@@ -46,23 +46,47 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const coverLetter = await gigachatAPI.generateCoverLetter(contentToUse, userInfo, jobAnalysis);
+    const optimizedResume = await gigachatAPI.optimizeResumeForJob(
+      resumeContent,
+      contentToUse,
+      jobAnalysis,
+      resumeContent
+    );
+
+    const keywordsAdded = jobAnalysis?.atsKeywords || [];
+    const improvements: string[] = [
+      'Резюме адаптировано под конкретную вакансию',
+      'Добавлены релевантные ATS ключевые слова',
+      'Опыт переформулирован под требования вакансии',
+      'Структура оптимизирована для ATS систем'
+    ];
+
+    if (jobAnalysis?.jobGrade) {
+      improvements.push(`Оптимизировано под уровень: ${jobAnalysis.jobGrade.level}`);
+    }
 
     return NextResponse.json({
       success: true,
-      coverLetter,
+      optimized: {
+        original: resumeContent,
+        optimized: optimizedResume,
+        improvements,
+        keywordsAdded,
+        type: 'resume' as const
+      },
       timestamp: new Date().toISOString()
     });
 
   } catch (error: any) {
-    console.error('Cover letter generation error:', error);
+    console.error('Resume optimization error:', error);
     return NextResponse.json(
       {
         success: false,
-        error: 'Cover letter generation failed',
+        error: 'Resume optimization failed',
         message: error.message || 'Unknown error occurred'
       },
       { status: 500 }
     );
   }
 }
+

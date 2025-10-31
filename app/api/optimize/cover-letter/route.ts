@@ -6,7 +6,7 @@ import { rateLimit } from '@/lib/rate-limit';
 export async function POST(request: NextRequest) {
   try {
     const identifier = request.ip || 'anonymous';
-    const rateLimitResult = await rateLimit(identifier, 3, 60000); // 3 requests per minute
+    const rateLimitResult = await rateLimit(identifier, 3, 60000);
     
     if (!rateLimitResult.success) {
       return NextResponse.json(
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { url, jobContent, userInfo, jobAnalysis } = body;
+    const { url, jobContent, userInfo, jobAnalysis, currentCoverLetter } = body;
 
     if (!url && !jobContent) {
       return NextResponse.json(
@@ -46,23 +46,42 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const coverLetter = await gigachatAPI.generateCoverLetter(contentToUse, userInfo, jobAnalysis);
+    const optimizedCoverLetter = await gigachatAPI.generateCoverLetter(
+      contentToUse, 
+      userInfo, 
+      jobAnalysis
+    );
+
+    // Извлекаем ключевые слова, которые были добавлены
+    const keywordsAdded = jobAnalysis?.atsKeywords || [];
 
     return NextResponse.json({
       success: true,
-      coverLetter,
+      optimized: {
+        original: currentCoverLetter || '',
+        optimized: optimizedCoverLetter,
+        improvements: [
+          'Оптимизировано под конкретную вакансию',
+          'Добавлены релевантные ATS ключевые слова',
+          'Учтен грейд позиции',
+          'Улучшена структура для ATS систем'
+        ],
+        keywordsAdded,
+        type: 'cover-letter' as const
+      },
       timestamp: new Date().toISOString()
     });
 
   } catch (error: any) {
-    console.error('Cover letter generation error:', error);
+    console.error('Cover letter optimization error:', error);
     return NextResponse.json(
       {
         success: false,
-        error: 'Cover letter generation failed',
+        error: 'Cover letter optimization failed',
         message: error.message || 'Unknown error occurred'
       },
       { status: 500 }
     );
   }
 }
+

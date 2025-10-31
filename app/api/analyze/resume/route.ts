@@ -35,13 +35,35 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Resume analysis error:', error);
+    
+    // Определяем статус код и детальное сообщение
+    let statusCode = 500;
+    let errorMessage = error.message || 'Unknown error occurred';
+    let errorDetails: any = null;
+
+    if (error.message?.includes('422') || error.message?.includes('Unprocessable Entity')) {
+      statusCode = 422;
+      errorMessage = 'Invalid request format or content. Please check your resume content.';
+      errorDetails = {
+        type: 'validation_error',
+        suggestion: 'Ensure your resume content is properly formatted and not too long (max ~25000 characters).'
+      };
+    } else if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+      statusCode = 401;
+      errorMessage = 'Authentication failed. Please check GigaChat API credentials.';
+    } else if (error.message?.includes('429') || error.message?.includes('Rate limit')) {
+      statusCode = 429;
+      errorMessage = 'Rate limit exceeded. Please try again later.';
+    }
+
     return NextResponse.json(
       {
         success: false,
         error: 'Resume analysis failed',
-        message: error.message || 'Unknown error occurred'
+        message: errorMessage,
+        details: errorDetails
       },
-      { status: 500 }
+      { status: statusCode }
     );
   }
 }
