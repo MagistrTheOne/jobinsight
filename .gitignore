@@ -19,6 +19,9 @@
 .DS_Store
 *.pem
 
+# certificates (можно коммитить, они публичные)
+# certs/russian_trusted_root_ca_pem.crt
+
 # debug
 npm-debug.log*
 yarn-debug.log*

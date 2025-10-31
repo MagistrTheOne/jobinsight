@@ -7,6 +7,7 @@ import { AnalysisResults } from '@/components/analysis-results';
 import { FileUpload } from '@/components/file-upload';
 import { CoverLetterGenerator } from '@/components/cover-letter-generator';
 import { ResumeAnalysisResults } from '@/components/resume-analysis';
+import { ATSCompatibilityChecker } from '@/components/ats-compatibility-checker';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CircleAlert as AlertCircle, Briefcase } from 'lucide-react';
 import { JobAnalysis, ResumeAnalysis, UserInfo } from '@/lib/types';
@@ -21,6 +22,7 @@ export default function Home() {
   
   // Resume Analysis State
   const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(null);
+  const [resumeContent, setResumeContent] = useState('');
   
   // Cover Letter State
   const [generatedCoverLetter, setGeneratedCoverLetter] = useState('');
@@ -58,6 +60,7 @@ export default function Home() {
     setIsLoading(true);
     setError('');
     setResumeAnalysis(null);
+    setResumeContent(content); // Сохраняем контент для ATS checker
 
     try {
       const response = await fetch('/api/analyze/resume', {
@@ -208,6 +211,19 @@ export default function Home() {
               title="Resume Analysis & Optimization"
               placeholder="Paste your resume content here..."
             />
+            
+            {/* ATS Compatibility Checker */}
+            {resumeContent && (
+              <ATSCompatibilityChecker 
+                resumeContent={resumeContent}
+                jobDescription={jobAnalysis ? 
+                  `${jobAnalysis.requirements?.realistic?.join(', ') || ''} ${jobAnalysis.atsKeywords?.join(', ') || ''}`.trim()
+                  : undefined
+                }
+              />
+            )}
+            
+            {/* Resume Analysis Results */}
             {resumeAnalysis && <ResumeAnalysisResults analysis={resumeAnalysis} />}
           </TabsContent>
 

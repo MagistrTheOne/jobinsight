@@ -12,7 +12,8 @@ interface AnalysisResultsProps {
 }
 
 export function AnalysisResults({ analysis }: AnalysisResultsProps) {
-  const scoreValue = parseInt(analysis.overallScore.match(/\d+/)?.[0] || '0');
+  const scoreText = String(analysis.overallScore || '0');
+  const scoreValue = parseInt(scoreText.match(/\d+/)?.[0] || '0', 10);
 
   return (
     <div className="space-y-6 w-full max-w-4xl mx-auto">

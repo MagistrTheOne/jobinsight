@@ -1,3 +1,7 @@
+import https from 'https';
+import { Agent } from 'https';
+import axios, { AxiosInstance } from 'axios';
+
 interface GigaChatToken {
   access_token: string;
   expires_in: number;
@@ -28,6 +32,50 @@ interface GigaChatResponse {
   };
 }
 
+// Создаём HTTPS агент для работы с сертификатами Минцифры
+function createGigaChatAgent(): Agent {
+  const fs = require('fs');
+  const path = require('path');
+  
+  // Проверяем переменную окружения для пути к сертификату
+  let certPath = process.env.GIGACHAT_CA_BUNDLE_PATH;
+  
+  // Если путь не указан, пытаемся использовать сертификат из папки certs
+  if (!certPath) {
+    const defaultCertPath = path.join(process.cwd(), 'certs', 'russian_trusted_root_ca_pem.crt');
+    if (fs.existsSync(defaultCertPath)) {
+      certPath = defaultCertPath;
+    }
+  }
+  
+  // Если сертификат найден, используем его
+  if (certPath && fs.existsSync(certPath)) {
+    try {
+      const ca = fs.readFileSync(certPath);
+      console.log('✅ Using Russian Trusted Root CA certificate:', certPath);
+      return new https.Agent({
+        ca,
+        rejectUnauthorized: true
+      });
+    } catch (error) {
+      console.warn('⚠️  Failed to load CA bundle, falling back to insecure agent:', error);
+    }
+  }
+
+  // Для разработки: используем небезопасный агент (только для dev!)
+  if (process.env.NODE_ENV === 'development' || process.env.GIGACHAT_INSECURE === 'true') {
+    console.warn('⚠️  WARNING: Using insecure HTTPS agent. Only for development!');
+    console.warn('⚠️  To fix this, set GIGACHAT_CA_BUNDLE_PATH or place certificate in certs/russian_trusted_root_ca_pem.crt');
+    return new https.Agent({
+      rejectUnauthorized: false
+    });
+  }
+
+  // По умолчанию - стандартный агент (может не работать с сертификатами Минцифры)
+  console.warn('⚠️  No certificate configured. Requests may fail. Set GIGACHAT_CA_BUNDLE_PATH or GIGACHAT_INSECURE=true');
+  return new https.Agent();
+}
+
 class GigaChatAPI {
   private token: GigaChatToken | null = null;
   private readonly clientId: string;
@@ -35,6 +83,8 @@ class GigaChatAPI {
   private readonly authKey: string;
   private readonly oauthUrl: string;
   private readonly apiUrl: string;
+  private readonly httpsAgent: Agent;
+  private readonly axiosInstance: AxiosInstance;
 
   constructor() {
     this.clientId = process.env.GIGACHAT_CLIENT_ID!;
@@ -42,6 +92,13 @@ class GigaChatAPI {
     this.authKey = process.env.GIGACHAT_AUTHORIZATION_KEY!;
     this.oauthUrl = process.env.GIGACHAT_OAUTH_URL || 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth';
     this.apiUrl = process.env.GIGACHAT_API_URL || 'https://gigachat.devices.sberbank.ru/api/v1';
+    this.httpsAgent = createGigaChatAgent();
+    
+    // Создаём axios instance с кастомным HTTPS agent
+    this.axiosInstance = axios.create({
+      httpsAgent: this.httpsAgent,
+      timeout: 30000
+    });
   }
 
   private async getAccessToken(): Promise<string> {
@@ -51,24 +108,21 @@ class GigaChatAPI {
     }
 
     try {
-      const response = await fetch(this.oauthUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${this.authKey}`,
-          'RqUID': crypto.randomUUID(),
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json'
-        },
-        body: 'scope=GIGACHAT_API_PERS'
-      });
+      // Используем axios с кастомным HTTPS agent для поддержки сертификатов Минцифры
+      const response = await this.axiosInstance.post(
+        this.oauthUrl,
+        'scope=GIGACHAT_API_PERS',
+        {
+          headers: {
+            'Authorization': `Basic ${this.authKey}`,
+            'RqUID': crypto.randomUUID(),
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json'
+          }
+        }
+      );
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('OAuth response:', errorText);
-        throw new Error(`OAuth request failed: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = response.data;
       
       this.token = {
         access_token: data.access_token,
@@ -77,8 +131,12 @@ class GigaChatAPI {
       };
 
       return this.token.access_token;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to obtain GigaChat access token:', error);
+      if (error.response) {
+        console.error('OAuth response:', error.response.data);
+        throw new Error(`OAuth request failed: ${error.response.status} ${error.response.statusText}`);
+      }
       throw new Error('Authentication failed');
     }
   }
@@ -87,35 +145,36 @@ class GigaChatAPI {
     try {
       const accessToken = await this.getAccessToken();
 
-      const response = await fetch(`${this.apiUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+      // Используем axios с кастомным HTTPS agent
+      const response = await this.axiosInstance.post<GigaChatResponse>(
+        `${this.apiUrl}/chat/completions`,
+        {
           model,
           messages,
           temperature: 0.7,
           max_tokens: 2048
-        })
-      });
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API response:', errorText);
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-      }
-
-      const data: GigaChatResponse = await response.json();
+      const data = response.data;
       
       if (!data.choices || data.choices.length === 0) {
         throw new Error('No response generated');
       }
 
       return data.choices[0].message.content;
-    } catch (error) {
+    } catch (error: any) {
       console.error('GigaChat API error:', error);
+      if (error.response) {
+        console.error('API response:', error.response.data);
+        throw new Error(`API request failed: ${error.response.status} ${error.response.statusText}`);
+      }
       throw error;
     }
   }

@@ -7,6 +7,70 @@ interface ScrapedContent {
   url: string;
 }
 
+// Парсинг вакансии с HeadHunter (hh.ru)
+async function parseHHVacancy(url: string): Promise<ScrapedContent> {
+  try {
+    // Извлекаем ID вакансии из URL (например: https://hh.ru/vacancy/12345678)
+    const vacancyIdMatch = url.match(/vacancy\/(\d+)/);
+    if (!vacancyIdMatch || !vacancyIdMatch[1]) {
+      throw new Error('Invalid HeadHunter URL format. Expected: https://hh.ru/vacancy/12345678');
+    }
+
+    const vacancyId = vacancyIdMatch[1];
+    
+    // Используем публичное API HeadHunter
+    const apiUrl = `https://api.hh.ru/vacancies/${vacancyId}`;
+    
+    const response = await fetch(apiUrl, {
+      headers: {
+        'User-Agent': 'JobInsight/1.0',
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HH API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    // Парсим данные из API
+    const description = data.description || '';
+    const requirements = data.key_skills?.map((skill: any) => skill.name).join(', ') || '';
+    const experience = data.experience?.name || '';
+    const schedule = data.schedule?.name || '';
+    const employment = data.employment?.name || '';
+    
+    // Формируем полный контент
+    const fullContent = [
+      `Название: ${data.name || 'Не указано'}`,
+      `Компания: ${data.employer?.name || 'Не указано'}`,
+      `Опыт работы: ${experience}`,
+      `График работы: ${schedule}`,
+      `Тип занятости: ${employment}`,
+      `Город: ${data.area?.name || 'Не указано'}`,
+      `Зарплата: ${data.salary ? `${data.salary.from ? `от ${data.salary.from}` : ''} ${data.salary.to ? `до ${data.salary.to}` : ''} ${data.salary.currency || 'рублей'}` : 'Не указана'}`,
+      '',
+      'Описание:',
+      description,
+      '',
+      `Ключевые навыки: ${requirements}`
+    ].join('\n');
+
+    return {
+      title: data.name || 'Вакансия',
+      company: data.employer?.name || 'Компания',
+      description: description.substring(0, 2000),
+      requirements: `${experience}. ${requirements}. ${schedule}. ${employment}`,
+      fullContent: fullContent.substring(0, 8000),
+      url
+    };
+  } catch (error) {
+    console.error('HH parsing error:', error);
+    throw error;
+  }
+}
+
 export async function scrapeJobPosting(url: string): Promise<ScrapedContent> {
   try {
     // Validate URL
@@ -15,12 +79,17 @@ export async function scrapeJobPosting(url: string): Promise<ScrapedContent> {
       throw new Error('Invalid URL provided');
     }
 
-    // Fetch the webpage content
+    // Проверяем, является ли это ссылкой на HeadHunter
+    if (urlObj.hostname.includes('hh.ru') || urlObj.hostname.includes('headhunter.ru')) {
+      return await parseHHVacancy(url);
+    }
+
+    // Для остальных сайтов используем обычный парсинг
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
         'Accept-Encoding': 'gzip, deflate, br',
         'DNT': '1',
         'Connection': 'keep-alive',
