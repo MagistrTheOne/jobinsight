@@ -66,9 +66,34 @@ ${marketAverage ? `Среднерыночная зарплата: ${marketAverag
     });
   } catch (error: any) {
     console.error('Error generating counter-offer:', error);
+    
+    // Determine status code and detailed message
+    let statusCode = 500;
+    let errorMessage = error.message || 'Failed to generate counter-offer';
+    let errorDetails: any = null;
+
+    if (errorMessage.includes('422') || errorMessage.includes('Unprocessable Entity')) {
+      statusCode = 422;
+      errorMessage = 'Invalid request format. Please check your salary negotiation data.';
+      errorDetails = {
+        type: 'validation_error',
+        suggestion: 'Ensure all salary fields are properly filled.'
+      };
+    } else if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+      statusCode = 401;
+      errorMessage = 'Authentication failed. Please check GigaChat API credentials.';
+    } else if (errorMessage.includes('429') || errorMessage.includes('Rate limit')) {
+      statusCode = 429;
+      errorMessage = 'Rate limit exceeded. Please try again later.';
+    }
+
     return NextResponse.json(
-      { error: 'Failed to generate counter-offer', message: error.message },
-      { status: 500 }
+      { 
+        error: 'Failed to generate counter-offer', 
+        message: errorMessage,
+        details: errorDetails
+      },
+      { status: statusCode }
     );
   }
 }

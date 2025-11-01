@@ -75,13 +75,38 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Cover letter optimization error:', error);
+    
+    // Determine status code and detailed message
+    let statusCode = 500;
+    let errorMessage = error.message || 'Unknown error occurred';
+    let errorDetails: any = null;
+
+    if (errorMessage.includes('422') || errorMessage.includes('Unprocessable Entity')) {
+      statusCode = 422;
+      errorMessage = 'Invalid request format or content. Please check your cover letter and job content.';
+      errorDetails = {
+        type: 'validation_error',
+        suggestion: 'Ensure your content is properly formatted and not too long.'
+      };
+    } else if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+      statusCode = 401;
+      errorMessage = 'Authentication failed. Please check GigaChat API credentials.';
+    } else if (errorMessage.includes('429') || errorMessage.includes('Rate limit')) {
+      statusCode = 429;
+      errorMessage = 'Rate limit exceeded. Please try again later.';
+    } else if (errorMessage.includes('timeout') || errorMessage.includes('Timeout')) {
+      statusCode = 504;
+      errorMessage = 'Request timeout. The optimization took too long. Please try again.';
+    }
+
     return NextResponse.json(
       {
         success: false,
         error: 'Cover letter optimization failed',
-        message: error.message || 'Unknown error occurred'
+        message: errorMessage,
+        details: errorDetails
       },
-      { status: 500 }
+      { status: statusCode }
     );
   }
 }

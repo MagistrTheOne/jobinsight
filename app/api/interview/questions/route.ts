@@ -62,9 +62,34 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Interview questions generation error:', error);
+    
+    // Determine status code and detailed message
+    let statusCode = 500;
+    let errorMessage = error.message || 'Failed to generate interview questions';
+    let errorDetails: any = null;
+
+    if (errorMessage.includes('422') || errorMessage.includes('Unprocessable Entity')) {
+      statusCode = 422;
+      errorMessage = 'Invalid request format. Please check your job description.';
+      errorDetails = {
+        type: 'validation_error',
+        suggestion: 'Ensure your job description is properly formatted.'
+      };
+    } else if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+      statusCode = 401;
+      errorMessage = 'Authentication failed. Please check GigaChat API credentials.';
+    } else if (errorMessage.includes('429') || errorMessage.includes('Rate limit')) {
+      statusCode = 429;
+      errorMessage = 'Rate limit exceeded. Please try again later.';
+    }
+
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to generate interview questions' },
-      { status: 500 }
+      { 
+        success: false, 
+        error: errorMessage,
+        details: errorDetails
+      },
+      { status: statusCode }
     );
   }
 }

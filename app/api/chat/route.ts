@@ -143,13 +143,38 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Chat API error:', error);
+    
+    // Determine status code and detailed message
+    let statusCode = 500;
+    let errorMessage = error.message || 'Unknown error occurred';
+    let errorDetails: any = null;
+
+    if (errorMessage.includes('422') || errorMessage.includes('Unprocessable Entity')) {
+      statusCode = 422;
+      errorMessage = 'Invalid request format or content. Please check your message content.';
+      errorDetails = {
+        type: 'validation_error',
+        suggestion: 'Ensure your message is properly formatted and not too long (max ~100k characters).'
+      };
+    } else if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+      statusCode = 401;
+      errorMessage = 'Authentication failed. Please check GigaChat API credentials.';
+    } else if (errorMessage.includes('429') || errorMessage.includes('Rate limit')) {
+      statusCode = 429;
+      errorMessage = 'Rate limit exceeded. Please try again later.';
+    } else if (errorMessage.includes('timeout') || errorMessage.includes('Timeout')) {
+      statusCode = 504;
+      errorMessage = 'Request timeout. The request took too long. Please try again with a shorter message.';
+    }
+
     return NextResponse.json(
       {
         success: false,
         error: 'Chat request failed',
-        message: error.message || 'Unknown error occurred'
+        message: errorMessage,
+        details: errorDetails
       },
-      { status: 500 }
+      { status: statusCode }
     );
   }
 }
