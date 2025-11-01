@@ -139,10 +139,25 @@ export function HRAutopilot() {
 
       const data = await response.json();
       if (data.success) {
+        // Ensure sentiment is a string, not an object
+        let sentimentValue: 'positive' | 'neutral' | 'negative' | undefined = undefined;
+        if (typeof data.sentiment === 'string') {
+          sentimentValue = data.sentiment as 'positive' | 'neutral' | 'negative';
+        } else if (typeof data.sentiment === 'object' && data.sentiment !== null) {
+          // If it's an object, try to extract the value
+          const sentimentObj = data.sentiment as any;
+          if (sentimentObj.positive) sentimentValue = 'positive';
+          else if (sentimentObj.negative) sentimentValue = 'negative';
+          else if (sentimentObj.neutral) sentimentValue = 'neutral';
+        }
+        
+        // Ensure intent is a string
+        const intentValue = typeof data.intent === 'string' ? data.intent : String(data.intent || 'question');
+        
         // Update message with AI suggestion
         setMessages(messages.map(m => 
           m.id === message.id 
-            ? { ...m, aiSuggestion: data.suggestion, sentiment: data.sentiment, intent: data.intent }
+            ? { ...m, aiSuggestion: data.suggestion, sentiment: sentimentValue, intent: intentValue }
             : m
         ));
       }
@@ -204,9 +219,11 @@ export function HRAutopilot() {
     return colors[intent] || 'bg-neutral-800/50 text-neutral-300';
   };
 
-  const getSentimentIcon = (sentiment?: string) => {
-    if (sentiment === 'positive') return <TrendingUp className="h-4 w-4 text-green-400" />;
-    if (sentiment === 'negative') return <AlertCircle className="h-4 w-4 text-red-400" />;
+  const getSentimentIcon = (sentiment?: string | 'positive' | 'neutral' | 'negative') => {
+    // Ensure sentiment is a string
+    const sentimentStr = typeof sentiment === 'string' ? sentiment : String(sentiment || '');
+    if (sentimentStr === 'positive') return <TrendingUp className="h-4 w-4 text-green-400" />;
+    if (sentimentStr === 'negative') return <AlertCircle className="h-4 w-4 text-red-400" />;
     return <MessageSquare className="h-4 w-4 text-neutral-400" />;
   };
 
