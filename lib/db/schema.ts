@@ -93,8 +93,16 @@ export const subscriptions = pgTable("subscriptions", {
   id: text("id").primaryKey(),
   userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
   plan: text("plan").$type<"free" | "pro" | "enterprise">().notNull().default("free"),
+  // Polar integration (legacy)
   polarCustomerId: text("polar_customer_id"),
   polarSubscriptionId: text("polar_subscription_id"),
+  // Multi-payment provider support
+  paymentProvider: text("payment_provider").$type<"polar" | "yookassa" | "cloudpayments" | "tinkoff">(),
+  externalCustomerId: text("external_customer_id"), // Customer ID in payment provider
+  externalSubscriptionId: text("external_subscription_id"), // Subscription ID in payment provider
+  // Payment metadata
+  lastPaymentId: text("last_payment_id"), // Last successful payment ID
+  lastPaymentDate: timestamp("last_payment_date"),
   status: text("status").$type<"active" | "cancelled" | "expired">().notNull().default("active"),
   currentPeriodStart: timestamp("current_period_start"),
   currentPeriodEnd: timestamp("current_period_end"),
@@ -103,6 +111,7 @@ export const subscriptions = pgTable("subscriptions", {
 }, (table) => ({
   userIdIdx: index("subscriptions_user_id_idx").on(table.userId),
   statusIdx: index("subscriptions_status_idx").on(table.status),
+  paymentProviderIdx: index("subscriptions_payment_provider_idx").on(table.paymentProvider),
 }));
 
 export const usageLimits = pgTable("usage_limits", {

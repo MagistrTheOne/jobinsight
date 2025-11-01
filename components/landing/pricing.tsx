@@ -6,6 +6,7 @@ import { Check } from 'lucide-react';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/auth-store';
 import { useRouter } from 'next/navigation';
+import { CheckoutButton } from '@/components/payments/checkout-button';
 
 const plans = [
   {
@@ -66,9 +67,7 @@ export function Pricing() {
       router.push('/auth/signup?redirect=checkout');
       return;
     }
-    // Redirect to checkout with product ID
-    const productId = process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID || 'f61ce25c-5122-429f-8b2e-8c77d9380a84';
-    window.location.href = `/api/checkout?products=${productId}`;
+    // Payment method selection will be handled by CheckoutButton component
   };
 
   return (
@@ -116,12 +115,18 @@ export function Pricing() {
               </ul>
 
               {index === 1 ? (
-                <Button
-                  onClick={handleProClick}
-                  className="w-full h-10 sm:h-11 text-sm sm:text-base font-medium transition-all bg-neutral-800 hover:bg-neutral-700 text-white mt-auto"
-                >
-                  {plan.cta}
-                </Button>
+                <div className="mt-auto">
+                  {isAuthenticated ? (
+                    <CheckoutButton plan="pro" className="w-full h-10 sm:h-11 text-sm sm:text-base font-medium transition-all bg-neutral-800 hover:bg-neutral-700 text-white" />
+                  ) : (
+                    <Button
+                      onClick={handleProClick}
+                      className="w-full h-10 sm:h-11 text-sm sm:text-base font-medium transition-all bg-neutral-800 hover:bg-neutral-700 text-white"
+                    >
+                      {plan.cta}
+                    </Button>
+                  )}
+                </div>
               ) : (
                 <Link href="/auth/signup" className="mt-auto">
                   <Button className={`w-full h-10 sm:h-11 text-sm sm:text-base font-medium transition-all ${
