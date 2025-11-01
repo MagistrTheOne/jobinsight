@@ -9,6 +9,9 @@ import {
 } from '@/lib/db/queries';
 import { checkUsageLimit, getCurrentPeriodStart } from '@/lib/usage-limits';
 import { incrementUsageLimit } from '@/lib/db/queries';
+import { detectTool } from '@/lib/ai-tools/tool-detector';
+import { executeTool } from '@/lib/ai-tools/tool-executor';
+import { formatSearchResults } from '@/lib/ai-tools/web-search';
 
 export async function POST(request: NextRequest) {
   try {
