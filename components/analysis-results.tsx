@@ -106,7 +106,13 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
           </div>
         </div>
         <Progress value={scoreValue * 10} className="mb-3 h-2 bg-white/5" />
-        <p className="text-sm text-neutral-300">{analysis.overallScore}</p>
+        <p className="text-sm text-neutral-300">
+          {typeof analysis.overallScore === 'string' 
+            ? analysis.overallScore 
+            : typeof analysis.overallScore === 'number'
+            ? String(analysis.overallScore)
+            : JSON.stringify(analysis.overallScore)}
+        </p>
       </GlassCard>
 
       {/* Job Grade Assessment */}
@@ -121,14 +127,20 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
               <div className="flex items-center gap-4">
                 <div>
                   <div className="text-2xl font-bold text-white">
-                    {analysis.jobGrade.level}
+                    {typeof analysis.jobGrade.level === 'string' 
+                      ? analysis.jobGrade.level 
+                      : String(analysis.jobGrade.level || 'Unknown')}
                   </div>
                   <div className="text-xs text-neutral-400">Level</div>
                 </div>
                 <div className="h-12 w-px bg-white/10" />
                 <div>
                   <div className="text-xl font-bold text-white">
-                    {analysis.jobGrade.score}/5
+                    {typeof analysis.jobGrade.score === 'number' 
+                      ? analysis.jobGrade.score 
+                      : typeof analysis.jobGrade.score === 'string'
+                      ? parseInt(analysis.jobGrade.score) || 0
+                      : 0}/5
                   </div>
                   <div className="text-xs text-neutral-400">Score</div>
                 </div>
@@ -136,15 +148,34 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-neutral-400">Confidence</span>
-                    <span className="text-xs font-medium text-white">{analysis.jobGrade.confidence}%</span>
+                    <span className="text-xs font-medium text-white">
+                      {typeof analysis.jobGrade.confidence === 'number' 
+                        ? analysis.jobGrade.confidence 
+                        : typeof analysis.jobGrade.confidence === 'string'
+                        ? parseInt(analysis.jobGrade.confidence) || 0
+                        : 0}%
+                    </span>
                   </div>
-                  <Progress value={analysis.jobGrade.confidence} className="h-1.5 bg-white/5" />
+                  <Progress 
+                    value={
+                      typeof analysis.jobGrade.confidence === 'number' 
+                        ? analysis.jobGrade.confidence 
+                        : typeof analysis.jobGrade.confidence === 'string'
+                        ? parseInt(analysis.jobGrade.confidence) || 0
+                        : 0
+                    } 
+                    className="h-1.5 bg-white/5" 
+                  />
                 </div>
               </div>
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-white/5">
-            <p className="text-sm text-neutral-300">{analysis.jobGrade.reasoning}</p>
+            <p className="text-sm text-neutral-300">
+              {typeof analysis.jobGrade.reasoning === 'string' 
+                ? analysis.jobGrade.reasoning 
+                : JSON.stringify(analysis.jobGrade.reasoning)}
+            </p>
           </div>
         </GlassCard>
       )}
@@ -159,7 +190,9 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
           <div className="space-y-2">
             {analysis.redFlags.map((flag, index) => (
               <Alert key={index} variant="destructive" className="bg-red-950/30 border-red-800/30">
-                <AlertDescription className="text-sm text-red-300">{flag}</AlertDescription>
+                <AlertDescription className="text-sm text-red-300">
+                  {typeof flag === 'string' ? flag : JSON.stringify(flag)}
+                </AlertDescription>
               </Alert>
             ))}
           </div>
@@ -177,7 +210,9 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
             {analysis.requirements?.realistic?.map((req, index) => (
               <div key={index} className="flex items-start">
                 <CheckCircle className="mr-2 h-3.5 w-3.5 text-green-400 mt-0.5 shrink-0" />
-                <span className="text-sm text-neutral-300">{req}</span>
+                <span className="text-sm text-neutral-300">
+                  {typeof req === 'string' ? req : JSON.stringify(req)}
+                </span>
               </div>
             ))}
           </div>
@@ -192,7 +227,9 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
             {analysis.requirements?.unrealistic?.map((req, index) => (
               <div key={index} className="flex items-start">
                 <AlertTriangle className="mr-2 h-3.5 w-3.5 text-orange-400 mt-0.5 shrink-0" />
-                <span className="text-sm text-neutral-300">{req}</span>
+                <span className="text-sm text-neutral-300">
+                  {typeof req === 'string' ? req : JSON.stringify(req)}
+                </span>
               </div>
             ))}
           </div>
@@ -207,7 +244,11 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
             <DollarSign className="mr-2 h-4 w-4 text-white" />
             Salary Assessment
           </h3>
-          <p className="text-sm text-neutral-300">{analysis.salaryInsight}</p>
+          <p className="text-sm text-neutral-300">
+            {typeof analysis.salaryInsight === 'string' 
+              ? analysis.salaryInsight 
+              : JSON.stringify(analysis.salaryInsight)}
+          </p>
         </GlassCard>
 
         {/* Work-Life Balance */}
@@ -216,7 +257,11 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
             <Clock className="mr-2 h-4 w-4 text-white" />
             Work-Life Balance
           </h3>
-          <p className="text-sm text-neutral-300">{analysis.workLifeBalance}</p>
+          <p className="text-sm text-neutral-300">
+            {typeof analysis.workLifeBalance === 'string' 
+              ? analysis.workLifeBalance 
+              : JSON.stringify(analysis.workLifeBalance)}
+          </p>
         </GlassCard>
       </div>
 
@@ -243,7 +288,7 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
           <div className="flex flex-wrap gap-2">
             {analysis.atsKeywords?.map((keyword, index) => (
               <Badge key={index} variant="secondary" className="bg-white/5 text-white border-white/10 text-xs">
-                {keyword}
+                {typeof keyword === 'string' ? keyword : JSON.stringify(keyword)}
               </Badge>
             ))}
           </div>
@@ -257,7 +302,7 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
           <div className="flex flex-wrap gap-2">
             {analysis.recommendedSkills?.map((skill, index) => (
               <Badge key={index} variant="outline" className="border-white/10 text-white bg-white/5 text-xs">
-                {skill}
+                {typeof skill === 'string' ? skill : JSON.stringify(skill)}
               </Badge>
             ))}
           </div>
