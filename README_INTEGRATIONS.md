@@ -35,15 +35,41 @@
 SERPER_API_KEY=your_serper_api_key
 ```
 
-**Вариант 2: Google Custom Search**
+**Вариант 2: Google Custom Search API (REST)**
 ```env
 GOOGLE_SEARCH_API_KEY=your_google_api_key
-GOOGLE_SEARCH_ENGINE_ID=your_search_engine_id
+# Engine ID уже настроен по умолчанию: 4640afe7d8a674032
+# Если нужно использовать другой, раскомментируйте:
+# GOOGLE_SEARCH_ENGINE_ID=4640afe7d8a674032
+```
+
+**Вариант 3: Google Custom Search Element (для фронтенда)**
+Если нужно встроить виджет поиска на страницу, добавьте в компонент:
+```tsx
+<Script src="https://cse.google.com/cse.js?cx=4640afe7d8a674032" strategy="lazyOnload" />
+<div className="gcse-search"></div>
 ```
 
 ### Получение ключей:
-1. **Serper**: https://serper.dev/ (бесплатный план: 2500 запросов/мес)
-2. **Google Custom Search**: https://developers.google.com/custom-search
+
+#### Serper API (Вариант 1 - Рекомендуется)
+1. Перейдите на https://serper.dev/
+2. Зарегистрируйтесь (бесплатный план: 2500 запросов/мес)
+3. Скопируйте API ключ
+4. Добавьте в `.env.local`: `SERPER_API_KEY=your_key`
+
+#### Google Custom Search API (Вариант 2)
+1. Перейдите на https://console.cloud.google.com/
+2. Создайте новый проект или выберите существующий
+3. Включите **Custom Search API**:
+   - APIs & Services → Library → найдите "Custom Search API" → Enable
+4. Создайте API ключ:
+   - APIs & Services → Credentials → Create Credentials → API Key
+5. Скопируйте API ключ
+6. Добавьте в `.env.local`: `GOOGLE_SEARCH_API_KEY=your_key`
+7. **Engine ID уже настроен**: `4640afe7d8a674032` (используется по умолчанию)
+
+**Примечание**: Google Custom Search API бесплатный лимит: 100 запросов/день
 
 ## 📝 Как это работает
 

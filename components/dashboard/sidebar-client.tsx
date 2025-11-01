@@ -99,12 +99,16 @@ export function DashboardSidebar() {
     }
 
     // Refresh on chat events
-    const handleChatEvent = () => fetchRecentActivity();
+    const handleChatEvent = () => {
+      setTimeout(() => fetchRecentActivity(), 100); // Small delay to ensure DB is updated
+    };
     window.addEventListener('chat-created', handleChatEvent);
     window.addEventListener('chat-deleted', handleChatEvent);
+    window.addEventListener('chat-updated', handleChatEvent);
     return () => {
       window.removeEventListener('chat-created', handleChatEvent);
       window.removeEventListener('chat-deleted', handleChatEvent);
+      window.removeEventListener('chat-updated', handleChatEvent);
     };
   }, [isCollapsed]);
 
