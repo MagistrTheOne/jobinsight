@@ -1,26 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { DashboardSidebar } from "@/components/dashboard/sidebar-client";
-import { DashboardNavbar } from "@/components/dashboard/navbar-client";
-import { KeyboardShortcuts } from "@/components/dashboard/keyboard-shortcuts";
+import { useState, useEffect } from "react";
+import { DashboardSidebar } from "./sidebar-client";
+import { DashboardNavbar } from "./navbar-client";
+import { cn } from "@/lib/utils";
 
-export function DashboardLayoutClient({
-  children,
-}: {
+interface DashboardLayoutClientProps {
   children: React.ReactNode;
-}) {
-  const [sidebarWidth, setSidebarWidth] = useState(() => {
+}
+
+export default function DashboardLayoutClient({ children }: DashboardLayoutClientProps) {
+  const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('sidebar-collapsed') === 'true' ? 64 : 256;
+      return localStorage.getItem('sidebar-collapsed') === 'true';
     }
-    return 256;
+    return false;
   });
 
   useEffect(() => {
     const handleSidebarToggle = () => {
-      const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
-      setSidebarWidth(isCollapsed ? 64 : 256);
+      if (typeof window !== 'undefined') {
+        setIsCollapsed(localStorage.getItem('sidebar-collapsed') === 'true');
+      }
     };
 
     window.addEventListener('sidebar-toggle', handleSidebarToggle);
@@ -28,27 +29,19 @@ export function DashboardLayoutClient({
   }, []);
 
   return (
-    <>
-      <KeyboardShortcuts />
-      <div className="flex h-screen bg-black overflow-hidden">
-        {/* Sidebar - Fixed on desktop, Sheet on mobile */}
-        <DashboardSidebar />
-        
-      {/* Main Content Area */}
+    <div className="flex min-h-dvh w-full bg-black">
+      <DashboardSidebar />
       <div 
-        className="flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
-        style={{ marginLeft: `clamp(0px, ${sidebarWidth}px, 100vw)` }}
+        className={cn(
+          "flex flex-1 flex-col overflow-hidden transition-all duration-300",
+          isCollapsed ? "lg:ml-16" : "lg:ml-64"
+        )}
       >
-          {/* Navbar */}
-          <DashboardNavbar />
-          
-          {/* Page Content */}
-          <div className="flex-1 overflow-auto">
-            {children}
-          </div>
-        </div>
+        <DashboardNavbar />
+        <main className="flex-1 overflow-hidden bg-black w-full">
+          {children}
+        </main>
       </div>
-    </>
+    </div>
   );
 }
-

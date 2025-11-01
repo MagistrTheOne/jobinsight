@@ -76,29 +76,29 @@ export function DashboardOverview() {
 
   const quickActions = [
     {
-      title: 'Analyze Job',
-      description: 'Get insights on job postings',
+      title: 'Анализ вакансии',
+      description: 'Получите инсайты о вакансиях',
       icon: Briefcase,
       action: () => router.push('/dashboard?tab=job-analysis'),
       color: 'from-blue-600 to-cyan-600',
     },
     {
-      title: 'Resume Analysis',
-      description: 'Optimize your resume',
+      title: 'Анализ резюме',
+      description: 'Оптимизируйте ваше резюме',
       icon: FileText,
       action: () => router.push('/dashboard?tab=resume-analysis'),
       color: 'from-purple-600 to-pink-600',
     },
     {
-      title: 'Cover Letter',
-      description: 'Generate ATS-optimized letters',
+      title: 'Сопроводительное письмо',
+      description: 'Создайте ATS-оптимизированные письма',
       icon: Mail,
       action: () => router.push('/dashboard?tab=cover-letter'),
       color: 'from-green-600 to-emerald-600',
     },
     {
-      title: 'Applications',
-      description: 'Track your applications',
+      title: 'Заявки',
+      description: 'Отслеживайте ваши заявки',
       icon: Target,
       action: () => router.push('/dashboard?tab=applications'),
       color: 'from-orange-600 to-red-600',
@@ -135,10 +135,10 @@ export function DashboardOverview() {
         <GlassCard className="p-4 sm:p-6 hover:scale-[1.02] transition-transform duration-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs sm:text-sm text-neutral-400 mb-1">Total Applications</p>
+              <p className="text-xs sm:text-sm text-neutral-400 mb-1">Всего заявок</p>
               <p className="text-2xl sm:text-3xl font-bold text-white">{stats?.totalApplications || 0}</p>
             </div>
-            <div className="p-3 rounded-lg bg-gradient-to-br from-blue-600/20 to-cyan-600/20">
+            <div className="p-3 rounded-lg bg-linear-to-br from-blue-600/20 to-cyan-600/20">
               <Briefcase className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400" />
             </div>
           </div>
@@ -147,10 +147,10 @@ export function DashboardOverview() {
         <GlassCard className="p-4 sm:p-6 hover:scale-[1.02] transition-transform duration-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs sm:text-sm text-neutral-400 mb-1">Interviews</p>
+              <p className="text-xs sm:text-sm text-neutral-400 mb-1">Собеседования</p>
               <p className="text-2xl sm:text-3xl font-bold text-orange-400">{stats?.interviewsCount || 0}</p>
             </div>
-            <div className="p-3 rounded-lg bg-gradient-to-br from-orange-600/20 to-red-600/20">
+            <div className="p-3 rounded-lg bg-linear-to-br from-orange-600/20 to-red-600/20">
               <Target className="h-5 w-5 sm:h-6 sm:w-6 text-orange-400" />
             </div>
           </div>
@@ -159,10 +159,10 @@ export function DashboardOverview() {
         <GlassCard className="p-4 sm:p-6 hover:scale-[1.02] transition-transform duration-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs sm:text-sm text-neutral-400 mb-1">Conversion Rate</p>
+              <p className="text-xs sm:text-sm text-neutral-400 mb-1">Конверсия</p>
               <p className="text-2xl sm:text-3xl font-bold text-green-400">{stats?.conversionRate || 0}%</p>
             </div>
-            <div className="p-3 rounded-lg bg-gradient-to-br from-green-600/20 to-emerald-600/20">
+            <div className="p-3 rounded-lg bg-linear-to-br from-green-600/20 to-emerald-600/20">
               <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-green-400" />
             </div>
           </div>
@@ -176,7 +176,7 @@ export function DashboardOverview() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <Zap className="h-5 w-5 text-yellow-400" />
-              Quick Actions
+              Быстрые действия
             </h3>
           </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -185,10 +185,10 @@ export function DashboardOverview() {
               key={index}
               onClick={action.action}
               className={cn(
-                "group relative p-4 rounded-xl border border-neutral-800/50",
-                "bg-gradient-to-br", action.color,
-                "hover:border-neutral-700 hover:scale-105 transition-all duration-200",
-                "text-left overflow-hidden"
+                "group relative p-4 rounded-xl border border-white/10",
+                `bg-linear-to-br ${action.color}`,
+                "hover:border-white/20 hover:scale-105 transition-all duration-200",
+                "text-left overflow-hidden backdrop-blur-sm"
               )}
             >
               <div className="relative z-10">
@@ -203,31 +203,31 @@ export function DashboardOverview() {
         </GlassCard>
 
         {/* Tips & Motivation */}
-        <GlassCard className="p-4 sm:p-6 bg-gradient-to-br from-purple-900/20 to-blue-900/20 border-purple-800/30">
+        <GlassCard className="p-4 sm:p-6 bg-linear-to-br from-purple-900/20 to-blue-900/20 border-purple-800/30">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <Award className="h-5 w-5 text-purple-400" />
-              Pro Tip
+              Совет профессионала
             </h3>
           </div>
           <div className="space-y-3">
             <div className="p-4 rounded-lg bg-black/30 border border-purple-800/30">
               <p className="text-sm text-neutral-200 leading-relaxed">
-                <strong className="text-white">Optimize your resume</strong> for each job application. 
-                Use our AI-powered analysis to match keywords and improve your ATS compatibility score.
+                <strong className="text-white">Оптимизируйте ваше резюме</strong> для каждой вакансии. 
+                Используйте наш AI-анализ для подбора ключевых слов и повышения совместимости с ATS.
               </p>
             </div>
             <div className="p-4 rounded-lg bg-black/30 border border-purple-800/30">
               <p className="text-sm text-neutral-200 leading-relaxed">
-                <strong className="text-white">Track all applications</strong> in one place. 
-                Set reminders for follow-ups and never miss an opportunity.
+                <strong className="text-white">Отслеживайте все заявки</strong> в одном месте. 
+                Устанавливайте напоминания для последующих действий и не упускайте возможности.
               </p>
             </div>
             <Button
               onClick={() => router.push('/dashboard?tab=applications')}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0"
+              className="w-full bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0"
             >
-              View All Applications
+              Просмотреть все заявки
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>

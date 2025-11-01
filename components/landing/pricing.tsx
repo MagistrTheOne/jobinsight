@@ -106,10 +106,10 @@ export function Pricing() {
                 <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed px-2">{plan.description}</p>
               </div>
 
-              <ul className="space-y-2 sm:space-y-2.5 mb-6 sm:mb-8 flex-grow">
+              <ul className="space-y-2 sm:space-y-2.5 mb-6 sm:mb-8 grow">
                 {plan.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-2.5 sm:gap-3">
-                    <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-neutral-500 mt-0.5 flex-shrink-0" />
+                    <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-neutral-500 mt-0.5 shrink-0" />
                     <span className="text-xs sm:text-sm text-neutral-300 leading-relaxed">{feature}</span>
                   </li>
                 ))}

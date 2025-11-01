@@ -68,16 +68,16 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
   return (
     <div className="space-y-6 w-full max-w-4xl mx-auto">
       {/* Quick Add Button */}
-      <GlassCard variant="muted">
+      <GlassCard variant="muted" className="bg-black/40 border-white/10 backdrop-blur-xl">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-white mb-1">Track This Application</h3>
-            <p className="text-sm text-gray-400">Save this job to your applications tracker</p>
+            <h3 className="text-base font-semibold text-white mb-1">Track This Application</h3>
+            <p className="text-xs text-neutral-400">Save this job to your applications tracker</p>
           </div>
           <Button
             onClick={handleAddToApplications}
             disabled={isSaving}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            className="bg-white/10 border border-white/10 hover:bg-white/15 text-white backdrop-blur-sm h-9 px-4"
           >
             {isSaving ? (
               <>
@@ -95,71 +95,71 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
       </GlassCard>
 
       {/* Overall Score */}
-      <GlassCard variant="accent">
+      <GlassCard variant="accent" className="bg-black/40 border-white/10 backdrop-blur-xl">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold text-white flex items-center">
-            <Award className="mr-2 h-5 w-5 text-blue-600" />
+          <h3 className="text-lg font-semibold text-white flex items-center">
+            <Award className="mr-2 h-4 w-4 text-white" />
             Overall Assessment
           </h3>
-          <div className="text-2xl font-bold text-blue-600">
+          <div className="text-xl font-bold text-white">
             {scoreValue}/10
           </div>
         </div>
-        <Progress value={scoreValue * 10} className="mb-3" />
-        <p className="text-gray-300">{analysis.overallScore}</p>
+        <Progress value={scoreValue * 10} className="mb-3 h-2 bg-white/5" />
+        <p className="text-sm text-neutral-300">{analysis.overallScore}</p>
       </GlassCard>
 
       {/* Job Grade Assessment */}
       {analysis.jobGrade && (
-        <GlassCard variant="accent">
+        <GlassCard variant="accent" className="bg-black/40 border-white/10 backdrop-blur-xl">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
-              <h3 className="text-xl font-semibold text-white flex items-center mb-2">
-                <BarChart3 className="mr-2 h-5 w-5 text-purple-600" />
+              <h3 className="text-lg font-semibold text-white flex items-center mb-2">
+                <BarChart3 className="mr-2 h-4 w-4 text-white" />
                 Job Level Assessment
               </h3>
               <div className="flex items-center gap-4">
                 <div>
-                  <div className="text-3xl font-bold text-purple-600">
+                  <div className="text-2xl font-bold text-white">
                     {analysis.jobGrade.level}
                   </div>
-                  <div className="text-sm text-gray-400">Level</div>
+                  <div className="text-xs text-neutral-400">Level</div>
                 </div>
-                <div className="h-12 w-px bg-gray-600" />
+                <div className="h-12 w-px bg-white/10" />
                 <div>
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-xl font-bold text-white">
                     {analysis.jobGrade.score}/5
                   </div>
-                  <div className="text-sm text-gray-400">Score</div>
+                  <div className="text-xs text-neutral-400">Score</div>
                 </div>
-                <div className="h-12 w-px bg-gray-600" />
+                <div className="h-12 w-px bg-white/10" />
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-gray-400">Confidence</span>
-                    <span className="text-sm font-medium text-gray-300">{analysis.jobGrade.confidence}%</span>
+                    <span className="text-xs text-neutral-400">Confidence</span>
+                    <span className="text-xs font-medium text-white">{analysis.jobGrade.confidence}%</span>
                   </div>
-                  <Progress value={analysis.jobGrade.confidence} className="h-2" />
+                  <Progress value={analysis.jobGrade.confidence} className="h-1.5 bg-white/5" />
                 </div>
               </div>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-700/50">
-            <p className="text-sm text-gray-300">{analysis.jobGrade.reasoning}</p>
+          <div className="mt-4 pt-4 border-t border-white/5">
+            <p className="text-sm text-neutral-300">{analysis.jobGrade.reasoning}</p>
           </div>
         </GlassCard>
       )}
 
       {/* Red Flags */}
       {analysis.redFlags && analysis.redFlags.length > 0 && (
-        <GlassCard>
-          <h3 className="text-lg font-semibold text-red-600 mb-4 flex items-center">
-            <AlertTriangle className="mr-2 h-5 w-5" />
+        <GlassCard className="bg-black/40 border-white/10 backdrop-blur-xl">
+          <h3 className="text-base font-semibold text-red-400 mb-4 flex items-center">
+            <AlertTriangle className="mr-2 h-4 w-4" />
             Red Flags Detected
           </h3>
           <div className="space-y-2">
             {analysis.redFlags.map((flag, index) => (
-              <Alert key={index} variant="destructive">
-                <AlertDescription>{flag}</AlertDescription>
+              <Alert key={index} variant="destructive" className="bg-red-950/30 border-red-800/30">
+                <AlertDescription className="text-sm text-red-300">{flag}</AlertDescription>
               </Alert>
             ))}
           </div>
@@ -167,32 +167,32 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
       )}
 
       {/* Requirements Analysis */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <GlassCard variant="default">
-          <h3 className="text-lg font-semibold text-green-600 mb-4 flex items-center">
-            <CheckCircle className="mr-2 h-5 w-5" />
+      <div className="grid md:grid-cols-2 gap-4">
+        <GlassCard variant="default" className="bg-black/40 border-white/10 backdrop-blur-xl">
+          <h3 className="text-base font-semibold text-green-400 mb-4 flex items-center">
+            <CheckCircle className="mr-2 h-4 w-4" />
             Realistic Requirements
           </h3>
           <div className="space-y-2">
             {analysis.requirements?.realistic?.map((req, index) => (
               <div key={index} className="flex items-start">
-                <CheckCircle className="mr-2 h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-300">{req}</span>
+                <CheckCircle className="mr-2 h-3.5 w-3.5 text-green-400 mt-0.5 shrink-0" />
+                <span className="text-sm text-neutral-300">{req}</span>
               </div>
             ))}
           </div>
         </GlassCard>
 
-        <GlassCard variant="muted">
-          <h3 className="text-lg font-semibold text-orange-600 mb-4 flex items-center">
-            <AlertTriangle className="mr-2 h-5 w-5" />
+        <GlassCard variant="muted" className="bg-black/40 border-white/10 backdrop-blur-xl">
+          <h3 className="text-base font-semibold text-orange-400 mb-4 flex items-center">
+            <AlertTriangle className="mr-2 h-4 w-4" />
             Questionable Requirements
           </h3>
           <div className="space-y-2">
             {analysis.requirements?.unrealistic?.map((req, index) => (
               <div key={index} className="flex items-start">
-                <AlertTriangle className="mr-2 h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-300">{req}</span>
+                <AlertTriangle className="mr-2 h-3.5 w-3.5 text-orange-400 mt-0.5 shrink-0" />
+                <span className="text-sm text-neutral-300">{req}</span>
               </div>
             ))}
           </div>
@@ -200,59 +200,59 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
       </div>
 
       {/* Insights Grid */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-4">
         {/* Salary Insight */}
-        <GlassCard>
-          <h3 className="text-lg font-semibold text-white mb-3 flex items-center">
-            <DollarSign className="mr-2 h-5 w-5 text-green-600" />
+        <GlassCard className="bg-black/40 border-white/10 backdrop-blur-xl">
+          <h3 className="text-base font-semibold text-white mb-3 flex items-center">
+            <DollarSign className="mr-2 h-4 w-4 text-white" />
             Salary Assessment
           </h3>
-          <p className="text-gray-300">{analysis.salaryInsight}</p>
+          <p className="text-sm text-neutral-300">{analysis.salaryInsight}</p>
         </GlassCard>
 
         {/* Work-Life Balance */}
-        <GlassCard>
-          <h3 className="text-lg font-semibold text-white mb-3 flex items-center">
-            <Clock className="mr-2 h-5 w-5 text-blue-600" />
+        <GlassCard className="bg-black/40 border-white/10 backdrop-blur-xl">
+          <h3 className="text-base font-semibold text-white mb-3 flex items-center">
+            <Clock className="mr-2 h-4 w-4 text-white" />
             Work-Life Balance
           </h3>
-          <p className="text-gray-300">{analysis.workLifeBalance}</p>
+          <p className="text-sm text-neutral-300">{analysis.workLifeBalance}</p>
         </GlassCard>
       </div>
 
       {/* Company Insights */}
-      <GlassCard>
-        <h3 className="text-lg font-semibold text-white mb-3 flex items-center">
-          <Users className="mr-2 h-5 w-5 text-purple-600" />
+      <GlassCard className="bg-black/40 border-white/10 backdrop-blur-xl">
+        <h3 className="text-base font-semibold text-white mb-3 flex items-center">
+          <Users className="mr-2 h-4 w-4 text-white" />
           Company Culture Insights
         </h3>
-        <p className="text-gray-300">{analysis.companyInsights}</p>
+        <p className="text-sm text-neutral-300">{analysis.companyInsights}</p>
       </GlassCard>
 
       {/* ATS Keywords and Recommended Skills */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <GlassCard>
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <Target className="mr-2 h-5 w-5 text-indigo-600" />
+      <div className="grid md:grid-cols-2 gap-4">
+        <GlassCard className="bg-black/40 border-white/10 backdrop-blur-xl">
+          <h3 className="text-base font-semibold text-white mb-4 flex items-center">
+            <Target className="mr-2 h-4 w-4 text-white" />
             ATS Keywords
           </h3>
           <div className="flex flex-wrap gap-2">
             {analysis.atsKeywords?.map((keyword, index) => (
-              <Badge key={index} variant="secondary" className="bg-indigo-900/50 text-indigo-300 border-indigo-700/50">
+              <Badge key={index} variant="secondary" className="bg-white/5 text-white border-white/10 text-xs">
                 {keyword}
               </Badge>
             ))}
           </div>
         </GlassCard>
 
-        <GlassCard>
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <TrendingUp className="mr-2 h-5 w-5 text-emerald-600" />
+        <GlassCard className="bg-black/40 border-white/10 backdrop-blur-xl">
+          <h3 className="text-base font-semibold text-white mb-4 flex items-center">
+            <TrendingUp className="mr-2 h-4 w-4 text-white" />
             Recommended Skills
           </h3>
           <div className="flex flex-wrap gap-2">
             {analysis.recommendedSkills?.map((skill, index) => (
-              <Badge key={index} variant="outline" className="border-emerald-600/50 text-emerald-400">
+              <Badge key={index} variant="outline" className="border-white/10 text-white bg-white/5 text-xs">
                 {skill}
               </Badge>
             ))}

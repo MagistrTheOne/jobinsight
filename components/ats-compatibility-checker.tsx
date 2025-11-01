@@ -137,7 +137,7 @@ export function ATSCompatibilityChecker({
               <p className="text-gray-300">Анализ ATS совместимости...</p>
             </>
           ) : (
-            <Button onClick={checkCompatibility} className="bg-gradient-to-r from-blue-600 to-purple-600">
+            <Button onClick={checkCompatibility} className="bg-linear-to-r from-blue-600 to-purple-600">
               <Shield className="mr-2 h-4 w-4" />
               Проверить ATS совместимость
             </Button>
@@ -194,7 +194,7 @@ export function ATSCompatibilityChecker({
           <ul className="space-y-2">
             {atsResult.recommendations.map((rec, index) => (
               <li key={index} className="flex items-start space-x-2">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
                 <span className="text-sm text-gray-300">{rec}</span>
               </li>
             ))}

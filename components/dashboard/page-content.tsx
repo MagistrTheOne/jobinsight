@@ -242,26 +242,27 @@ export function DashboardPageContent() {
   };
 
   return (
-    <div className="h-full bg-black p-6 overflow-auto">
-      {/* Error Display */}
+    <div className="h-full w-full bg-black overflow-hidden flex flex-col">
+      {/* Error Display - Compact */}
       {error && (
-        <div className="mb-6">
-          <Alert variant="destructive" className="bg-red-950/50 border-red-800/50">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="text-red-300">{error}</AlertDescription>
+        <div className="p-4 border-b border-white/5 bg-red-950/30">
+          <Alert variant="destructive" className="bg-transparent border-0 py-1">
+            <AlertCircle className="h-3.5 w-3.5" />
+            <AlertDescription className="text-xs text-red-300">{error}</AlertDescription>
           </Alert>
         </div>
       )}
 
       {/* Main Content - AI Chat is default, other tabs for specific features */}
       {activeTab === 'chat' ? (
-        <div className="h-full w-full animate-fade-in">
+        <div className="flex-1 w-full max-w-full animate-fade-in overflow-hidden">
           <AIChat />
         </div>
       ) : (
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
         <Tabs value={activeTab} className="h-full transition-tab">
           {/* Job URL Analysis */}
-          <TabsContent value="job-analysis" className="space-y-6 mt-0">
+          <TabsContent value="job-analysis" className="space-y-4 mt-0">
             <UrlInput 
               onAnalyze={handleJobAnalysis} 
               isLoading={isLoading}
@@ -276,7 +277,7 @@ export function DashboardPageContent() {
           </TabsContent>
 
           {/* Job Content Analysis */}
-          <TabsContent value="job-content" className="space-y-6 mt-0">
+          <TabsContent value="job-content" className="space-y-4 mt-0">
             <FileUpload
               onAnalyze={handleJobContentAnalysis}
               isLoading={isLoading}
@@ -294,7 +295,7 @@ export function DashboardPageContent() {
           </TabsContent>
 
           {/* Resume Analysis */}
-          <TabsContent value="resume-analysis" className="space-y-6 mt-0">
+          <TabsContent value="resume-analysis" className="space-y-4 mt-0">
             <FileUpload
               onAnalyze={handleResumeAnalysis}
               isLoading={isLoading}
@@ -327,7 +328,7 @@ export function DashboardPageContent() {
           </TabsContent>
 
           {/* Cover Letter Generation */}
-          <TabsContent value="cover-letter" className="space-y-6 mt-0">
+          <TabsContent value="cover-letter" className="space-y-4 mt-0">
             <CoverLetterGenerator
               jobUrl={currentJobUrl}
               jobContent={jobContentText}
@@ -349,7 +350,7 @@ export function DashboardPageContent() {
           </TabsContent>
 
           {/* Advanced ATS Tools */}
-          <TabsContent value="advanced" className="space-y-6 mt-0">
+          <TabsContent value="advanced" className="space-y-4 mt-0">
             {resumeContent && jobAnalysis ? (
               <>
                 <SkillsGapAnalyzer 
@@ -385,11 +386,11 @@ export function DashboardPageContent() {
             ) : (
               <GlassCard className="py-12 animate-fade-in">
                 <div className="text-center">
-                  <div className="p-4 rounded-full bg-gradient-to-br from-blue-600/20 to-purple-600/20 w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <div className="p-4 rounded-full bg-linear-to-br from-blue-600/20 to-purple-600/20 w-20 h-20 mx-auto mb-6 flex items-center justify-center">
                     <BarChart3 className="h-10 w-10 text-blue-400" />
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-3">
-                    Advanced Tools Available
+                    Доступны продвинутые инструменты
                   </h3>
                   <p className="text-sm text-neutral-400 mb-6 max-w-md mx-auto">
                     Для использования продвинутых инструментов необходимо:
@@ -397,27 +398,27 @@ export function DashboardPageContent() {
                   <ul className="text-left text-sm text-neutral-300 space-y-2 max-w-md mx-auto mb-6">
                     <li className="flex items-center gap-2">
                       <span className="text-blue-400">•</span>
-                      Проанализировать вакансию (вкладка Job Analysis)
+                      Проанализировать вакансию (вкладка Анализ вакансий)
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="text-blue-400">•</span>
-                      Проанализировать резюме (вкладка Resume)
+                      Проанализировать резюме (вкладка Анализ резюме)
                     </li>
                   </ul>
                   <div className="flex gap-3 justify-center">
                     <Button
                       onClick={() => router.push('/dashboard?tab=job-analysis')}
                       variant="outline"
-                      className="border-blue-600/50 text-blue-400 hover:bg-blue-600/10"
+                      className="border-blue-600/50 text-blue-400 hover:bg-blue-600/10 bg-white/5"
                     >
-                      Analyze Job
+                      Анализ вакансии
                     </Button>
                     <Button
                       onClick={() => router.push('/dashboard?tab=resume-analysis')}
                       variant="outline"
-                      className="border-purple-600/50 text-purple-400 hover:bg-purple-600/10"
+                      className="border-purple-600/50 text-purple-400 hover:bg-purple-600/10 bg-white/5"
                     >
-                      Analyze Resume
+                      Анализ резюме
                     </Button>
                   </div>
                 </div>
@@ -426,25 +427,26 @@ export function DashboardPageContent() {
           </TabsContent>
 
           {/* Applications Tracking */}
-          <TabsContent value="applications" className="space-y-6 mt-0">
+          <TabsContent value="applications" className="space-y-4 mt-0">
             <ApplicationTracker />
           </TabsContent>
 
           {/* HR Autopilot */}
-          <TabsContent value="hr-autopilot" className="space-y-6 mt-0">
+          <TabsContent value="hr-autopilot" className="space-y-4 mt-0">
             <HRAutopilot />
           </TabsContent>
 
           {/* Salary Negotiation AI */}
-          <TabsContent value="salary-ai" className="space-y-6 mt-0">
+          <TabsContent value="salary-ai" className="space-y-4 mt-0">
             <SalaryNegotiationAI />
           </TabsContent>
 
           {/* Pipeline Automation */}
-          <TabsContent value="pipeline" className="space-y-6 mt-0">
+          <TabsContent value="pipeline" className="space-y-4 mt-0">
             <PipelineAutomation />
           </TabsContent>
         </Tabs>
+        </div>
       )}
 
       {/* Upgrade Modal */}

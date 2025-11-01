@@ -146,11 +146,11 @@ export function FileUpload({ onAnalyze, isLoading, type, title, placeholder }: F
   };
 
   return (
-    <GlassCard className="w-full max-w-2xl mx-auto">
-      <div className="space-y-4">
+    <GlassCard className="w-full max-w-3xl mx-auto bg-black/40 border-white/10 backdrop-blur-xl">
+      <div className="space-y-5">
         <div className="text-center space-y-2">
-          <h2 className="text-2xl font-semibold text-white">{title}</h2>
-          <p className="text-gray-300">Upload a file or paste your content directly</p>
+          <h2 className="text-xl font-semibold text-white">{title}</h2>
+          <p className="text-sm text-neutral-400">Upload a file or paste your content directly</p>
         </div>
 
         <Tabs defaultValue={type === 'job-content' ? 'hh-url' : type === 'resume' ? 'url-link' : 'upload'} className="w-full">
@@ -174,7 +174,7 @@ export function FileUpload({ onAnalyze, isLoading, type, title, placeholder }: F
           {type === 'job-content' && (
             <TabsContent value="hh-url" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="hh-url" className="text-sm font-medium text-gray-200">
+                <Label htmlFor="hh-url" className="text-xs font-medium text-neutral-300">
                   HeadHunter вакансия URL
                 </Label>
                 <div className="flex gap-2">
@@ -187,14 +187,14 @@ export function FileUpload({ onAnalyze, isLoading, type, title, placeholder }: F
                       setHhUrl(e.target.value);
                       setHhError('');
                     }}
-                    className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/10 backdrop-blur-sm h-10"
                     disabled={isLoadingHH || isLoading}
                   />
                   <Button
                     type="button"
                     onClick={handleHHFetch}
                     disabled={isLoadingHH || isLoading || !hhUrl.trim()}
-                    className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                    className="bg-white/10 border border-white/10 hover:bg-white/15 text-white backdrop-blur-sm h-10 px-4"
                   >
                     {isLoadingHH ? (
                       <>
@@ -209,17 +209,17 @@ export function FileUpload({ onAnalyze, isLoading, type, title, placeholder }: F
                     )}
                   </Button>
                 </div>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-neutral-500">
                   Вставьте ссылку на вакансию с сайта HeadHunter.ru. Данные будут автоматически загружены.
                 </p>
                 {hhError && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{hhError}</AlertDescription>
+                  <Alert variant="destructive" className="bg-red-950/30 border-red-800/30">
+                    <AlertDescription className="text-sm text-red-300">{hhError}</AlertDescription>
                   </Alert>
                 )}
                 {content && !hhError && (
-                  <Alert>
-                    <AlertDescription className="text-green-400">
+                  <Alert className="bg-green-950/30 border-green-800/30">
+                    <AlertDescription className="text-sm text-green-300">
                       ✅ Вакансия успешно загружена! Перейдите на вкладку "Paste Content" для просмотра или сразу нажмите кнопку "Analyze".
                     </AlertDescription>
                   </Alert>
@@ -234,7 +234,7 @@ export function FileUpload({ onAnalyze, isLoading, type, title, placeholder }: F
                         }
                       }}
                       disabled={isLoading || !content.trim()}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      className="w-full bg-white/10 border border-white/10 hover:bg-white/15 text-white backdrop-blur-sm"
                     >
                       {isLoading ? (
                         <>
@@ -254,7 +254,7 @@ export function FileUpload({ onAnalyze, isLoading, type, title, placeholder }: F
           {type === 'resume' && (
             <TabsContent value="url-link" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="resume-url" className="text-sm font-medium text-gray-200">
+                <Label htmlFor="resume-url" className="text-xs font-medium text-neutral-300">
                   Ссылка на резюме (HH.ru, LinkedIn и др.)
                 </Label>
                 <div className="flex gap-2">
@@ -267,14 +267,14 @@ export function FileUpload({ onAnalyze, isLoading, type, title, placeholder }: F
                       setResumeUrl(e.target.value);
                       setResumeError('');
                     }}
-                    className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/10 backdrop-blur-sm h-10"
                     disabled={isLoadingResume || isLoading}
                   />
                   <Button
                     type="button"
                     onClick={handleResumeFetch}
                     disabled={isLoadingResume || isLoading || !resumeUrl.trim()}
-                    className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                    className="bg-white/10 border border-white/10 hover:bg-white/15 text-white backdrop-blur-sm h-10 px-4"
                   >
                     {isLoadingResume ? (
                       <>
@@ -289,17 +289,17 @@ export function FileUpload({ onAnalyze, isLoading, type, title, placeholder }: F
                     )}
                   </Button>
                 </div>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-neutral-500">
                   Вставьте публичную ссылку на резюме. Поддерживаются HeadHunter, LinkedIn и другие сайты.
                 </p>
                 {resumeError && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{resumeError}</AlertDescription>
+                  <Alert variant="destructive" className="bg-red-950/30 border-red-800/30">
+                    <AlertDescription className="text-sm text-red-300">{resumeError}</AlertDescription>
                   </Alert>
                 )}
                 {content && !resumeError && (
-                  <Alert>
-                    <AlertDescription className="text-green-400">
+                  <Alert className="bg-green-950/30 border-green-800/30">
+                    <AlertDescription className="text-sm text-green-300">
                       ✅ Резюме успешно загружено! Перейдите на вкладку "Paste Content" для просмотра или сразу нажмите кнопку "Analyze".
                     </AlertDescription>
                   </Alert>
@@ -314,7 +314,7 @@ export function FileUpload({ onAnalyze, isLoading, type, title, placeholder }: F
                         }
                       }}
                       disabled={isLoading || !content.trim()}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      className="w-full bg-white/10 border border-white/10 hover:bg-white/15 text-white backdrop-blur-sm"
                     >
                       {isLoading ? (
                         <>
@@ -332,13 +332,13 @@ export function FileUpload({ onAnalyze, isLoading, type, title, placeholder }: F
           )}
           
           <TabsContent value="upload" className="space-y-4">
-            <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
-              <Upload className="mx-auto h-12 w-12 text-gray-500 mb-4" />
+            <div className="border-2 border-dashed border-white/10 rounded-lg p-8 text-center hover:border-white/20 transition-colors bg-white/5 backdrop-blur-sm">
+              <Upload className="mx-auto h-10 w-10 text-neutral-400 mb-4" />
               <div className="space-y-2">
-                <Label htmlFor="file-upload" className="text-sm font-medium text-gray-200 cursor-pointer">
+                <Label htmlFor="file-upload" className="text-sm font-medium text-white cursor-pointer">
                   Choose a file to upload
                 </Label>
-                <p className="text-xs text-gray-400">TXT, DOC, PDF files supported</p>
+                <p className="text-xs text-neutral-500">TXT, DOC, PDF files supported</p>
                 <input
                   id="file-upload"
                   type="file"
@@ -349,7 +349,7 @@ export function FileUpload({ onAnalyze, isLoading, type, title, placeholder }: F
               </div>
             </div>
             {uploadedFileName && (
-              <div className="flex items-center justify-center space-x-2 text-sm text-green-400">
+              <div className="flex items-center justify-center space-x-2 text-sm text-green-300">
                 <FileText className="h-4 w-4" />
                 <span>Uploaded: {uploadedFileName}</span>
               </div>
@@ -358,7 +358,7 @@ export function FileUpload({ onAnalyze, isLoading, type, title, placeholder }: F
           
           <TabsContent value="paste" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="content" className="text-sm font-medium text-gray-200">
+              <Label htmlFor="content" className="text-xs font-medium text-neutral-300">
                 Paste your content
               </Label>
               <Textarea
@@ -366,7 +366,7 @@ export function FileUpload({ onAnalyze, isLoading, type, title, placeholder }: F
                 placeholder={placeholder}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="min-h-[200px] bg-gray-800/50 border-gray-600/30 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20"
+                className="min-h-[200px] bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
                 disabled={isLoading}
               />
             </div>
@@ -376,7 +376,7 @@ export function FileUpload({ onAnalyze, isLoading, type, title, placeholder }: F
         <form onSubmit={handleSubmit}>
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200"
+            className="w-full bg-white/10 border border-white/10 hover:bg-white/15 text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 backdrop-blur-sm"
             disabled={isLoading || !content.trim()}
           >
             {isLoading ? (

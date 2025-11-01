@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Briefcase, FileText, Mail, BarChart3, Bot, Sparkles, TrendingUp, Workflow, DollarSign, Home, History, Menu, X, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { Briefcase, FileText, Mail, BarChart3, Bot, Sparkles, TrendingUp, Workflow, DollarSign, Home, History, Menu, X, ChevronLeft, ChevronRight, Clock, Plus } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -59,11 +59,11 @@ export function DashboardSidebar() {
     // Fetch recent activity
     const fetchRecentActivity = async () => {
       try {
-        const chatsResponse = await fetch('/api/chat/history?limit=3');
+        const chatsResponse = await fetch('/api/chat/history?limit=5');
         const chatsData = await chatsResponse.json();
         
         if (chatsData.success && chatsData.chats?.length > 0) {
-          const activity = chatsData.chats.slice(0, 3).map((chat: any) => {
+          const activity = chatsData.chats.slice(0, 5).map((chat: any) => {
             const d = typeof chat.updatedAt === 'string' ? new Date(chat.updatedAt) : chat.updatedAt || new Date();
             const now = new Date();
             const diffMs = now.getTime() - d.getTime();
@@ -71,74 +71,86 @@ export function DashboardSidebar() {
             const diffHours = Math.floor(diffMs / 3600000);
             const diffDays = Math.floor(diffMs / 86400000);
 
-            let timeStr = 'Just now';
-            if (diffMins >= 1 && diffMins < 60) timeStr = `${diffMins}m ago`;
-            else if (diffHours < 24) timeStr = `${diffHours}h ago`;
-            else if (diffDays < 7) timeStr = `${diffDays}d ago`;
-            else timeStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            let timeStr = 'Только что';
+            if (diffMins >= 1 && diffMins < 60) timeStr = `${diffMins} мин назад`;
+            else if (diffHours < 24) timeStr = `${diffHours} ч назад`;
+            else if (diffDays < 7) timeStr = `${diffDays} дн назад`;
+            else timeStr = d.toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' });
 
             return {
               id: chat.id,
               type: 'chat' as const,
-              title: chat.title || 'Chat conversation',
+              title: chat.title || 'Новый чат',
               time: timeStr,
             };
           });
           setRecentActivity(activity);
+        } else {
+          setRecentActivity([]);
         }
       } catch (error) {
         console.error('Failed to fetch recent activity:', error);
+        setRecentActivity([]);
       }
     };
 
     if (!isCollapsed) {
       fetchRecentActivity();
     }
+
+    // Refresh on chat events
+    const handleChatEvent = () => fetchRecentActivity();
+    window.addEventListener('chat-created', handleChatEvent);
+    window.addEventListener('chat-deleted', handleChatEvent);
+    return () => {
+      window.removeEventListener('chat-created', handleChatEvent);
+      window.removeEventListener('chat-deleted', handleChatEvent);
+    };
   }, [isCollapsed]);
 
   const navItems: NavItem[] = [
     {
-      title: "AI Chat",
+      title: "AI Чат",
       href: "/dashboard?tab=chat",
       icon: <Bot className="h-4 w-4" />,
     },
     {
-      title: "Job Analysis",
+      title: "Анализ вакансий",
       href: "/dashboard?tab=job-analysis",
       icon: <Briefcase className="h-4 w-4" />,
     },
     {
-      title: "Resume Analysis",
+      title: "Анализ резюме",
       href: "/dashboard?tab=resume-analysis",
       icon: <FileText className="h-4 w-4" />,
     },
     {
-      title: "Cover Letter",
+      title: "Сопроводительное письмо",
       href: "/dashboard?tab=cover-letter",
       icon: <Mail className="h-4 w-4" />,
     },
     {
-      title: "Applications",
+      title: "Заявки",
       href: "/dashboard?tab=applications",
       icon: <Workflow className="h-4 w-4" />,
     },
     {
-      title: "HR Autopilot",
+      title: "HR Автопилот",
       href: "/dashboard?tab=hr-autopilot",
       icon: <Sparkles className="h-4 w-4" />,
     },
     {
-      title: "Salary AI",
+      title: "Зарплата AI",
       href: "/dashboard?tab=salary-ai",
       icon: <DollarSign className="h-4 w-4" />,
     },
     {
-      title: "Pipeline",
+      title: "Пайплайн",
       href: "/dashboard?tab=pipeline",
       icon: <TrendingUp className="h-4 w-4" />,
     },
     {
-      title: "Advanced Tools",
+      title: "Продвинутые инструменты",
       href: "/dashboard?tab=advanced",
       icon: <BarChart3 className="h-4 w-4" />,
     },
@@ -151,26 +163,26 @@ export function DashboardSidebar() {
 
   const SidebarContent = () => (
     <>
-      {/* Logo/Header */}
+      {/* Logo/Header - Compact */}
       <div className={cn(
-        "border-b border-neutral-800/50 flex items-center justify-between",
-        isCollapsed ? "p-4" : "p-4 sm:p-6"
+        "border-b border-white/5 flex items-center justify-between",
+        isCollapsed ? "p-3" : "p-3 sm:p-4"
       )}>
         <Link 
           href="/dashboard?tab=chat" 
           className={cn(
-            "flex items-center gap-2 group transition-all",
-            isCollapsed && "justify-center"
+            "flex items-center gap-2.5 group transition-all",
+            isCollapsed && "justify-center w-full"
           )}
           onClick={() => setMobileOpen(false)}
         >
-          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 group-hover:from-blue-500 group-hover:to-purple-500 transition-all">
-            <Briefcase className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+          <div className="p-1.5 rounded-md bg-white/5 border border-white/10 group-hover:bg-white/10 transition-all">
+            <Bot className="h-4 w-4 text-white" />
           </div>
           {!isCollapsed && (
             <div>
-              <h2 className="font-bold text-base sm:text-lg text-white">JobInsight</h2>
-              <p className="text-xs text-neutral-400 hidden sm:block">AI Assistant</p>
+              <h2 className="font-semibold text-sm text-white">JobInsight</h2>
+              <p className="text-xs text-neutral-500">AI</p>
             </div>
           )}
         </Link>
@@ -179,9 +191,9 @@ export function DashboardSidebar() {
             variant="ghost"
             size="icon"
             onClick={toggleCollapse}
-            className="h-8 w-8 text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+            className="h-7 w-7 text-neutral-500 hover:text-white hover:bg-white/5"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-3.5 w-3.5" />
           </Button>
         )}
         {isCollapsed && (
@@ -189,9 +201,9 @@ export function DashboardSidebar() {
             variant="ghost"
             size="icon"
             onClick={toggleCollapse}
-            className="h-8 w-8 text-neutral-400 hover:text-white hover:bg-neutral-800/50 mx-auto"
+            className="h-7 w-7 text-neutral-500 hover:text-white hover:bg-white/5"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-3.5 w-3.5" />
           </Button>
         )}
       </div>
@@ -207,24 +219,24 @@ export function DashboardSidebar() {
                   key={item.href}
                   onClick={() => handleNavigation(item.href)}
                   className={cn(
-                    "w-full flex items-center rounded-lg text-xs sm:text-sm font-medium transition-all relative",
-                    "hover:bg-neutral-800/50 hover:text-white",
+                    "w-full flex items-center rounded-md text-xs font-medium transition-all relative",
+                    "hover:bg-white/5 hover:text-white",
                     isActive
-                      ? "bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-white border border-blue-500/30"
-                      : "text-neutral-400",
+                      ? "bg-white/10 text-white border border-white/10"
+                      : "text-neutral-400 border border-transparent",
                     isCollapsed 
-                      ? "justify-center px-2 py-2.5" 
-                      : "gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5"
+                      ? "justify-center px-2 py-2" 
+                      : "gap-2.5 px-2.5 py-2"
                   )}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center shrink-0 [&_svg]:h-3.5 [&_svg]:w-3.5">
                     {item.icon}
                   </div>
                   {!isCollapsed && (
                     <>
                       <span className="truncate">{item.title}</span>
                       {item.badge && (
-                        <span className="ml-auto px-2 py-0.5 text-xs rounded-full bg-blue-600/20 text-blue-400">
+                        <span className="ml-auto px-1.5 py-0.5 text-[10px] rounded bg-blue-500/20 text-blue-400 border border-blue-500/20">
                           {item.badge}
                         </span>
                       )}
@@ -251,27 +263,27 @@ export function DashboardSidebar() {
           </nav>
         </TooltipProvider>
 
-        <Separator className="my-4 bg-neutral-800/50" />
+        <Separator className="my-3 bg-white/5" />
 
         {/* Quick Actions */}
         <TooltipProvider delayDuration={300}>
           <div className="space-y-1">
             {[
-              { icon: Home, label: 'Back to Landing', action: () => { router.push('/landing'); setMobileOpen(false); } },
-              { icon: History, label: 'History', action: () => { router.push('/dashboard?tab=history'); setMobileOpen(false); } }
+              { icon: Home, label: 'На главную', action: () => { router.push('/landing'); setMobileOpen(false); } },
+              { icon: History, label: 'История', action: () => { router.push('/dashboard?tab=history'); setMobileOpen(false); } }
             ].map((item, index) => {
               const button = (
                 <button
                   key={index}
                   onClick={item.action}
                   className={cn(
-                    "w-full flex items-center rounded-lg text-xs sm:text-sm font-medium text-neutral-400 hover:bg-neutral-800/50 hover:text-white transition-all",
+                    "w-full flex items-center rounded-md text-xs font-medium text-neutral-500 hover:bg-white/5 hover:text-white transition-all",
                     isCollapsed 
-                      ? "justify-center px-2 py-2.5" 
-                      : "gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5"
+                      ? "justify-center px-2 py-2" 
+                      : "gap-2.5 px-2.5 py-2"
                   )}
                 >
-                  <item.icon className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <item.icon className="h-3.5 w-3.5" />
                   {!isCollapsed && <span>{item.label}</span>}
                 </button>
               );
@@ -295,55 +307,100 @@ export function DashboardSidebar() {
         </TooltipProvider>
       </ScrollArea>
 
-      {/* Recent Activity - only show when not collapsed */}
+      {/* Recent Activity - Compact, only show when not collapsed */}
       {!isCollapsed && (
         <>
-          <Separator className="bg-neutral-800/50" />
-          <div className="px-2 sm:px-3 py-3">
-            <div className="flex items-center gap-2 mb-3 px-2">
-              <Clock className="h-4 w-4 text-blue-400" />
-              <h3 className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">
-                Recent Activity
-              </h3>
+          <Separator className="bg-white/5" />
+          <div className="px-2.5 py-2.5">
+            <div className="flex items-center justify-between mb-2 px-2">
+              <div className="flex items-center gap-2">
+                <Clock className="h-3 w-3 text-neutral-500" />
+                <h3 className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider">
+                  Recent
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  router.push('/dashboard?tab=chat');
+                  window.dispatchEvent(new Event('chat-create-new'));
+                }}
+                className="p-1 rounded hover:bg-white/5 transition-colors group"
+                title="Новый чат"
+              >
+                <Plus className="h-3 w-3 text-neutral-500 group-hover:text-white transition-colors" />
+              </button>
             </div>
             {recentActivity.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {recentActivity.map((activity) => (
-                  <button
+                  <div
                     key={activity.id}
-                    onClick={() => {
-                      if (activity.type === 'chat') {
-                        router.push('/dashboard?tab=chat');
-                      }
-                    }}
-                    className="w-full flex items-center gap-2 p-2 rounded-lg bg-neutral-900/50 border border-neutral-800/50 hover:border-neutral-700/50 hover:bg-neutral-900/70 transition-colors text-left group"
+                    className="group relative w-full flex items-center gap-2 p-1.5 rounded-md bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/10 transition-colors"
                   >
-                    <div className="p-1.5 rounded bg-blue-600/20 flex-shrink-0">
-                      <Sparkles className="h-3 w-3 text-blue-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-white truncate group-hover:text-blue-300 transition-colors">
-                        {activity.title}
-                      </p>
-                      <p className="text-xs text-neutral-500">{activity.time}</p>
-                    </div>
-                  </button>
+                    <button
+                      onClick={() => {
+                        if (activity.type === 'chat') {
+                          router.push(`/dashboard?tab=chat&chatId=${activity.id}`);
+                        }
+                      }}
+                      className="flex items-center gap-2 flex-1 min-w-0 text-left"
+                    >
+                      <div className="p-1 rounded bg-blue-500/20 shrink-0">
+                        <Sparkles className="h-2.5 w-2.5 text-blue-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-white truncate">
+                          {activity.title}
+                        </p>
+                        <p className="text-[10px] text-neutral-500">{activity.time}</p>
+                      </div>
+                    </button>
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (!confirm('Удалить этот чат?')) return;
+                        try {
+                          const res = await fetch(`/api/chat/history/${activity.id}`, {
+                            method: 'DELETE',
+                          });
+                          if (res.ok) {
+                            setRecentActivity(prev => prev.filter(a => a.id !== activity.id));
+                            window.dispatchEvent(new Event('chat-deleted'));
+                          }
+                        } catch (error) {
+                          console.error('Failed to delete chat:', error);
+                        }
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/20 text-neutral-500 hover:text-red-400 transition-all shrink-0"
+                      title="Удалить чат"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-4 text-neutral-500">
-                <Clock className="h-6 w-6 mx-auto mb-2 opacity-50" />
-                <p className="text-xs">No recent activity</p>
+              <div className="text-center py-3">
+                <p className="text-[10px] text-neutral-600">Нет недавних чатов</p>
+                <button
+                  onClick={() => {
+                    router.push('/dashboard?tab=chat');
+                    window.dispatchEvent(new Event('chat-create-new'));
+                  }}
+                  className="mt-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Создать новый чат
+                </button>
               </div>
             )}
           </div>
         </>
       )}
 
-      {/* Footer with Usage Limits and User Button */}
+      {/* Footer - Compact */}
       <div className={cn(
-        "border-t border-neutral-800/50 space-y-2 sm:space-y-3",
-        isCollapsed ? "p-2" : "p-3 sm:p-4"
+        "border-t border-white/5 space-y-2",
+        isCollapsed ? "p-2" : "p-2.5"
       )}>
         {/* Usage Limits - Compact Version */}
         {!isCollapsed && (
@@ -365,7 +422,7 @@ export function DashboardSidebar() {
       {/* Desktop Sidebar */}
       <aside 
         className={cn(
-          "hidden lg:flex h-screen flex-col bg-black/40 backdrop-blur-xl border-r border-neutral-800/50 fixed left-0 top-0 z-40 transition-all duration-300",
+          "hidden lg:flex h-screen flex-col bg-black/60 backdrop-blur-2xl border-r border-white/5 fixed left-0 top-0 z-40 transition-all duration-300",
           isCollapsed ? "w-16" : "w-64"
         )}
       >

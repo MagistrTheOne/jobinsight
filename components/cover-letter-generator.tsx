@@ -51,13 +51,13 @@ export function CoverLetterGenerator({
   return (
     <div className="space-y-6 w-full max-w-4xl mx-auto">
       {!generatedLetter ? (
-        <GlassCard>
-          <div className="space-y-4">
+        <GlassCard className="bg-black/40 border-white/10 backdrop-blur-xl">
+          <div className="space-y-5">
             <div className="text-center space-y-2">
-              <h2 className="text-2xl font-semibold text-white">
+              <h2 className="text-xl font-semibold text-white">
                 Generate ATS-Optimized Cover Letter
               </h2>
-              <p className="text-gray-300">
+              <p className="text-sm text-neutral-400">
                 Provide your information to create a personalized cover letter
               </p>
             </div>
@@ -65,76 +65,76 @@ export function CoverLetterGenerator({
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name *</Label>
+                  <Label htmlFor="name" className="text-xs font-medium text-neutral-300">Full Name *</Label>
                   <Input
                     id="name"
                     value={userInfo.name}
                     onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })}
-                    className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/10 backdrop-blur-sm h-10"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email" className="text-xs font-medium text-neutral-300">Email Address</Label>
                   <Input
                     id="email"
                     type="email"
                     value={userInfo.email}
                     onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })}
-                    className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/10 backdrop-blur-sm h-10"
                   />
                 </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="phone" className="text-xs font-medium text-neutral-300">Phone Number</Label>
                   <Input
                     id="phone"
                     value={userInfo.phone}
                     onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })}
-                    className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/10 backdrop-blur-sm h-10"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="education">Education</Label>
+                  <Label htmlFor="education" className="text-xs font-medium text-neutral-300">Education</Label>
                   <Input
                     id="education"
                     placeholder="e.g., BS Computer Science"
                     value={userInfo.education}
                     onChange={(e) => setUserInfo({ ...userInfo, education: e.target.value })}
-                    className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/10 backdrop-blur-sm h-10"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="experience">Work Experience Summary</Label>
+                <Label htmlFor="experience" className="text-xs font-medium text-neutral-300">Work Experience Summary</Label>
                 <Textarea
                   id="experience"
                   placeholder="Briefly describe your relevant work experience..."
                   value={userInfo.experience}
                   onChange={(e) => setUserInfo({ ...userInfo, experience: e.target.value })}
-                  className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
+                  className="bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
                   rows={3}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="skills">Key Skills (comma-separated)</Label>
+                <Label htmlFor="skills" className="text-xs font-medium text-neutral-300">Key Skills (comma-separated)</Label>
                 <Textarea
                   id="skills"
                   placeholder="JavaScript, React, Node.js, Python, etc."
                   value={skillsInput}
                   onChange={(e) => setSkillsInput(e.target.value)}
-                  className="bg-gray-800/50 border-gray-600/30 focus:border-blue-400"
+                  className="bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
                   rows={2}
                 />
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200"
+                className="w-full bg-white/10 border border-white/10 hover:bg-white/15 text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 backdrop-blur-sm"
                 disabled={isLoading || !userInfo.name}
               >
                 {isLoading ? (
@@ -150,10 +150,10 @@ export function CoverLetterGenerator({
           </div>
         </GlassCard>
       ) : (
-        <GlassCard>
-          <div className="space-y-4">
+        <GlassCard className="bg-black/40 border-white/10 backdrop-blur-xl">
+          <div className="space-y-5">
             <div className="flex justify-between items-center">
-              <h3 className="text-xl font-semibold text-white">
+              <h3 className="text-lg font-semibold text-white">
                 Your ATS-Optimized Cover Letter
               </h3>
               <div className="flex space-x-2">
@@ -161,9 +161,9 @@ export function CoverLetterGenerator({
                   onClick={copyToClipboard}
                   variant="outline"
                   size="sm"
-                  className="bg-gray-800/50 border-gray-600/50"
+                  className="bg-white/5 border-white/10 hover:bg-white/10 text-white backdrop-blur-sm h-9"
                 >
-                  <Copy className="mr-2 h-4 w-4" />
+                  <Copy className="mr-2 h-3.5 w-3.5" />
                   Copy
                 </Button>
                 <Button
@@ -178,17 +178,17 @@ export function CoverLetterGenerator({
                   }}
                   variant="outline"
                   size="sm"
-                  className="bg-gray-800/50 border-gray-600/50"
+                  className="bg-white/5 border-white/10 hover:bg-white/10 text-white backdrop-blur-sm h-9"
                 >
-                  <Download className="mr-2 h-4 w-4" />
+                  <Download className="mr-2 h-3.5 w-3.5" />
                   Download
                 </Button>
               </div>
             </div>
             
-            <Card>
-              <CardContent className="p-6">
-                <pre className="whitespace-pre-wrap text-sm text-gray-200 font-mono">
+            <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
+              <CardContent className="p-5">
+                <pre className="whitespace-pre-wrap text-sm text-white font-mono">
                   {generatedLetter}
                 </pre>
               </CardContent>
@@ -197,7 +197,7 @@ export function CoverLetterGenerator({
             <Button
               onClick={() => window.location.reload()}
               variant="outline"
-              className="w-full"
+              className="w-full bg-white/5 border-white/10 hover:bg-white/10 text-white backdrop-blur-sm"
             >
               Generate Another Cover Letter
             </Button>

@@ -1,164 +1,161 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { GlassCard } from '@/components/ui/glass-card';
-import { Trash2, Plus, MessageSquare, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useEffect, useState, useCallback, useMemo } from "react"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Button } from "@/components/ui/button"
+import { GlassCard } from "@/components/ui/glass-card"
+import { Trash2, Plus, MessageSquare, Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface Chat {
-  id: string;
-  title: string;
-  createdAt: Date | string;
-  updatedAt: Date | string;
+  id: string
+  title: string
+  createdAt: Date | string
+  updatedAt: Date | string
 }
 
 interface ChatSidebarProps {
-  currentChatId?: string;
-  onSelectChat: (chatId: string | null) => void;
-  onDeleteChat?: (chatId: string) => void;
+  currentChatId?: string
+  onSelectChat: (chatId: string | null) => void
+  onDeleteChat?: (chatId: string) => void
 }
 
-export function ChatSidebar({ currentChatId, onSelectChat, onDeleteChat }: ChatSidebarProps) {
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function ChatSidebar({
+  currentChatId,
+  onSelectChat,
+  onDeleteChat,
+}: ChatSidebarProps) {
+  const [chats, setChats] = useState<Chat[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const fetchChats = async () => {
+  const fetchChats = useCallback(async () => {
+    setLoading(true)
+    setError(null)
     try {
-      setIsLoading(true);
-      setError(null);
-      const response = await fetch('/api/chat/history');
-      if (response.ok) {
-        const data = await response.json();
-        setChats(data.chats || []);
-      } else {
-        setError('Failed to load chats');
-      }
-    } catch (err) {
-      console.error('Failed to fetch chats:', err);
-      setError('Failed to load chats');
+      const res = await fetch("/api/chat/history")
+      if (!res.ok) throw new Error("failed")
+      const data = await res.json()
+      setChats(data.chats || [])
+    } catch {
+      setError("Не удалось загрузить чаты")
     } finally {
-      setIsLoading(false);
+      setLoading(false)
     }
-  };
+  }, [])
 
   useEffect(() => {
-    fetchChats();
-    
-    // Listen for new chat creation to refresh list
-    const handleChatCreated = () => fetchChats();
-    window.addEventListener('chat-created', handleChatCreated);
-    
-    return () => {
-      window.removeEventListener('chat-created', handleChatCreated);
-    };
-  }, []);
+    fetchChats()
+    const refresh = () => fetchChats()
+    window.addEventListener("chat-created", refresh)
+    return () => window.removeEventListener("chat-created", refresh)
+  }, [fetchChats])
 
-  const handleDelete = async (chatId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!confirm('Удалить этот чат?')) return;
-
-    try {
-      const response = await fetch(`/api/chat/history/${chatId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setChats(chats.filter(chat => chat.id !== chatId));
-        if (onDeleteChat) {
-          onDeleteChat(chatId);
-        }
-        if (currentChatId === chatId) {
-          onSelectChat(null);
-        }
+  const handleDelete = useCallback(
+    async (chatId: string, e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (!confirm("Удалить этот чат?")) return
+      try {
+        const res = await fetch(`/api/chat/history/${chatId}`, {
+          method: "DELETE",
+        })
+        if (!res.ok) throw new Error("delete fail")
+        setChats((prev) => prev.filter((c) => c.id !== chatId))
+        if (onDeleteChat) onDeleteChat(chatId)
+        if (currentChatId === chatId) onSelectChat(null)
+      } catch (err) {
+        console.error(err)
       }
-    } catch (err) {
-      console.error('Failed to delete chat:', err);
-    }
-  };
+    },
+    [currentChatId, onDeleteChat, onSelectChat],
+  )
 
-  const formatDate = (date: Date | string) => {
-    const d = typeof date === 'string' ? new Date(date) : date;
-    const now = new Date();
-    const diffMs = now.getTime() - d.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+  const formatDate = useCallback((date: Date | string) => {
+    const d = typeof date === "string" ? new Date(date) : date
+    const diff = Date.now() - d.getTime()
+    const mins = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+    if (mins < 1) return "Только что"
+    if (mins < 60) return `${mins} мин назад`
+    if (hours < 24) return `${hours} ч назад`
+    if (days < 7) return `${days} дн назад`
+    return d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" })
+  }, [])
 
-    if (diffMins < 1) return 'Только что';
-    if (diffMins < 60) return `${diffMins} мин назад`;
-    if (diffHours < 24) return `${diffHours} ч назад`;
-    if (diffDays < 7) return `${diffDays} дн назад`;
-    return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-  };
+  const content = useMemo(() => {
+    if (loading)
+      return (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-4 w-4 animate-spin text-neutral-500" />
+        </div>
+      )
+
+    if (error)
+      return (
+        <div className="py-8 text-center text-xs text-neutral-500">{error}</div>
+      )
+
+    if (chats.length === 0)
+      return (
+        <div className="py-8 text-center text-xs text-neutral-500">
+          <MessageSquare className="mx-auto mb-2 h-6 w-6 opacity-50" />
+          <p>Нет сохраненных чатов</p>
+          <p className="mt-1 text-[10px]">Начните новый чат</p>
+        </div>
+      )
+
+    return (
+      <div className="space-y-0.5 px-2">
+        {chats.map((chat) => (
+          <div
+            key={chat.id}
+            className={cn(
+              "group flex w-full items-center justify-between rounded-md p-2 transition-colors",
+              currentChatId === chat.id
+                ? "bg-white/10 border border-white/10"
+                : "hover:bg-white/5 border border-transparent",
+            )}
+          >
+            <button
+              onClick={() => onSelectChat(chat.id)}
+              className="min-w-0 flex-1 pr-2 text-left"
+            >
+              <div className="truncate text-xs font-medium text-white">
+                {chat.title}
+              </div>
+              <div className="mt-0.5 text-[10px] text-neutral-500">
+                {formatDate(chat.updatedAt)}
+              </div>
+            </button>
+            <button
+              onClick={(e) => handleDelete(chat.id, e)}
+              className="flex h-6 w-6 items-center justify-center rounded text-neutral-500 opacity-0 transition-opacity hover:bg-white/10 hover:text-red-400 group-hover:opacity-100"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          </div>
+        ))}
+      </div>
+    )
+  }, [loading, error, chats, currentChatId, formatDate, handleDelete, onSelectChat])
 
   return (
-    <GlassCard className="h-full flex flex-col bg-neutral-950/60 backdrop-blur-sm border border-neutral-800/50">
-      <div className="p-3 border-b border-neutral-800/50">
+    <GlassCard className="flex h-full flex-col border border-white/5 bg-black/60 backdrop-blur-2xl">
+      <div className="border-b border-white/5 p-2.5">
         <Button
           onClick={() => onSelectChat(null)}
-          className="w-full bg-neutral-800 hover:bg-neutral-700 text-white"
           size="sm"
+          className="w-full bg-white/5 border border-white/10 text-white hover:bg-white/10 text-xs h-8"
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Новый чат
         </Button>
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="p-2">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
-            </div>
-          ) : error ? (
-            <div className="text-center py-8 text-sm text-neutral-500">
-              {error}
-            </div>
-          ) : chats.length === 0 ? (
-            <div className="text-center py-8 text-sm text-neutral-500">
-              <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>Нет сохраненных чатов</p>
-              <p className="text-xs mt-1">Начните новый чат</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {chats.map((chat) => (
-                <div
-                  key={chat.id}
-                  className={cn(
-                    "w-full flex items-center justify-between p-2.5 rounded-lg transition-colors group",
-                    currentChatId === chat.id
-                      ? "bg-neutral-800/80"
-                      : "hover:bg-neutral-900/50"
-                  )}
-                >
-                  <button
-                    onClick={() => onSelectChat(chat.id)}
-                    className="flex-1 min-w-0 pr-2 text-left"
-                  >
-                    <div className="text-sm font-medium truncate text-white">
-                      {chat.title}
-                    </div>
-                    <div className="text-xs text-neutral-500 mt-0.5">
-                      {formatDate(chat.updatedAt)}
-                    </div>
-                  </button>
-                  <button
-                    onClick={(e) => handleDelete(chat.id, e)}
-                    className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-red-400 flex items-center justify-center rounded hover:bg-neutral-800/50"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <div className="p-2">{content}</div>
       </ScrollArea>
     </GlassCard>
-  );
+  )
 }
-

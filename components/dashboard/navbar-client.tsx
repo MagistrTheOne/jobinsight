@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UsageLimits } from "@/components/usage/usage-limits";
 import { Breadcrumbs } from "@/components/dashboard/breadcrumbs";
+import { ThemeToggle } from "@/components/dashboard/theme-toggle";
+import { LanguageToggle } from "@/components/dashboard/language-toggle";
+import { LandingToggle } from "@/components/dashboard/landing-toggle";
 
 export function DashboardNavbar() {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -24,54 +27,63 @@ export function DashboardNavbar() {
   };
 
   return (
-    <div className="border-b border-neutral-800/50 bg-black/40 backdrop-blur-xl">
-      {/* Breadcrumbs */}
+    <div className="bg-black/60 backdrop-blur-2xl border-b border-white/5">
+      {/* Breadcrumbs - Enhanced */}
       <Breadcrumbs />
       
-      {/* Main Navbar */}
-      <div className="h-14 sm:h-16 flex items-center justify-between px-3 sm:px-4 md:px-6 gap-2 sm:gap-4">
-        {/* Mobile Menu Button - Hidden on desktop (sidebar is always visible) */}
-        <div className="lg:hidden flex-shrink-0">
+      {/* Main Navbar - Centered and Compact */}
+      <div className="h-11 flex items-center justify-center px-4 sm:px-6 gap-3 border-t border-white/5">
+        {/* Mobile Menu Button */}
+        <div className="lg:hidden shrink-0 absolute left-3">
           {/* Menu button is handled by Sidebar Sheet */}
         </div>
 
-      {/* Search */}
-      <form onSubmit={handleSearch} className="flex-1 max-w-xl min-w-0">
-        <div className="relative">
-          <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-neutral-400" />
-          <Input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-7 sm:pl-10 pr-2 sm:pr-3 text-sm sm:text-base bg-neutral-900/50 border-neutral-800 text-white placeholder:text-neutral-500 focus:border-blue-500 focus:ring-blue-500/20 w-full"
-          />
-        </div>
-      </form>
+        {/* Search - Centered */}
+        <form onSubmit={handleSearch} className="flex-1 max-w-2xl min-w-0 flex justify-center">
+          <div className="relative w-full max-w-2xl">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
+            <Input
+              type="text"
+              placeholder="Поиск по чатам, вакансиям, резюме..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-3 h-9 text-sm bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/10 w-full backdrop-blur-sm"
+            />
+          </div>
+        </form>
 
-      {/* Right Side Actions */}
-      <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-        {/* Usage Limits - Mobile only (desktop has it in sidebar) */}
-        <div className="lg:hidden">
-          <UsageLimits />
-        </div>
+        {/* Right Side Actions - Compact */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Usage Limits - Mobile only */}
+          <div className="lg:hidden">
+            <UsageLimits />
+          </div>
 
-        {/* Notifications */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 text-neutral-400 hover:text-white hover:bg-neutral-800/50">
-              <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-72 sm:w-80 bg-neutral-900 border-neutral-800">
-            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-neutral-800" />
-            <div className="p-4 text-center text-xs sm:text-sm text-neutral-400">
-              No new notifications
-            </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+          {/* Language Toggle */}
+          <LanguageToggle />
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
+          {/* Landing/Dashboard Toggle */}
+          <LandingToggle />
+
+          {/* Notifications */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9 bg-white/5 border border-white/10 hover:bg-white/10 text-white">
+                <Bell className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-72 bg-black/95 backdrop-blur-xl border-white/10">
+              <DropdownMenuLabel className="text-xs text-white">Уведомления</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-white/5" />
+              <div className="p-4 text-center text-xs text-neutral-500">
+                Нет новых уведомлений
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </div>
   );

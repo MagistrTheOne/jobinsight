@@ -157,7 +157,7 @@ Generated: ${new Date().toISOString()}
           <Button 
             onClick={generate} 
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-red-600 to-orange-600"
+            className="w-full bg-linear-to-r from-red-600 to-orange-600"
           >
             {isLoading ? (
               <>
@@ -213,7 +213,7 @@ Generated: ${new Date().toISOString()}
             <ul className="space-y-1">
               {report.candidateProfile.strengths.map((strength, idx) => (
                 <li key={idx} className="text-white flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
                   <span>{strength}</span>
                 </li>
               ))}

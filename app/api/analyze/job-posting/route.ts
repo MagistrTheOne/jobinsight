@@ -77,11 +77,55 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const analysis = await gigachatAPI.analyzeJobPosting(contentToAnalyze);
+    // Analyze job posting with GigaChat API
+    let analysis;
+    try {
+      analysis = await gigachatAPI.analyzeJobPosting(contentToAnalyze);
+    } catch (gigachatError: any) {
+      console.error('GigaChat API error:', gigachatError);
+      
+      // Determine status code and detailed message
+      let statusCode = 500;
+      let errorMessage = gigachatError.message || 'Unknown error occurred';
+      let errorDetails: any = null;
+
+      if (errorMessage.includes('422') || errorMessage.includes('Unprocessable Entity')) {
+        statusCode = 422;
+        errorMessage = 'Invalid request format or content. Please check your job posting content.';
+        errorDetails = {
+          type: 'validation_error',
+          suggestion: 'Ensure your job posting content is properly formatted and not too long (max ~25000 characters).'
+        };
+      } else if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+        statusCode = 401;
+        errorMessage = 'Authentication failed. Please check GigaChat API credentials.';
+      } else if (errorMessage.includes('429') || errorMessage.includes('Rate limit')) {
+        statusCode = 429;
+        errorMessage = 'Rate limit exceeded. Please try again later.';
+      } else if (errorMessage.includes('timeout') || errorMessage.includes('Timeout')) {
+        statusCode = 504;
+        errorMessage = 'Request timeout. The analysis took too long. Please try again with shorter content.';
+      }
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Job analysis failed',
+          message: errorMessage,
+          details: errorDetails
+        },
+        { status: statusCode }
+      );
+    }
 
     // Increment usage counter after successful analysis
-    const periodStart = getCurrentPeriodStart();
-    await incrementUsageLimit(session.user.id, 'job', periodStart);
+    try {
+      const periodStart = getCurrentPeriodStart();
+      await incrementUsageLimit(session.user.id, 'job', periodStart);
+    } catch (dbError: any) {
+      // Log but don't fail the request if usage tracking fails
+      console.error('Failed to increment usage limit:', dbError);
+    }
 
     return NextResponse.json({
       success: true,
