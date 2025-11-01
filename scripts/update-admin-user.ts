@@ -1,7 +1,20 @@
-import 'dotenv/config';
-import { db } from "@/lib/db";
-import { users, subscriptions, usageLimits } from "@/lib/db/schema";
+import { config } from 'dotenv';
+import { resolve } from 'path';
+config({ path: resolve(process.cwd(), '.env.local') });
+
+import { drizzle } from 'drizzle-orm/neon-http';
+import { neon } from '@neondatabase/serverless';
+import * as schema from '../lib/db/schema';
 import { eq } from "drizzle-orm";
+
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is not defined in .env.local');
+}
+
+const sql = neon(process.env.DATABASE_URL);
+const db = drizzle(sql, { schema });
+
+const { users, subscriptions, usageLimits } = schema;
 
 async function updateAdminUser() {
   try {
