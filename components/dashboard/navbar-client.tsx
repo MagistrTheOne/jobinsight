@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UsageLimits } from "@/components/usage/usage-limits";
+import { Breadcrumbs } from "@/components/dashboard/breadcrumbs";
 
 export function DashboardNavbar() {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -23,11 +24,16 @@ export function DashboardNavbar() {
   };
 
   return (
-    <div className="h-14 sm:h-16 border-b border-neutral-800/50 bg-black/40 backdrop-blur-xl flex items-center justify-between px-3 sm:px-4 md:px-6 gap-2 sm:gap-4">
-      {/* Mobile Menu Button - Hidden on desktop (sidebar is always visible) */}
-      <div className="lg:hidden flex-shrink-0">
-        {/* Menu button is handled by Sidebar Sheet */}
-      </div>
+    <div className="border-b border-neutral-800/50 bg-black/40 backdrop-blur-xl">
+      {/* Breadcrumbs */}
+      <Breadcrumbs />
+      
+      {/* Main Navbar */}
+      <div className="h-14 sm:h-16 flex items-center justify-between px-3 sm:px-4 md:px-6 gap-2 sm:gap-4">
+        {/* Mobile Menu Button - Hidden on desktop (sidebar is always visible) */}
+        <div className="lg:hidden flex-shrink-0">
+          {/* Menu button is handled by Sidebar Sheet */}
+        </div>
 
       {/* Search */}
       <form onSubmit={handleSearch} className="flex-1 max-w-xl min-w-0">
@@ -65,6 +71,7 @@ export function DashboardNavbar() {
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
       </div>
     </div>
   );

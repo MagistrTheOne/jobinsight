@@ -213,12 +213,18 @@ export async function resetUsageLimits(userId: string, newPeriodStart: Date) {
 }
 
 // Chat queries
-export async function getUserChats(userId: string) {
-  return await db
+export async function getUserChats(userId: string, limit?: number) {
+  let query = db
     .select()
     .from(chats)
     .where(eq(chats.userId, userId))
     .orderBy(desc(chats.updatedAt));
+  
+  if (limit) {
+    query = query.limit(limit) as typeof query;
+  }
+  
+  return await query;
 }
 
 export async function getChatById(chatId: string, userId: string) {

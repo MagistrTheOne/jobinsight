@@ -16,7 +16,8 @@ import { JobResponseOptimizer } from '@/components/job-response-optimizer';
 import { UpgradeModal } from '@/components/usage/upgrade-modal';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { GlassCard } from '@/components/ui/glass-card';
-import { CircleAlert as AlertCircle } from 'lucide-react';
+import { CircleAlert as AlertCircle, BarChart3 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { JobAnalysis, UserInfo } from '@/lib/types';
 import { useAnalysisStore } from '@/store/analysis-store';
 import { useAuthStore } from '@/store/auth-store';
@@ -25,6 +26,7 @@ import { ApplicationTracker } from '@/components/applications/application-tracke
 import { HRAutopilot } from '@/components/automation/hr-autopilot';
 import { SalaryNegotiationAI } from '@/components/automation/salary-negotiation';
 import { PipelineAutomation } from '@/components/automation/pipeline-automation';
+import { DashboardOverview } from '@/components/dashboard/dashboard-overview';
 
 export function DashboardPageContent() {
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
@@ -68,11 +70,19 @@ export function DashboardPageContent() {
     }
   }, [authLoading, isAuthenticated, router]);
 
+  // Smooth scroll to top on tab change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activeTab]);
+
   // Show loading while checking auth
   if (authLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+        <div className="text-center animate-fade-in">
+          <div className="w-12 h-12 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-neutral-400 text-sm">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -246,11 +256,12 @@ export function DashboardPageContent() {
 
       {/* Main Content - AI Chat is default, other tabs for specific features */}
       {activeTab === 'chat' ? (
-        <div className="h-full min-h-[calc(100vh-14rem)] sm:min-h-[calc(100vh-16rem)] lg:min-h-[calc(100vh-8rem)]">
+        <div className="h-full min-h-[calc(100vh-14rem)] sm:min-h-[calc(100vh-16rem)] lg:min-h-[calc(100vh-8rem)] animate-fade-in">
+          <DashboardOverview />
           <AIChat />
         </div>
       ) : (
-        <Tabs value={activeTab} className="h-full">
+        <Tabs value={activeTab} className="h-full transition-tab">
           {/* Job URL Analysis */}
           <TabsContent value="job-analysis" className="space-y-6 mt-0">
             <UrlInput 
@@ -374,15 +385,43 @@ export function DashboardPageContent() {
                 />
               </>
             ) : (
-              <GlassCard>
-                <div className="text-center py-8">
-                  <p className="text-gray-400 mb-4">
+              <GlassCard className="py-12 animate-fade-in">
+                <div className="text-center">
+                  <div className="p-4 rounded-full bg-gradient-to-br from-blue-600/20 to-purple-600/20 w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                    <BarChart3 className="h-10 w-10 text-blue-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-3">
+                    Advanced Tools Available
+                  </h3>
+                  <p className="text-sm text-neutral-400 mb-6 max-w-md mx-auto">
                     Для использования продвинутых инструментов необходимо:
                   </p>
-                  <ul className="text-left text-sm text-gray-400 space-y-2 max-w-md mx-auto">
-                    <li>• Проанализировать вакансию (вкладка Job Analysis)</li>
-                    <li>• Проанализировать резюме (вкладка Resume)</li>
+                  <ul className="text-left text-sm text-neutral-300 space-y-2 max-w-md mx-auto mb-6">
+                    <li className="flex items-center gap-2">
+                      <span className="text-blue-400">•</span>
+                      Проанализировать вакансию (вкладка Job Analysis)
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-blue-400">•</span>
+                      Проанализировать резюме (вкладка Resume)
+                    </li>
                   </ul>
+                  <div className="flex gap-3 justify-center">
+                    <Button
+                      onClick={() => router.push('/dashboard?tab=job-analysis')}
+                      variant="outline"
+                      className="border-blue-600/50 text-blue-400 hover:bg-blue-600/10"
+                    >
+                      Analyze Job
+                    </Button>
+                    <Button
+                      onClick={() => router.push('/dashboard?tab=resume-analysis')}
+                      variant="outline"
+                      className="border-purple-600/50 text-purple-400 hover:bg-purple-600/10"
+                    >
+                      Analyze Resume
+                    </Button>
+                  </div>
                 </div>
               </GlassCard>
             )}

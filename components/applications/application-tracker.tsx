@@ -185,15 +185,18 @@ export function ApplicationTracker() {
   if (isLoading) {
     return (
       <GlassCard>
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        <div className="flex items-center justify-center py-12 animate-fade-in">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-3" />
+            <p className="text-sm text-neutral-400">Loading applications...</p>
+          </div>
         </div>
       </GlassCard>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Stats Overview */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -270,11 +273,24 @@ export function ApplicationTracker() {
         )}
 
         {filteredApplications.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg mb-2">No applications found</p>
-            <p className="text-sm">Start tracking your job applications by adding one above</p>
-          </div>
+          <GlassCard className="py-12 animate-fade-in">
+            <div className="text-center">
+              <div className="p-4 rounded-full bg-gradient-to-br from-blue-600/20 to-purple-600/20 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                <Briefcase className="h-10 w-10 text-blue-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">No applications yet</h3>
+              <p className="text-sm text-neutral-400 mb-6 max-w-md mx-auto">
+                Start tracking your job search journey. Add your first application to see it here.
+              </p>
+              <Button
+                onClick={() => setIsDialogOpen(true)}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0"
+              >
+                <Briefcase className="h-4 w-4 mr-2" />
+                Add First Application
+              </Button>
+            </div>
+          </GlassCard>
         ) : (
           <ScrollArea className="h-[600px] pr-4">
             <div className="space-y-3">

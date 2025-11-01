@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Otherwise, get all user chats
-    const chats = await getUserChats(userId);
+    const limit = parseInt(searchParams.get('limit') || '100', 10);
+    const chats = await getUserChats(userId, limit);
 
     return NextResponse.json({
       success: true,
