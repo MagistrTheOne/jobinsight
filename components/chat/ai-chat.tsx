@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChatSidebar } from './chat-sidebar';
 import { ChatMessages } from './chat-messages';
 import { ChatInput } from './chat-input';
-import { GlassCard } from '@/components/ui/glass-card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
@@ -109,9 +108,9 @@ export function AIChat() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-full gap-3 sm:gap-4 max-w-7xl mx-auto w-full">
+    <div className="flex flex-col lg:flex-row h-full w-full max-w-full">
       {/* Chat History Sidebar */}
-      <div className="w-full lg:w-64 shrink-0">
+      <div className="hidden lg:block w-64 shrink-0 border-r border-neutral-800/50">
         <ChatSidebar
           currentChatId={currentChatId || undefined}
           onSelectChat={handleSelectChat}
@@ -119,11 +118,11 @@ export function AIChat() {
         />
       </div>
 
-      {/* Main Chat Area */}
-      <GlassCard className="flex-1 flex flex-col bg-neutral-950/60 backdrop-blur-sm border border-neutral-800/50 h-full min-h-[500px] lg:min-h-0">
+      {/* Main Chat Area - ChatGPT-like layout */}
+      <div className="flex-1 flex flex-col h-full min-h-0 bg-black relative">
         {/* Error Display */}
         {error && (
-          <div className="p-4 border-b border-neutral-800/50">
+          <div className="absolute top-0 left-0 right-0 z-10 p-4 border-b border-neutral-800/50 bg-black/90 backdrop-blur-sm">
             <Alert variant="destructive" className="bg-red-950/50 border-red-800/50">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription className="text-red-300">
@@ -134,7 +133,7 @@ export function AIChat() {
         )}
 
         {upgradeRequired && (
-          <div className="p-4 border-b border-neutral-800/50">
+          <div className="absolute top-0 left-0 right-0 z-10 p-4 border-b border-neutral-800/50 bg-black/90 backdrop-blur-sm">
             <Alert className="bg-amber-950/50 border-amber-800/50">
               <AlertCircle className="h-4 w-4 text-amber-400" />
               <AlertDescription className="text-amber-300">
@@ -144,16 +143,22 @@ export function AIChat() {
           </div>
         )}
 
-        {/* Messages */}
-        <ChatMessages messages={messages} isLoading={isLoading} />
+        {/* Messages - Centered like ChatGPT */}
+        <div className="flex-1 overflow-hidden relative">
+          <ChatMessages messages={messages} isLoading={isLoading} />
+        </div>
 
-        {/* Input */}
-        <ChatInput
-          onSend={handleSendMessage}
-          isLoading={isLoading}
-          disabled={upgradeRequired}
-        />
-      </GlassCard>
+        {/* Input - Fixed at bottom */}
+        <div className="w-full border-t border-neutral-800/50 bg-black/95 backdrop-blur-sm">
+          <div className="mx-auto max-w-3xl px-4 py-4">
+            <ChatInput
+              onSend={handleSendMessage}
+              isLoading={isLoading}
+              disabled={upgradeRequired}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

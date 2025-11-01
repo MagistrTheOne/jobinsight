@@ -51,7 +51,7 @@ export function ChatInput({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-neutral-800/50 p-4">
+    <form onSubmit={handleSubmit} className="w-full">
       <div className="flex gap-2 items-end">
         <div className="flex-1 relative">
           <Textarea
@@ -62,9 +62,11 @@ export function ChatInput({
             placeholder={placeholder}
             disabled={isLoading || disabled}
             className={cn(
-              "min-h-[44px] max-h-[200px] resize-none bg-neutral-950/80 border-neutral-800/50 text-white placeholder:text-neutral-500",
-              "focus-visible:ring-0 focus-visible:border-neutral-700/50",
-              "pr-12"
+              "min-h-[52px] max-h-[200px] resize-none",
+              "bg-neutral-950/90 border-neutral-800/50 text-white placeholder:text-neutral-500",
+              "focus-visible:ring-1 focus-visible:ring-blue-500/50 focus-visible:border-blue-500/50",
+              "rounded-2xl px-4 py-3 pr-12",
+              "shadow-lg"
             )}
             rows={1}
           />
@@ -72,7 +74,7 @@ export function ChatInput({
         <Button
           type="submit"
           disabled={!message.trim() || isLoading || disabled}
-          className="h-11 w-11 shrink-0 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          className="h-[52px] w-[52px] shrink-0 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-full shadow-lg"
           size="icon"
         >
           {isLoading ? (

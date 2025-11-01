@@ -26,7 +26,6 @@ import { ApplicationTracker } from '@/components/applications/application-tracke
 import { HRAutopilot } from '@/components/automation/hr-autopilot';
 import { SalaryNegotiationAI } from '@/components/automation/salary-negotiation';
 import { PipelineAutomation } from '@/components/automation/pipeline-automation';
-import { DashboardOverview } from '@/components/dashboard/dashboard-overview';
 
 export function DashboardPageContent() {
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
@@ -256,13 +255,8 @@ export function DashboardPageContent() {
 
       {/* Main Content - AI Chat is default, other tabs for specific features */}
       {activeTab === 'chat' ? (
-        <div className="h-full min-h-[calc(100vh-14rem)] sm:min-h-[calc(100vh-16rem)] lg:min-h-[calc(100vh-8rem)] animate-fade-in flex flex-col">
-          <div className="flex-shrink-0">
-            <DashboardOverview />
-          </div>
-          <div className="flex-1 min-h-0">
-            <AIChat />
-          </div>
+        <div className="h-full w-full animate-fade-in">
+          <AIChat />
         </div>
       ) : (
         <Tabs value={activeTab} className="h-full transition-tab">

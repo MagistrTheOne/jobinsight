@@ -19,7 +19,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
-import { GlassCard } from "@/components/ui/glass-card";
 
 interface NavItem {
   title: string;
@@ -353,14 +352,9 @@ export function DashboardSidebar() {
           </div>
         )}
         
-        {/* User Button with Glass Effect */}
+        {/* User Button */}
         <div className={cn("flex", isCollapsed ? "justify-center" : "justify-start")}>
-          <GlassCard className={cn(
-            "p-0 w-full border-0 bg-transparent shadow-none",
-            isCollapsed && "flex justify-center"
-          )}>
-            <UserButton />
-          </GlassCard>
+          <UserButton />
         </div>
       </div>
     </>

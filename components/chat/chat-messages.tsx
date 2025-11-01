@@ -51,22 +51,23 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   const userName = user?.name || user?.email?.split('@')[0] || 'User';
 
   return (
-    <ScrollArea className="flex-1 h-full">
-      <div className="p-3 sm:p-4 space-y-4 sm:space-y-6">
+    <ScrollArea className="h-full w-full">
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:py-8">
         {displayMessages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full py-12 text-center px-4">
-            <div className="p-4 rounded-full bg-gradient-to-br from-blue-600/20 to-purple-600/20 mb-4">
-              <Bot className="h-12 w-12 text-blue-500" />
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+            <div className="p-4 rounded-full bg-gradient-to-br from-blue-600/20 to-purple-600/20 mb-6">
+              <Bot className="h-16 w-16 text-blue-500" />
             </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-neutral-300 mb-2">
+            <h3 className="text-xl sm:text-2xl font-semibold text-white mb-3">
               Начните разговор с AI Hunter
             </h3>
-            <p className="text-sm sm:text-base text-neutral-500 max-w-md">
+            <p className="text-sm sm:text-base text-neutral-400 max-w-lg">
               Я помогу вам составить резюме, подготовиться к собеседованию или найти подходящие вакансии
             </p>
           </div>
         ) : (
-          displayMessages.map((message) => {
+          <div className="space-y-6 sm:space-y-8">
+            {displayMessages.map((message) => {
             const isUser = message.role === 'user';
             
             return (
@@ -195,12 +196,13 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
                 )}
               </div>
             );
-          })
+            })}
+          </div>
         )}
 
         {/* Loading Indicator */}
         {isLoading && (
-          <div className="flex gap-2 sm:gap-3 justify-start group">
+          <div className="flex gap-3 justify-start mt-6">
             <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
               <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white">
                 <Bot className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -220,6 +222,7 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
             </div>
           </div>
         )}
+        
         <div ref={messagesEndRef} />
       </div>
     </ScrollArea>
