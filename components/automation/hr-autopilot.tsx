@@ -216,7 +216,7 @@ export function HRAutopilot() {
       question: 'bg-yellow-900/30 text-yellow-300',
       follow_up: 'bg-purple-900/30 text-purple-300',
     };
-    return colors[intent] || 'bg-neutral-800/50 text-neutral-300';
+    return colors[intentStr] || 'bg-neutral-800/50 text-neutral-300';
   };
 
   const getSentimentIcon = (sentiment?: string | 'positive' | 'neutral' | 'negative') => {
@@ -336,7 +336,7 @@ export function HRAutopilot() {
                       <p className="text-sm text-neutral-400">{selectedThread.application?.title}</p>
                     </div>
                     <Badge className={getIntentColor(messages[0]?.intent)}>
-                      {messages[0]?.intent || 'Unknown'}
+                      {typeof messages[0]?.intent === 'string' ? messages[0].intent : 'Unknown'}
                     </Badge>
                   </div>
 
