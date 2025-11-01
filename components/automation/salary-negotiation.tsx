@@ -199,7 +199,7 @@ export function SalaryNegotiationAI() {
 
   const getStageColor = (stage: string) => {
     const colors: Record<string, string> = {
-      initial: 'bg-gray-800/50 text-gray-300',
+      initial: 'bg-neutral-800/50 text-neutral-300',
       counter_offered: 'bg-blue-900/30 text-blue-300',
       negotiating: 'bg-yellow-900/30 text-yellow-300',
       accepted: 'bg-green-900/30 text-green-300',
@@ -219,11 +219,11 @@ export function SalaryNegotiationAI() {
               <DollarSign className="mr-3 h-6 w-6 text-green-500" />
               Salary Negotiation AI
             </h2>
-            <p className="text-gray-400 mt-1">
+            <p className="text-neutral-400 mt-1">
               AI-powered salary negotiation assistant with market analysis and counter-offer generation
             </p>
           </div>
-          <Badge className="bg-gradient-to-r from-green-600 to-emerald-600 border-0">
+          <Badge className="bg-linear-to-r from-green-600 to-emerald-600 border-0">
             <Brain className="h-3 w-3 mr-1" />
             AI-POWERED
           </Badge>
@@ -246,12 +246,12 @@ export function SalaryNegotiationAI() {
             <div>
               <Label className="text-white mb-2 block">Select Application</Label>
               <Select value={selectedApplication} onValueChange={setSelectedApplication}>
-                <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white">
+                <SelectTrigger className="bg-white/10 border-white/20 text-white hover:bg-white/15 backdrop-blur-sm">
                   <SelectValue placeholder="Choose an application with offer" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
                   {applications.map((app) => (
-                    <SelectItem key={app.id} value={app.id}>
+                    <SelectItem key={app.id} value={app.id} className="text-white focus:bg-white/10">
                       {app.company} - {app.title}
                     </SelectItem>
                   ))}
@@ -263,7 +263,7 @@ export function SalaryNegotiationAI() {
               <>
                 <div className="p-3 bg-blue-900/20 border border-blue-700/30 rounded-lg">
                   <p className="text-sm text-blue-300 font-semibold">{selectedApp.company}</p>
-                  <p className="text-xs text-gray-400">{selectedApp.title}</p>
+                  <p className="text-xs text-neutral-400">{selectedApp.title}</p>
                 </div>
 
                 <div>
@@ -275,7 +275,7 @@ export function SalaryNegotiationAI() {
                     value={formData.initialOffer}
                     onChange={(e) => setFormData({ ...formData, initialOffer: e.target.value })}
                     placeholder="$100,000"
-                    className="bg-gray-800/50 border-gray-700 text-white"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
                   />
                 </div>
 
@@ -289,7 +289,7 @@ export function SalaryNegotiationAI() {
                     value={formData.targetSalary}
                     onChange={(e) => setFormData({ ...formData, targetSalary: e.target.value })}
                     placeholder="$120,000"
-                    className="bg-gray-800/50 border-gray-700 text-white"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
                   />
                 </div>
 
@@ -302,7 +302,7 @@ export function SalaryNegotiationAI() {
                     value={formData.currentOffer}
                     onChange={(e) => setFormData({ ...formData, currentOffer: e.target.value })}
                     placeholder="$110,000"
-                    className="bg-gray-800/50 border-gray-700 text-white"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
                   />
                 </div>
 
@@ -310,7 +310,7 @@ export function SalaryNegotiationAI() {
                   <Button
                     onClick={handleAnalyzeMarket}
                     disabled={isGenerating || !formData.targetSalary}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    className="flex-1 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   >
                     {isGenerating ? (
                       <>
@@ -328,7 +328,7 @@ export function SalaryNegotiationAI() {
                   <Button
                     onClick={handleGenerateCounterOffer}
                     disabled={isGenerating || !formData.initialOffer || !formData.targetSalary}
-                    className="flex-1 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
+                    className="flex-1 bg-linear-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
                   >
                     {isGenerating ? (
                       <>
@@ -347,7 +347,7 @@ export function SalaryNegotiationAI() {
                 <Button
                   onClick={handleSaveNegotiation}
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  className="w-full bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                 >
                   {isLoading ? (
                     <>
@@ -373,8 +373,8 @@ export function SalaryNegotiationAI() {
           {negotiation && (
             <div className="space-y-4">
               {negotiation.negotiationStage && (
-                <div className="flex items-center justify-between p-3 bg-black/30 border border-gray-700 rounded-lg">
-                  <span className="text-sm text-gray-400">Negotiation Stage:</span>
+                <div className="flex items-center justify-between p-3 bg-black/40 border border-white/5 rounded-lg backdrop-blur-sm">
+                  <span className="text-sm text-neutral-400">Negotiation Stage:</span>
                   <Badge className={getStageColor(negotiation.negotiationStage)}>
                     {negotiation.negotiationStage.replace('_', ' ').toUpperCase()}
                   </Badge>
@@ -390,7 +390,7 @@ export function SalaryNegotiationAI() {
                     </Label>
                   </div>
                   <p className="text-2xl font-bold text-white">{negotiation.marketAverage}</p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-neutral-400 mt-1">
                     Based on job title, location, and experience level
                   </p>
                 </div>
@@ -402,7 +402,7 @@ export function SalaryNegotiationAI() {
                     <Sparkles className="h-4 w-4 mr-1" />
                     AI Strategy Recommendation
                   </Label>
-                  <p className="text-sm text-gray-300 whitespace-pre-wrap">
+                  <p className="text-sm text-neutral-300 whitespace-pre-wrap">
                     {negotiation.aiRecommendation}
                   </p>
                 </div>
@@ -428,13 +428,13 @@ export function SalaryNegotiationAI() {
                     value={negotiation.counterOfferDraft}
                     readOnly
                     rows={8}
-                    className="bg-black/30 border-gray-700 text-white mt-2"
+                    className="bg-black/40 border-white/5 text-white placeholder:text-neutral-500 focus:border-white/20 backdrop-blur-sm mt-2"
                   />
                 </div>
               )}
 
               {!negotiation.marketAverage && !negotiation.aiRecommendation && !negotiation.counterOfferDraft && (
-                <div className="text-center py-12 text-gray-400">
+                <div className="text-center py-12 text-neutral-400">
                   <Brain className="h-16 w-16 mx-auto mb-4 opacity-50" />
                   <p>Analyze market or generate counter-offer to see AI recommendations</p>
                 </div>

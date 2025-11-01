@@ -240,26 +240,26 @@ export function ApplicationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-black/95 backdrop-blur-xl border-white/10 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white">
             {application ? 'Edit Application' : 'Add New Application'}
           </DialogTitle>
-          <DialogDescription className="text-gray-400">
+          <DialogDescription className="text-neutral-400">
             Track your job application status and details
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-gray-800/50">
-            <TabsTrigger value="details" className="text-gray-300 data-[state=active]:text-white">
+          <TabsList className="grid w-full grid-cols-3 bg-black/40 border-white/5 backdrop-blur-xl">
+            <TabsTrigger value="details" className="text-neutral-300 data-[state=active]:text-white data-[state=active]:bg-white/10">
               Details
             </TabsTrigger>
-            <TabsTrigger value="emails" className="text-gray-300 data-[state=active]:text-white">
+            <TabsTrigger value="emails" className="text-neutral-300 data-[state=active]:text-white data-[state=active]:bg-white/10">
               <Mail className="h-4 w-4 mr-2" />
               Emails
             </TabsTrigger>
-            <TabsTrigger value="interview" className="text-gray-300 data-[state=active]:text-white">
+            <TabsTrigger value="interview" className="text-neutral-300 data-[state=active]:text-white data-[state=active]:bg-white/10">
               <MessageSquare className="h-4 w-4 mr-2" />
               Interview Prep
             </TabsTrigger>
@@ -282,7 +282,7 @@ export function ApplicationDialog({
                 value={formData.title || ''}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 required
-                className="bg-gray-800/50 border-gray-700 text-white"
+                className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
               />
             </div>
             <div className="space-y-2">
@@ -292,7 +292,7 @@ export function ApplicationDialog({
                 value={formData.company || ''}
                 onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                 required
-                className="bg-gray-800/50 border-gray-700 text-white"
+                className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
               />
             </div>
           </div>
@@ -304,12 +304,12 @@ export function ApplicationDialog({
                 value={formData.status || 'saved'}
                 onValueChange={(value) => setFormData({ ...formData, status: value })}
               >
-                <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white">
+                <SelectTrigger className="bg-white/10 border-white/20 text-white hover:bg-white/15 backdrop-blur-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
                   {STATUS_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                    <SelectItem key={option.value} value={option.value} className="text-white focus:bg-white/10">
                       {option.label}
                     </SelectItem>
                   ))}
@@ -323,7 +323,7 @@ export function ApplicationDialog({
                 type="date"
                 value={formData.appliedDate || ''}
                 onChange={(e) => setFormData({ ...formData, appliedDate: e.target.value || null })}
-                className="bg-gray-800/50 border-gray-700 text-white"
+                className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
               />
             </div>
           </div>
@@ -348,7 +348,7 @@ export function ApplicationDialog({
                 value={formData.salaryOffer || ''}
                 onChange={(e) => setFormData({ ...formData, salaryOffer: e.target.value || null })}
                 placeholder="$100k - $120k"
-                className="bg-gray-800/50 border-gray-700 text-white"
+                className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
               />
             </div>
             <div className="space-y-2">
@@ -358,7 +358,7 @@ export function ApplicationDialog({
                 type="date"
                 value={formData.nextFollowUp || ''}
                 onChange={(e) => setFormData({ ...formData, nextFollowUp: e.target.value || null })}
-                className="bg-gray-800/50 border-gray-700 text-white"
+                className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
               />
             </div>
           </div>
@@ -392,7 +392,7 @@ export function ApplicationDialog({
               id="isFavorite"
               checked={formData.isFavorite === 1}
               onChange={(e) => setFormData({ ...formData, isFavorite: e.target.checked ? 1 : 0 })}
-              className="w-4 h-4 rounded border-gray-700 bg-gray-800 text-yellow-500 focus:ring-yellow-500"
+              className="w-4 h-4 rounded border-white/20 bg-white/10 text-yellow-500 focus:ring-yellow-500"
             />
             <Label htmlFor="isFavorite" className="text-white cursor-pointer">
               Mark as favorite
@@ -405,7 +405,7 @@ export function ApplicationDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
-              className="border-gray-700 text-gray-300 hover:bg-gray-800"
+              className="border-white/10 text-neutral-300 hover:bg-white/10"
             >
               Cancel
             </Button>
@@ -434,13 +434,13 @@ export function ApplicationDialog({
                   <Mail className="h-5 w-5 mr-2" />
                   Follow-up Email
                 </h3>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-neutral-400">
                   Generate a professional follow-up email to send after applying
                 </p>
                 <Button
                   onClick={handleGenerateFollowUp}
                   disabled={isGeneratingEmail || !formData.title || !formData.company}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 >
                   {isGeneratingEmail ? (
                     <>
@@ -462,7 +462,7 @@ export function ApplicationDialog({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleCopyEmail(followUpEmail.subject + '\n\n' + followUpEmail.body)}
-                        className="text-gray-400 hover:text-white"
+                        className="text-neutral-400 hover:text-white"
                       >
                         {copiedEmail ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                       </Button>
@@ -470,31 +470,31 @@ export function ApplicationDialog({
                     <Input
                       value={followUpEmail.subject}
                       readOnly
-                      className="bg-gray-800/50 border-gray-700 text-white mb-3"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 backdrop-blur-sm mb-3"
                     />
                     <Label className="text-white font-semibold mb-2 block">Body:</Label>
                     <Textarea
                       value={followUpEmail.body}
                       readOnly
                       rows={10}
-                      className="bg-gray-800/50 border-gray-700 text-white"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
                     />
                   </div>
                 )}
               </div>
 
-              <div className="border-t border-gray-700 pt-4 space-y-3">
+              <div className="border-t border-white/10 pt-4 space-y-3">
                 <h3 className="text-lg font-semibold text-white flex items-center">
                   <Mail className="h-5 w-5 mr-2" />
                   Thank You Email
                 </h3>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-neutral-400">
                   Generate a thank you email to send after an interview
                 </p>
                 <Button
                   onClick={handleGenerateThankYou}
                   disabled={isGeneratingEmail || !formData.title || !formData.company}
-                  className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
+                  className="bg-linear-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
                 >
                   {isGeneratingEmail ? (
                     <>
@@ -516,7 +516,7 @@ export function ApplicationDialog({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleCopyEmail(thankYouEmail.subject + '\n\n' + thankYouEmail.body)}
-                        className="text-gray-400 hover:text-white"
+                        className="text-neutral-400 hover:text-white"
                       >
                         {copiedEmail ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                       </Button>
@@ -524,14 +524,14 @@ export function ApplicationDialog({
                     <Input
                       value={thankYouEmail.subject}
                       readOnly
-                      className="bg-gray-800/50 border-gray-700 text-white mb-3"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 backdrop-blur-sm mb-3"
                     />
                     <Label className="text-white font-semibold mb-2 block">Body:</Label>
                     <Textarea
                       value={thankYouEmail.body}
                       readOnly
                       rows={10}
-                      className="bg-gray-800/50 border-gray-700 text-white"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
                     />
                   </div>
                 )}

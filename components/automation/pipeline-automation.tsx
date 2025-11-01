@@ -106,7 +106,7 @@ export function PipelineAutomation() {
       create_reminder: 'bg-yellow-900/30 text-yellow-300',
       generate_response: 'bg-purple-900/30 text-purple-300',
     };
-    return colors[action] || 'bg-gray-800/50 text-gray-300';
+    return colors[action] || 'bg-neutral-800/50 text-neutral-300';
   };
 
   return (
@@ -118,11 +118,11 @@ export function PipelineAutomation() {
               <Zap className="mr-3 h-6 w-6 text-yellow-500" />
               Pipeline Automation
             </h2>
-            <p className="text-gray-400 mt-1">
+            <p className="text-neutral-400 mt-1">
               Automate your job application pipeline with intelligent triggers and actions
             </p>
           </div>
-          <Badge className="bg-gradient-to-r from-yellow-600 to-orange-600 border-0">
+          <Badge className="bg-linear-to-r from-yellow-600 to-orange-600 border-0">
             <Settings className="h-3 w-3 mr-1" />
             AUTO
           </Badge>
@@ -134,7 +134,7 @@ export function PipelineAutomation() {
         <GlassCard>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-white">Automation Rules</h3>
-            <Button className="bg-gradient-to-r from-blue-600 to-purple-600">
+            <Button className="bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
               <Settings className="mr-2 h-4 w-4" />
               New Rule
             </Button>
@@ -145,7 +145,7 @@ export function PipelineAutomation() {
               <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
             </div>
           ) : rules.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
+            <div className="text-center py-12 text-neutral-400">
               <Zap className="h-16 w-16 mx-auto mb-4 opacity-50" />
               <p>No automation rules configured</p>
               <p className="text-sm mt-2">Create rules to automate your application pipeline</p>
@@ -160,7 +160,7 @@ export function PipelineAutomation() {
                         {getTriggerIcon(rule.trigger)}
                         <h4 className="font-semibold text-white">{rule.name}</h4>
                       </div>
-                      <p className="text-xs text-gray-400 mb-2">When: {rule.trigger.replace('_', ' ')}</p>
+                      <p className="text-xs text-neutral-400 mb-2">When: {rule.trigger.replace('_', ' ')}</p>
                       <div className="flex flex-wrap gap-2">
                         {rule.actions.map((action, idx) => (
                           <Badge key={idx} className={`${getActionBadge(action)} text-xs`}>
@@ -170,7 +170,7 @@ export function PipelineAutomation() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 ml-4">
-                      <Label className="text-sm text-gray-300">Active</Label>
+                      <Label className="text-sm text-neutral-300">Active</Label>
                       <Switch
                         checked={rule.isActive}
                         onCheckedChange={() => toggleRule(rule.id, rule.isActive)}
@@ -188,7 +188,7 @@ export function PipelineAutomation() {
           <h3 className="text-lg font-semibold text-white mb-6">Recent Actions</h3>
 
           {recentActions.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
+            <div className="text-center py-12 text-neutral-400">
               <Clock className="h-16 w-16 mx-auto mb-4 opacity-50" />
               <p>No recent automation actions</p>
               <p className="text-sm mt-2">Actions will appear here when rules are triggered</p>
@@ -198,7 +198,7 @@ export function PipelineAutomation() {
               {recentActions.map((action) => (
                 <div
                   key={action.id}
-                  className="p-3 bg-black/30 border border-gray-700 rounded-lg"
+                  className="p-3 bg-black/40 border border-white/5 rounded-lg backdrop-blur-sm"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
@@ -216,13 +216,13 @@ export function PipelineAutomation() {
                           {action.action.replace('_', ' ')}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-400">Trigger: {action.trigger}</p>
+                      <p className="text-xs text-neutral-400">Trigger: {action.trigger}</p>
                       {action.result && (
-                        <p className="text-xs text-gray-500 mt-1">{action.result}</p>
+                        <p className="text-xs text-neutral-500 mt-1">{action.result}</p>
                       )}
                     </div>
                     {action.executedAt && (
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-neutral-500">
                         {new Date(action.executedAt).toLocaleTimeString()}
                       </span>
                     )}
@@ -238,42 +238,42 @@ export function PipelineAutomation() {
       <GlassCard variant="muted">
         <h3 className="text-lg font-semibold text-white mb-4">Suggested Automation Rules</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
+          <div className="p-4 bg-black/40 border border-white/5 rounded-lg backdrop-blur-sm">
             <div className="flex items-center gap-2 mb-2">
               <Mail className="h-4 w-4 text-blue-400" />
               <h4 className="font-semibold text-white">Auto Follow-up</h4>
             </div>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-neutral-400">
               Send follow-up email 7 days after applying if no response
             </p>
           </div>
 
-          <div className="p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
+          <div className="p-4 bg-black/40 border border-white/5 rounded-lg backdrop-blur-sm">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle2 className="h-4 w-4 text-green-400" />
               <h4 className="font-semibold text-white">Status Updates</h4>
             </div>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-neutral-400">
               Update status when HR views application or sends email
             </p>
           </div>
 
-          <div className="p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
+          <div className="p-4 bg-black/40 border border-white/5 rounded-lg backdrop-blur-sm">
             <div className="flex items-center gap-2 mb-2">
               <Calendar className="h-4 w-4 text-yellow-400" />
               <h4 className="font-semibold text-white">Interview Prep</h4>
             </div>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-neutral-400">
               Generate interview questions when status changes to "Interview"
             </p>
           </div>
 
-          <div className="p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
+          <div className="p-4 bg-black/40 border border-white/5 rounded-lg backdrop-blur-sm">
             <div className="flex items-center gap-2 mb-2">
               <AlertCircle className="h-4 w-4 text-orange-400" />
               <h4 className="font-semibold text-white">Reminders</h4>
             </div>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-neutral-400">
               Create reminders for follow-ups based on nextFollowUp date
             </p>
           </div>

@@ -82,7 +82,7 @@ export function ImpactOptimizer({ resumeContent, jobDescription }: ImpactOptimiz
       case 'scale': return 'bg-blue-500/20 text-blue-400 border-blue-500/50';
       case 'quality': return 'bg-purple-500/20 text-purple-400 border-purple-500/50';
       case 'leadership': return 'bg-orange-500/20 text-orange-400 border-orange-500/50';
-      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
+      default: return 'bg-neutral-500/20 text-neutral-400 border-neutral-500/50';
     }
   };
 
@@ -101,7 +101,7 @@ export function ImpactOptimizer({ resumeContent, jobDescription }: ImpactOptimiz
               <Zap className="mr-2 h-5 w-5 text-yellow-600" />
               Оптимизация через Impact (2025)
             </h3>
-            <p className="text-sm text-gray-400 mb-2">
+            <p className="text-sm text-neutral-400 mb-2">
               В 2025 году важно не количество проектов, а <strong>влияние на бизнес-метрики</strong>.
             </p>
             <Alert className="bg-blue-950/30 border-blue-800/50">
@@ -118,7 +118,7 @@ export function ImpactOptimizer({ resumeContent, jobDescription }: ImpactOptimiz
           <Button 
             onClick={optimize} 
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-yellow-600 to-orange-600"
+            className="w-full bg-linear-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
           >
             {isLoading ? (
               <>
@@ -158,8 +158,8 @@ export function ImpactOptimizer({ resumeContent, jobDescription }: ImpactOptimiz
                   </div>
                   <span className="text-sm font-semibold text-green-400">{impact.value}</span>
                 </div>
-                <p className="text-sm text-gray-300 mb-2">{impact.description}</p>
-                <p className="text-xs text-gray-400 mb-2">Контекст: {impact.context}</p>
+                <p className="text-sm text-neutral-300 mb-2">{impact.description}</p>
+                <p className="text-xs text-neutral-400 mb-2">Контекст: {impact.context}</p>
                 {impact.suggestion && (
                   <Alert className="bg-blue-950/30 border-blue-800/50 mt-2">
                     <AlertDescription className="text-blue-300 text-xs">
@@ -201,14 +201,14 @@ export function ImpactOptimizer({ resumeContent, jobDescription }: ImpactOptimiz
                 
                 <div className="space-y-3">
                   <div>
-                    <div className="text-xs text-gray-400 mb-1">Было:</div>
-                    <div className="text-sm text-gray-400 p-2 bg-red-950/20 rounded border border-red-800/30 line-through">
+                    <div className="text-xs text-neutral-400 mb-1">Было:</div>
+                    <div className="text-sm text-neutral-400 p-2 bg-red-950/20 rounded border border-red-800/30 line-through">
                       {section.original}
                     </div>
                   </div>
                   
                   <div>
-                    <div className="text-xs text-gray-400 mb-1">Стало (с метриками):</div>
+                    <div className="text-xs text-neutral-400 mb-1">Стало (с метриками):</div>
                     <div className="text-sm text-white p-2 bg-green-950/20 rounded border border-green-800/30">
                       {section.optimized}
                     </div>
@@ -243,8 +243,8 @@ export function ImpactOptimizer({ resumeContent, jobDescription }: ImpactOptimiz
                   </Badge>
                   <span className="text-sm font-semibold text-green-400">{suggestion.value}</span>
                 </div>
-                <p className="text-sm text-gray-300 mb-2">{suggestion.description}</p>
-                <p className="text-xs text-gray-400 mb-2">Контекст: {suggestion.context}</p>
+                <p className="text-sm text-neutral-300 mb-2">{suggestion.description}</p>
+                <p className="text-xs text-neutral-400 mb-2">Контекст: {suggestion.context}</p>
                 {suggestion.suggestion && (
                   <p className="text-xs text-blue-400">💡 {suggestion.suggestion}</p>
                 )}

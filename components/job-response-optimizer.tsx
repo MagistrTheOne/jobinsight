@@ -118,7 +118,7 @@ export function JobResponseOptimizer({
                 <Sparkles className="mr-2 h-5 w-5 text-yellow-600" />
                 {type === 'cover-letter' ? 'Оптимизация сопроводительного письма' : 'Оптимизация резюме'}
               </h3>
-              <p className="text-sm text-gray-400 mt-1">
+              <p className="text-sm text-neutral-400 mt-1">
                 Создайте улучшенную версию, оптимизированную под конкретную вакансию
               </p>
             </div>
@@ -130,13 +130,13 @@ export function JobResponseOptimizer({
             </Alert>
           )}
 
-          <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700/50">
-            <p className="text-sm text-gray-300 mb-4">
+          <div className="bg-black/40 rounded-lg p-4 border border-white/5 backdrop-blur-sm">
+            <p className="text-sm text-neutral-300 mb-4">
               {type === 'cover-letter' 
                 ? 'Для оптимизации сопроводительного письма необходим анализ вакансии и информация о пользователе.'
                 : 'Для оптимизации резюме необходим анализ вакансии или содержание вакансии.'}
             </p>
-            <div className="space-y-2 text-sm text-gray-400">
+            <div className="space-y-2 text-sm text-neutral-400">
               {jobAnalysis && (
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -172,7 +172,7 @@ export function JobResponseOptimizer({
           <Button
             onClick={handleOptimize}
             disabled={isLoading || (!jobAnalysis && !jobContent && !jobUrl) || (type === 'cover-letter' && !userInfo?.name)}
-            className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
+            className="w-full bg-linear-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
           >
             {isLoading ? (
               <>
@@ -200,7 +200,7 @@ export function JobResponseOptimizer({
               <Sparkles className="mr-2 h-5 w-5 text-yellow-600" />
               Оптимизированная версия
             </h3>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm text-neutral-400 mt-1">
               {type === 'cover-letter' ? 'Сопроводительное письмо' : 'Резюме'} оптимизировано под вакансию
             </p>
           </div>
@@ -209,7 +209,7 @@ export function JobResponseOptimizer({
               onClick={() => copyToClipboard(optimized.optimized)}
               variant="outline"
               size="sm"
-              className="bg-gray-800/50 border-gray-600/50"
+              className="bg-white/5 border-white/10 text-white hover:bg-white/10"
             >
               <Copy className="mr-2 h-4 w-4" />
               Копировать
@@ -218,7 +218,7 @@ export function JobResponseOptimizer({
               onClick={() => downloadText(optimized.optimized, `${type === 'cover-letter' ? 'cover-letter' : 'resume'}-optimized.txt`)}
               variant="outline"
               size="sm"
-              className="bg-gray-800/50 border-gray-600/50"
+              className="bg-white/5 border-white/10 text-white hover:bg-white/10"
             >
               <Download className="mr-2 h-4 w-4" />
               Скачать
@@ -234,7 +234,7 @@ export function JobResponseOptimizer({
                 <div className="font-semibold text-green-400 mb-2">Улучшения:</div>
                 <ul className="list-disc list-inside space-y-1 text-sm">
                   {optimized.improvements.map((improvement, index) => (
-                    <li key={index} className="text-gray-300">{improvement}</li>
+                    <li key={index} className="text-neutral-300">{improvement}</li>
                   ))}
                 </ul>
               </div>
@@ -272,7 +272,7 @@ export function JobResponseOptimizer({
           <TabsContent value="optimized" className="mt-4">
             <Card>
               <CardContent className="p-6">
-                <pre className="whitespace-pre-wrap text-sm text-gray-200 font-mono">
+                <pre className="whitespace-pre-wrap text-sm text-neutral-200 font-mono">
                   {optimized.optimized}
                 </pre>
               </CardContent>
@@ -282,7 +282,7 @@ export function JobResponseOptimizer({
           <TabsContent value="original" className="mt-4">
             <Card>
               <CardContent className="p-6">
-                <pre className="whitespace-pre-wrap text-sm text-gray-300 font-mono opacity-75">
+                <pre className="whitespace-pre-wrap text-sm text-neutral-300 font-mono opacity-75">
                   {optimized.original || originalContent}
                 </pre>
               </CardContent>

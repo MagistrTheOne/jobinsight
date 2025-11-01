@@ -83,7 +83,7 @@ export function SkillsGapAnalyzer({ resumeContent, jobDescription }: SkillsGapAn
               <Target className="mr-2 h-5 w-5 text-blue-600" />
               Анализ разрыва навыков
             </h3>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-neutral-400">
               AI анализирует разницу между вашими навыками и требованиями вакансии, 
               дает конкретные рекомендации как закрыть пробелы.
             </p>
@@ -97,7 +97,7 @@ export function SkillsGapAnalyzer({ resumeContent, jobDescription }: SkillsGapAn
           <Button 
             onClick={analyze} 
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600"
+            className="w-full bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >
             {isLoading ? (
               <>
@@ -124,7 +124,7 @@ export function SkillsGapAnalyzer({ resumeContent, jobDescription }: SkillsGapAn
           <Target className="mr-2 h-5 w-5 text-blue-600" />
           Резюме анализа
         </h3>
-        <p className="text-gray-300">{analysis.summary}</p>
+        <p className="text-neutral-300">{analysis.summary}</p>
       </GlassCard>
 
       {/* Skills Gaps */}
@@ -148,14 +148,14 @@ export function SkillsGapAnalyzer({ resumeContent, jobDescription }: SkillsGapAn
                   <div className="flex items-center gap-4 mb-3">
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-gray-400">Ваш уровень</span>
+                        <span className="text-xs text-neutral-400">Ваш уровень</span>
                         <span className="text-sm font-medium text-white">{gap.currentLevel}/5</span>
                       </div>
                       <Progress value={(gap.currentLevel / 5) * 100} className="h-2" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-gray-400">Требуется</span>
+                        <span className="text-xs text-neutral-400">Требуется</span>
                         <span className="text-sm font-medium text-white">{gap.requiredLevel}/5</span>
                       </div>
                       <Progress value={(gap.requiredLevel / 5) * 100} className="h-2" />
@@ -164,7 +164,7 @@ export function SkillsGapAnalyzer({ resumeContent, jobDescription }: SkillsGapAn
                       <div className={`text-2xl font-bold ${getGapSizeColor(gap.gap)}`}>
                         -{gap.gap}
                       </div>
-                      <div className="text-xs text-gray-400">Разрыв</div>
+                      <div className="text-xs text-neutral-400">Разрыв</div>
                     </div>
                   </div>
                 </div>
@@ -186,7 +186,7 @@ export function SkillsGapAnalyzer({ resumeContent, jobDescription }: SkillsGapAn
                 </h5>
                 <ul className="space-y-2">
                   {gap.recommendations.map((rec, recIdx) => (
-                    <li key={recIdx} className="text-sm text-gray-300 flex items-start gap-2">
+                    <li key={recIdx} className="text-sm text-neutral-300 flex items-start gap-2">
                       <span className="text-green-500 mt-1">•</span>
                       <span>{rec}</span>
                     </li>
@@ -203,7 +203,7 @@ export function SkillsGapAnalyzer({ resumeContent, jobDescription }: SkillsGapAn
                   </h5>
                   <ul className="space-y-1">
                     {gap.resources.map((resource, resIdx) => (
-                      <li key={resIdx} className="text-sm text-gray-400 flex items-start gap-2">
+                      <li key={resIdx} className="text-sm text-neutral-400 flex items-start gap-2">
                         <span className="text-blue-500 mt-1">→</span>
                         <span>{resource}</span>
                       </li>
@@ -213,7 +213,7 @@ export function SkillsGapAnalyzer({ resumeContent, jobDescription }: SkillsGapAn
               )}
 
               {/* Time Estimate */}
-              <div className="flex items-center gap-2 text-sm text-gray-400 pt-2 border-t border-gray-800">
+              <div className="flex items-center gap-2 text-sm text-neutral-400 pt-2 border-t border-white/10">
                 <Clock className="h-4 w-4" />
                 <span>Ориентировочное время: <strong className="text-white">{gap.estimatedTimeToClose}</strong></span>
               </div>

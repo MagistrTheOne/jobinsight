@@ -42,7 +42,7 @@ interface Application {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
-  saved: { label: 'Saved', color: 'text-gray-400', bgColor: 'bg-gray-800/50' },
+  saved: { label: 'Saved', color: 'text-neutral-400', bgColor: 'bg-neutral-800/50' },
   applied: { label: 'Applied', color: 'text-blue-400', bgColor: 'bg-blue-900/30' },
   viewed: { label: 'Viewed', color: 'text-purple-400', bgColor: 'bg-purple-900/30' },
   phone_screen: { label: 'Phone Screen', color: 'text-yellow-400', bgColor: 'bg-yellow-900/30' },
@@ -51,7 +51,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: str
   final_interview: { label: 'Final Interview', color: 'text-pink-400', bgColor: 'bg-pink-900/30' },
   offer: { label: 'Offer', color: 'text-green-400', bgColor: 'bg-green-900/30' },
   rejected: { label: 'Rejected', color: 'text-red-400', bgColor: 'bg-red-900/30' },
-  withdrawn: { label: 'Withdrawn', color: 'text-gray-500', bgColor: 'bg-gray-800/30' },
+  withdrawn: { label: 'Withdrawn', color: 'text-neutral-500', bgColor: 'bg-neutral-800/30' },
 };
 
 export function ApplicationTracker() {
@@ -201,17 +201,17 @@ export function ApplicationTracker() {
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <GlassCard variant="muted">
-            <div className="text-sm text-gray-400 mb-1">Total Applications</div>
+            <div className="text-sm text-neutral-400 mb-1">Total Applications</div>
             <div className="text-2xl font-bold text-white">{stats.total}</div>
           </GlassCard>
           <GlassCard variant="muted">
-            <div className="text-sm text-gray-400 mb-1">Applied</div>
+            <div className="text-sm text-neutral-400 mb-1">Applied</div>
             <div className="text-2xl font-bold text-blue-400">
               {stats.byStatus?.find((s: any) => s.status === 'applied')?.count || 0}
             </div>
           </GlassCard>
           <GlassCard variant="muted">
-            <div className="text-sm text-gray-400 mb-1">Interviews</div>
+            <div className="text-sm text-neutral-400 mb-1">Interviews</div>
             <div className="text-2xl font-bold text-orange-400">
               {(stats.byStatus?.find((s: any) => s.status === 'interview')?.count || 0) +
                (stats.byStatus?.find((s: any) => s.status === 'technical_interview')?.count || 0) +
@@ -219,7 +219,7 @@ export function ApplicationTracker() {
             </div>
           </GlassCard>
           <GlassCard variant="muted">
-            <div className="text-sm text-gray-400 mb-1">Conversion Rate</div>
+            <div className="text-sm text-neutral-400 mb-1">Conversion Rate</div>
             <div className="text-2xl font-bold text-green-400">{getConversionRate()}%</div>
           </GlassCard>
         </div>
@@ -233,29 +233,29 @@ export function ApplicationTracker() {
               placeholder="Search by company or title..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-gray-900/50 border-gray-700/50 text-white placeholder:text-gray-400"
+              className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
             />
           </div>
           <div className="flex gap-3 items-center w-full md:w-auto">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-[180px] bg-gray-900/50 border-gray-700/50 text-white">
+              <SelectTrigger className="w-full md:w-[180px] bg-white/10 border-white/20 text-white hover:bg-white/15 backdrop-blur-sm">
                 <SelectValue placeholder="All Statuses" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-gray-700">
-                <SelectItem value="all">All Statuses</SelectItem>
+              <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
+                <SelectItem value="all" className="text-white focus:bg-white/10">All Statuses</SelectItem>
                 {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-                  <SelectItem key={key} value={key}>{config.label}</SelectItem>
+                  <SelectItem key={key} value={key} className="text-white focus:bg-white/10">{config.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Button
               variant={favoriteOnly ? 'default' : 'outline'}
               onClick={() => setFavoriteOnly(!favoriteOnly)}
-              className={favoriteOnly ? 'bg-yellow-900/30 border-yellow-700/50 text-yellow-400' : ''}
+              className={favoriteOnly ? 'bg-yellow-900/30 border-yellow-700/50 text-yellow-400 hover:bg-yellow-900/40' : 'border-white/10 bg-white/5 hover:bg-white/10 text-white'}
             >
               <Star className={`h-4 w-4 ${favoriteOnly ? 'fill-current' : ''}`} />
             </Button>
-            <Button onClick={() => setIsDialogOpen(true)} className="bg-gradient-to-r from-blue-600 to-purple-600">
+            <Button onClick={() => setIsDialogOpen(true)} className="bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0">
               <Plus className="h-4 w-4 mr-2" />
               Add Application
             </Button>
@@ -275,7 +275,7 @@ export function ApplicationTracker() {
         {filteredApplications.length === 0 ? (
           <GlassCard className="py-12 animate-fade-in">
             <div className="text-center">
-              <div className="p-4 rounded-full bg-gradient-to-br from-blue-600/20 to-purple-600/20 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+              <div className="p-4 rounded-full bg-linear-to-br from-blue-600/20 to-purple-600/20 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
                 <Briefcase className="h-10 w-10 text-blue-400" />
               </div>
               <h3 className="text-xl font-semibold text-white mb-2">No applications yet</h3>
@@ -284,7 +284,7 @@ export function ApplicationTracker() {
               </p>
               <Button
                 onClick={() => setIsDialogOpen(true)}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0"
+                className="bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0"
               >
                 <Briefcase className="h-4 w-4 mr-2" />
                 Add First Application
@@ -298,7 +298,7 @@ export function ApplicationTracker() {
                 <div
                   key={application.id}
                   onClick={() => handleApplicationClick(application)}
-                  className="p-4 bg-black/30 border border-white/5 rounded-lg cursor-pointer hover:border-white/20 hover:bg-black/40 transition-all"
+                  className="p-4 bg-black/40 border border-white/5 rounded-lg cursor-pointer hover:border-white/10 hover:bg-black/50 transition-all backdrop-blur-sm"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
@@ -311,7 +311,7 @@ export function ApplicationTracker() {
                           <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                         )}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
+                      <div className="flex items-center gap-4 text-sm text-neutral-400">
                         <div className="flex items-center gap-1">
                           <Building2 className="h-3 w-3" />
                           <span>{application.company}</span>
@@ -338,7 +338,7 @@ export function ApplicationTracker() {
                       {application.tags && application.tags.length > 0 && (
                         <div className="flex gap-2 mt-2 flex-wrap">
                           {application.tags.map((tag, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs bg-gray-800/50 border-gray-700 text-gray-300">
+                            <Badge key={idx} variant="outline" className="text-xs bg-neutral-800/50 border-neutral-700/50 text-neutral-300">
                               {tag}
                             </Badge>
                           ))}
@@ -353,7 +353,7 @@ export function ApplicationTracker() {
                           e.stopPropagation();
                           toggleFavorite(application.id, application.isFavorite);
                         }}
-                        className="text-gray-400 hover:text-yellow-400"
+                        className="text-neutral-400 hover:text-yellow-400"
                       >
                         {application.isFavorite === 1 ? (
                           <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -369,7 +369,7 @@ export function ApplicationTracker() {
                             e.stopPropagation();
                             window.open(application.applicationUrl!, '_blank');
                           }}
-                          className="text-gray-400 hover:text-blue-400"
+                          className="text-neutral-400 hover:text-blue-400"
                         >
                           <ExternalLink className="h-4 w-4" />
                         </Button>

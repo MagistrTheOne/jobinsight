@@ -115,14 +115,14 @@ export function InterviewPrepTab({ applicationId, jobTitle, company }: Interview
                 <Sparkles className="h-5 w-5 mr-2 text-yellow-500" />
                 Interview Questions Generator
               </h3>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-neutral-400">
                 Generate practice questions based on the job description
               </p>
             </div>
             <Button
               onClick={handleGenerateQuestions}
               disabled={isGeneratingQuestions || !jobTitle || !company}
-              className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
+              className="bg-linear-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
             >
               {isGeneratingQuestions ? (
                 <>
@@ -142,7 +142,7 @@ export function InterviewPrepTab({ applicationId, jobTitle, company }: Interview
             <div className="mt-4 p-4 bg-black/30 border border-white/10 rounded-lg">
               <Label className="text-white font-semibold mb-2 block">Generated Questions:</Label>
               <ScrollArea className="h-[200px] pr-4">
-                <div className="space-y-2 text-sm text-gray-300 whitespace-pre-wrap">
+                <div className="space-y-2 text-sm text-neutral-300 whitespace-pre-wrap">
                   {questions}
                 </div>
               </ScrollArea>
@@ -159,14 +159,14 @@ export function InterviewPrepTab({ applicationId, jobTitle, company }: Interview
               <MessageSquare className="h-5 w-5 mr-2 text-blue-500" />
               Practice Your Answers
             </h3>
-            <p className="text-sm text-gray-400 mb-4">
+            <p className="text-sm text-neutral-400 mb-4">
               Select a question, write your answer, and get AI feedback
             </p>
 
             <div className="space-y-3">
               <div>
                 <Label className="text-white mb-2 block">Select Question:</Label>
-                <ScrollArea className="h-[120px] border border-gray-700 rounded-lg p-3 bg-gray-900/50">
+                <ScrollArea className="h-[120px] border border-white/10 rounded-lg p-3 bg-black/40 backdrop-blur-sm">
                   <div className="space-y-2">
                     {questionList.map((q, idx) => (
                       <button
@@ -175,7 +175,7 @@ export function InterviewPrepTab({ applicationId, jobTitle, company }: Interview
                         className={`w-full text-left p-2 rounded text-sm transition-all ${
                           selectedQuestion === q
                             ? 'bg-blue-900/50 border border-blue-700 text-white'
-                            : 'bg-gray-800/50 border border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white'
+                            : 'bg-black/40 border border-white/5 text-neutral-300 hover:bg-black/50 hover:text-white hover:border-white/10'
                         }`}
                       >
                         {q.substring(0, 100)}{q.length > 100 ? '...' : ''}
@@ -200,14 +200,14 @@ export function InterviewPrepTab({ applicationId, jobTitle, company }: Interview
                   onChange={(e) => setUserAnswer(e.target.value)}
                   placeholder="Write your answer here... Use STAR method for behavioral questions (Situation, Task, Action, Result)"
                   rows={6}
-                  className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
                 />
               </div>
 
               <Button
                 onClick={handleEvaluateAnswer}
                 disabled={isEvaluating || !selectedQuestion || !userAnswer.trim()}
-                className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
+                className="w-full bg-linear-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
               >
                 {isEvaluating ? (
                   <>
@@ -229,7 +229,7 @@ export function InterviewPrepTab({ applicationId, jobTitle, company }: Interview
                     AI Evaluation:
                   </Label>
                   <ScrollArea className="h-[300px] pr-4">
-                    <div className="text-sm text-gray-300 whitespace-pre-wrap">
+                    <div className="text-sm text-neutral-300 whitespace-pre-wrap">
                       {evaluation}
                     </div>
                   </ScrollArea>
@@ -243,8 +243,8 @@ export function InterviewPrepTab({ applicationId, jobTitle, company }: Interview
       {!questions && (
         <GlassCard variant="muted">
           <div className="text-center py-8">
-            <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-500 opacity-50" />
-            <p className="text-gray-400">
+            <MessageSquare className="h-12 w-12 mx-auto mb-4 text-neutral-500 opacity-50" />
+            <p className="text-neutral-400">
               Generate interview questions to start practicing
             </p>
           </div>

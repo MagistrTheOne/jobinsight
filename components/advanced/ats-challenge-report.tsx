@@ -124,7 +124,7 @@ Generated: ${new Date().toISOString()}
               <Shield className="mr-2 h-5 w-5 text-red-600" />
               ATS Challenge Report для HR
             </h3>
-            <p className="text-sm text-gray-400 mb-2">
+            <p className="text-sm text-neutral-400 mb-2">
               Генерация профессионального отчета для HR отдела о том, почему их ATS система 
               может отфильтровать хорошего кандидата и почему нужен human review.
             </p>
@@ -136,7 +136,7 @@ Generated: ${new Date().toISOString()}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="ats-system" className="text-gray-300">
+            <Label htmlFor="ats-system" className="text-neutral-300">
               ATS система (опционально)
             </Label>
             <Input
@@ -144,7 +144,7 @@ Generated: ${new Date().toISOString()}
               placeholder="Taleo, Workday, Greenhouse, etc."
               value={atsSystemName}
               onChange={(e) => setAtsSystemName(e.target.value)}
-              className="bg-neutral-900/50 border-neutral-700/50 text-white"
+              className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
             />
           </div>
 
@@ -184,7 +184,7 @@ Generated: ${new Date().toISOString()}
           <FileText className="mr-2 h-5 w-5 text-blue-600" />
           Executive Summary
         </h3>
-        <p className="text-gray-300 leading-relaxed">{report.executiveSummary}</p>
+        <p className="text-neutral-300 leading-relaxed">{report.executiveSummary}</p>
       </GlassCard>
 
       {/* Candidate Profile */}
@@ -195,7 +195,7 @@ Generated: ${new Date().toISOString()}
         </h3>
         <div className="space-y-3">
           <div>
-            <div className="text-sm text-gray-400 mb-1">Навыки:</div>
+            <div className="text-sm text-neutral-400 mb-1">Навыки:</div>
             <div className="flex flex-wrap gap-2">
               {report.candidateProfile.skills.map((skill, idx) => (
                 <Badge key={idx} variant="outline" className="bg-blue-500/10 text-blue-300 border-blue-500/30">
@@ -205,11 +205,11 @@ Generated: ${new Date().toISOString()}
             </div>
           </div>
           <div>
-            <div className="text-sm text-gray-400 mb-1">Опыт:</div>
+            <div className="text-sm text-neutral-400 mb-1">Опыт:</div>
             <div className="text-white">{report.candidateProfile.experience}</div>
           </div>
           <div>
-            <div className="text-sm text-gray-400 mb-1">Сильные стороны:</div>
+            <div className="text-sm text-neutral-400 mb-1">Сильные стороны:</div>
             <ul className="space-y-1">
               {report.candidateProfile.strengths.map((strength, idx) => (
                 <li key={idx} className="text-white flex items-start gap-2">
@@ -243,8 +243,8 @@ Generated: ${new Date().toISOString()}
               
               <div className="space-y-2 text-sm">
                 <div>
-                  <span className="text-gray-400">Объяснение: </span>
-                  <span className="text-gray-300">{issue.explanation}</span>
+                  <span className="text-neutral-400">Объяснение: </span>
+                  <span className="text-neutral-300">{issue.explanation}</span>
                 </div>
                 <Alert className="bg-amber-950/30 border-amber-800/50">
                   <AlertDescription className="text-amber-300 text-xs">
@@ -270,7 +270,7 @@ Generated: ${new Date().toISOString()}
         </h3>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">Рекомендуется ручная проверка:</span>
+            <span className="text-sm text-neutral-400">Рекомендуется ручная проверка:</span>
             <Badge className={report.humanReviewRecommendation.shouldReview 
               ? 'bg-green-500/20 text-green-400 border-green-500/50' 
               : 'bg-red-500/20 text-red-400 border-red-500/50'}
@@ -279,14 +279,14 @@ Generated: ${new Date().toISOString()}
             </Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">Оценка соответствия:</span>
+            <span className="text-sm text-neutral-400">Оценка соответствия:</span>
             <span className="text-lg font-bold text-white">
               {report.humanReviewRecommendation.estimatedFitScore}/100
             </span>
           </div>
           <div>
-            <span className="text-sm text-gray-400">Обоснование:</span>
-            <p className="text-sm text-gray-300 mt-1">{report.humanReviewRecommendation.reasoning}</p>
+            <span className="text-sm text-neutral-400">Обоснование:</span>
+            <p className="text-sm text-neutral-300 mt-1">{report.humanReviewRecommendation.reasoning}</p>
           </div>
         </div>
       </GlassCard>

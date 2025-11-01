@@ -193,7 +193,7 @@ export function HRAutopilot() {
   };
 
   const getIntentColor = (intent?: string) => {
-    if (!intent) return 'bg-gray-800/50';
+    if (!intent) return 'bg-neutral-800/50';
     const colors: Record<string, string> = {
       interview_request: 'bg-green-900/30 text-green-300',
       rejection: 'bg-red-900/30 text-red-300',
@@ -201,13 +201,13 @@ export function HRAutopilot() {
       question: 'bg-yellow-900/30 text-yellow-300',
       follow_up: 'bg-purple-900/30 text-purple-300',
     };
-    return colors[intent] || 'bg-gray-800/50 text-gray-300';
+    return colors[intent] || 'bg-neutral-800/50 text-neutral-300';
   };
 
   const getSentimentIcon = (sentiment?: string) => {
     if (sentiment === 'positive') return <TrendingUp className="h-4 w-4 text-green-400" />;
     if (sentiment === 'negative') return <AlertCircle className="h-4 w-4 text-red-400" />;
-    return <MessageSquare className="h-4 w-4 text-gray-400" />;
+    return <MessageSquare className="h-4 w-4 text-neutral-400" />;
   };
 
   return (
@@ -219,11 +219,11 @@ export function HRAutopilot() {
               <Bot className="mr-3 h-6 w-6 text-purple-500" />
               HR Communication Autopilot
             </h2>
-            <p className="text-gray-400 mt-1">
+            <p className="text-neutral-400 mt-1">
               AI-powered automatic email responses and HR communication management
             </p>
           </div>
-          <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 border-0">
+          <Badge className="bg-linear-to-r from-purple-600 to-pink-600 border-0">
             <Zap className="h-3 w-3 mr-1" />
             BETA
           </Badge>
@@ -238,16 +238,16 @@ export function HRAutopilot() {
       </GlassCard>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-gray-800/50">
-          <TabsTrigger value="threads" className="text-gray-300 data-[state=active]:text-white">
+        <TabsList className="grid w-full grid-cols-3 bg-black/40 border-white/5 backdrop-blur-xl">
+          <TabsTrigger value="threads" className="text-neutral-300 data-[state=active]:text-white data-[state=active]:bg-white/10">
             <Mail className="h-4 w-4 mr-2" />
             Email Threads
           </TabsTrigger>
-          <TabsTrigger value="automation" className="text-gray-300 data-[state=active]:text-white">
+          <TabsTrigger value="automation" className="text-neutral-300 data-[state=active]:text-white data-[state=active]:bg-white/10">
             <Settings className="h-4 w-4 mr-2" />
             Automation Rules
           </TabsTrigger>
-          <TabsTrigger value="stats" className="text-gray-300 data-[state=active]:text-white">
+          <TabsTrigger value="stats" className="text-neutral-300 data-[state=active]:text-white data-[state=active]:bg-white/10">
             <TrendingUp className="h-4 w-4 mr-2" />
             Stats
           </TabsTrigger>
@@ -265,7 +265,7 @@ export function HRAutopilot() {
                     <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
                   </div>
                 ) : emailThreads.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
+                  <div className="text-center py-8 text-neutral-400">
                     <Mail className="h-12 w-12 mx-auto mb-3 opacity-50" />
                     <p>No email threads yet</p>
                   </div>
@@ -278,14 +278,14 @@ export function HRAutopilot() {
                           onClick={() => setSelectedThread(thread)}
                           className={`w-full text-left p-3 rounded-lg border transition-all ${
                             selectedThread?.id === thread.id
-                              ? 'bg-blue-900/30 border-blue-700 text-white'
-                              : 'bg-gray-800/50 border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white'
+                              ? 'bg-blue-900/30 border-blue-700/50 text-white'
+                              : 'bg-black/40 border-white/5 text-neutral-300 hover:bg-black/50 hover:text-white hover:border-white/10'
                           }`}
                         >
                           <div className="flex items-start justify-between mb-1">
                             <div className="flex-1 min-w-0">
                               <p className="font-semibold text-sm truncate">{thread.application?.company || 'Unknown'}</p>
-                              <p className="text-xs text-gray-400 truncate">{thread.application?.title || thread.subject}</p>
+                              <p className="text-xs text-neutral-400 truncate">{thread.application?.title || thread.subject}</p>
                             </div>
                             {thread.unreadCount > 0 && (
                               <Badge className="bg-blue-600 text-white text-xs ml-2">
@@ -294,7 +294,7 @@ export function HRAutopilot() {
                             )}
                           </div>
                           <div className="flex items-center justify-between mt-2">
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-neutral-500">
                               {format(new Date(thread.lastMessageDate), 'MMM d')}
                             </span>
                             {thread.isAutomated && (
@@ -313,10 +313,10 @@ export function HRAutopilot() {
             <div className="lg:col-span-2">
               {selectedThread ? (
                 <GlassCard>
-                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-700">
+                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-white/10">
                     <div>
                       <h3 className="text-lg font-semibold text-white">{selectedThread.application?.company}</h3>
-                      <p className="text-sm text-gray-400">{selectedThread.application?.title}</p>
+                      <p className="text-sm text-neutral-400">{selectedThread.application?.title}</p>
                     </div>
                     <Badge className={getIntentColor(messages[0]?.intent)}>
                       {messages[0]?.intent || 'Unknown'}
@@ -330,7 +330,7 @@ export function HRAutopilot() {
                           key={message.id}
                           className={`p-4 rounded-lg border ${
                             message.isIncoming
-                              ? 'bg-gray-800/50 border-gray-700'
+                              ? 'bg-black/40 border-white/5'
                               : 'bg-blue-900/20 border-blue-700/50'
                           }`}
                         >
@@ -347,12 +347,12 @@ export function HRAutopilot() {
                               )}
                               {message.sentiment && getSentimentIcon(message.sentiment)}
                             </div>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-neutral-500">
                               {format(new Date(message.createdAt), 'MMM d, HH:mm')}
                             </span>
                           </div>
 
-                          <p className="text-sm text-gray-300 whitespace-pre-wrap mb-3">{message.body}</p>
+                          <p className="text-sm text-neutral-300 whitespace-pre-wrap mb-3">{message.body}</p>
 
                           {message.isIncoming && message.needsResponse && (
                             <div className="mt-4 p-3 bg-black/30 border border-yellow-700/30 rounded-lg">
@@ -372,7 +372,7 @@ export function HRAutopilot() {
                                       Send
                                     </Button>
                                   </div>
-                                  <p className="text-sm text-gray-300 whitespace-pre-wrap">{message.aiSuggestion}</p>
+                                  <p className="text-sm text-neutral-300 whitespace-pre-wrap">{message.aiSuggestion}</p>
                                 </div>
                               ) : (
                                 <Button
@@ -403,7 +403,7 @@ export function HRAutopilot() {
                 </GlassCard>
               ) : (
                 <GlassCard>
-                  <div className="text-center py-12 text-gray-400">
+                  <div className="text-center py-12 text-neutral-400">
                     <MessageSquare className="h-16 w-16 mx-auto mb-4 opacity-50" />
                     <p>Select a conversation to view messages</p>
                   </div>
@@ -419,7 +419,7 @@ export function HRAutopilot() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-lg font-semibold text-white">Automation Rules</h3>
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="text-sm text-neutral-400 mt-1">
                   Configure automatic actions based on triggers
                 </p>
               </div>
@@ -440,12 +440,12 @@ export function HRAutopilot() {
                           {rule.trigger}
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-neutral-400">
                         {rule.actions.length} action(s) configured
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Label className="text-sm text-gray-300">Active</Label>
+                      <Label className="text-sm text-neutral-300">Active</Label>
                       <Switch
                         checked={rule.isActive}
                         onCheckedChange={() => toggleAutomationRule(rule.id, rule.isActive)}
@@ -456,7 +456,7 @@ export function HRAutopilot() {
               ))}
 
               {automationRules.length === 0 && (
-                <div className="text-center py-12 text-gray-400">
+                <div className="text-center py-12 text-neutral-400">
                   <Zap className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No automation rules configured yet</p>
                   <p className="text-sm mt-2">Create rules to automate your HR communications</p>
@@ -473,25 +473,25 @@ export function HRAutopilot() {
               <div className="text-2xl font-bold text-white mb-1">
                 {emailThreads.length}
               </div>
-              <div className="text-sm text-gray-400">Total Threads</div>
+              <div className="text-sm text-neutral-400">Total Threads</div>
             </GlassCard>
             <GlassCard variant="muted" className="p-4 text-center">
               <div className="text-2xl font-bold text-blue-400 mb-1">
                 {emailThreads.reduce((sum, t) => sum + t.unreadCount, 0)}
               </div>
-              <div className="text-sm text-gray-400">Unread Messages</div>
+              <div className="text-sm text-neutral-400">Unread Messages</div>
             </GlassCard>
             <GlassCard variant="muted" className="p-4 text-center">
               <div className="text-2xl font-bold text-purple-400 mb-1">
                 {emailThreads.filter(t => t.isAutomated).length}
               </div>
-              <div className="text-sm text-gray-400">Auto-Responded</div>
+              <div className="text-sm text-neutral-400">Auto-Responded</div>
             </GlassCard>
             <GlassCard variant="muted" className="p-4 text-center">
               <div className="text-2xl font-bold text-green-400 mb-1">
                 {automationRules.filter(r => r.isActive).length}
               </div>
-              <div className="text-sm text-gray-400">Active Rules</div>
+              <div className="text-sm text-neutral-400">Active Rules</div>
             </GlassCard>
           </div>
         </TabsContent>
