@@ -214,7 +214,7 @@ function checkKeywordIssues(content: string, jobKeywords?: string[]): ATSIssue[]
   // Проверка на keyword stuffing
   const keywordDensity: { [key: string]: number } = {};
   foundKeywords.forEach(keyword => {
-    // Экранируем специальные символы regex для безопасного использования
+    // Экранируем специальные символы регулярных выражений
     const escapedKeyword = keyword.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(escapedKeyword, 'gi');
     const matches = contentLower.match(regex);

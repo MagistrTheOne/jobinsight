@@ -42,7 +42,7 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
     }
     
     // Try from companyInsights as fallback
-    if (analysis.companyInsights) {
+    if (analysis.companyInsights && typeof analysis.companyInsights === 'string') {
       const match = analysis.companyInsights.match(/(?:company|компания)[:\s]+([^\n,]+)/i);
       if (match) return match[1].trim();
     }
@@ -226,7 +226,11 @@ export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResult
           <Users className="mr-2 h-4 w-4 text-white" />
           Company Culture Insights
         </h3>
-        <p className="text-sm text-neutral-300">{analysis.companyInsights}</p>
+        <p className="text-sm text-neutral-300">
+          {typeof analysis.companyInsights === 'string' 
+            ? analysis.companyInsights 
+            : JSON.stringify(analysis.companyInsights)}
+        </p>
       </GlassCard>
 
       {/* ATS Keywords and Recommended Skills */}
