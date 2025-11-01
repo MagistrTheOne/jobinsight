@@ -13,13 +13,16 @@ import { detectTool } from '@/lib/ai-tools/tool-detector';
 import { executeTool } from '@/lib/ai-tools/tool-executor';
 import { formatSearchResults } from '@/lib/ai-tools/web-search';
 
+// Export runtime config for Next.js
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized', message: 'Требуется авторизация для отправки сообщений' },
         { status: 401 }
       );
     }
