@@ -17,22 +17,16 @@ export default function LandingPage() {
   const { isAuthenticated } = useAuthStore();
   const action = searchParams.get('action');
 
-  // Redirect to dashboard if authenticated
+  // Redirect to dashboard only if there's an action parameter
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && action) {
       if (action === 'job') {
         router.push('/dashboard?tab=job-analysis');
       } else if (action === 'resume') {
         router.push('/dashboard?tab=resume-analysis');
-      } else {
-        router.push('/dashboard');
       }
     }
   }, [isAuthenticated, action, router]);
-
-  if (isAuthenticated) {
-    return null; // Will redirect
-  }
 
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">

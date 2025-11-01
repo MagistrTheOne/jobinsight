@@ -13,7 +13,12 @@ import { Loader2, Mail, Github } from 'lucide-react';
 export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const action = searchParams.get('action');
+  const callbackUrlBase = searchParams.get('callbackUrl') || '/dashboard';
+  // Build callback URL with action parameter if present
+  const callbackUrl = action && callbackUrlBase === '/dashboard' 
+    ? `/dashboard?tab=${action === 'job' ? 'job-analysis' : 'resume-analysis'}`
+    : callbackUrlBase;
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

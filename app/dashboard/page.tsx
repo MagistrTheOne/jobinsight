@@ -13,13 +13,14 @@ import { UserButton } from '@/components/auth/user-button';
 import { UsageLimits } from '@/components/usage/usage-limits';
 import { UpgradeModal } from '@/components/usage/upgrade-modal';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CircleAlert as AlertCircle, Briefcase } from 'lucide-react';
+import { CircleAlert as AlertCircle, Briefcase, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import { JobAnalysis, ResumeAnalysis, UserInfo } from '@/lib/types';
 import { useAnalysisStore } from '@/store/analysis-store';
 import { useAuthStore } from '@/store/auth-store';
 import { HistoryPanel } from '@/components/analysis/history-panel';
 import { AIChat } from '@/components/chat/ai-chat';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +44,8 @@ export default function DashboardPage() {
 
   const { isAuthenticated, user, isLoading: authLoading } = useAuthStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'job-analysis';
 
   // Redirect to landing if not authenticated
   useEffect(() => {
@@ -254,7 +257,14 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="text-center mb-8">
                 <div className="flex items-center justify-between mb-4 gap-4">
-                    <div className="flex-1"></div>
+                    <div className="flex-1 flex items-center justify-start">
+                      <Link href="/landing">
+                        <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-800/50">
+                          <ArrowLeft className="h-4 w-4 mr-2" />
+                          Back to Landing
+                        </Button>
+                      </Link>
+                    </div>
                     <div className="flex items-center justify-center flex-1">
                       <Briefcase className="h-8 w-8 text-blue-600 mr-3" />
                       <h1 className="text-4xl font-bold text-white">
@@ -290,7 +300,7 @@ export default function DashboardPage() {
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
-                <Tabs defaultValue="job-analysis" className="w-full">
+                <Tabs value={activeTab} onValueChange={(value) => router.replace(`/dashboard?tab=${value}`)} className="w-full">
                   <TabsList className="grid w-full grid-cols-5 max-w-3xl mx-auto mb-8">
                     <TabsTrigger value="job-analysis">Job Analysis</TabsTrigger>
                     <TabsTrigger value="job-content">Job Content</TabsTrigger>

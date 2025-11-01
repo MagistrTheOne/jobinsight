@@ -1,13 +1,32 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GlassCard } from '@/components/ui/glass-card';
-import { Sparkles, FileText, Briefcase, ArrowRight, Loader2 } from 'lucide-react';
+import { Sparkles, FileText, Briefcase, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+
+// Demo job analysis result
+const demoJobAnalysis = {
+  title: "Senior Frontend Developer",
+  company: "Tech Company Inc.",
+  grade: "Senior",
+  redFlags: [],
+  positives: [
+    "Clear job requirements",
+    "Competitive salary range",
+    "Remote work option available",
+  ],
+  suggestions: [
+    "Emphasize your React and TypeScript experience",
+    "Highlight any team leadership experience",
+  ],
+};
 
 export function Hero() {
   const router = useRouter();
@@ -15,14 +34,49 @@ export function Hero() {
   const [jobInput, setJobInput] = useState('');
   const [resumeInput, setResumeInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showDemoResult, setShowDemoResult] = useState(false);
+  const [demoAttempts, setDemoAttempts] = useState(0);
+
+  // Load demo attempts from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const attempts = parseInt(localStorage.getItem('landing-demo-attempts') || '0', 10);
+      setDemoAttempts(attempts);
+    }
+  }, []);
+
+  const handleJobDemo = async () => {
+    if (!jobInput.trim()) return;
+
+    setIsLoading(true);
+    // Simulate analysis
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setShowDemoResult(true);
+    setIsLoading(false);
+
+    // Increment demo attempts
+    const newAttempts = demoAttempts + 1;
+    setDemoAttempts(newAttempts);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('landing-demo-attempts', newAttempts.toString());
+    }
+  };
 
   const handleAction = (type: 'job' | 'resume') => {
-    if (!isAuthenticated) {
-      router.push('/auth/signin?callbackUrl=/dashboard&action=' + type);
+    if (isAuthenticated) {
+      setIsLoading(true);
+      router.push(`/dashboard?tab=${type === 'job' ? 'job-analysis' : 'resume-analysis'}`);
       return;
     }
-    setIsLoading(true);
-    router.push(`/dashboard?tab=${type === 'job' ? 'job-analysis' : 'resume-analysis'}`);
+
+    // Check if this is a demo attempt (first try for job analysis, only if demo not used yet)
+    if (type === 'job' && demoAttempts === 0 && !showDemoResult && jobInput.trim()) {
+      handleJobDemo();
+      return;
+    }
+
+    // After first demo or resume analysis - redirect to sign in
+    router.push('/auth/signin?callbackUrl=/dashboard&action=' + type);
   };
 
   return (
@@ -71,6 +125,22 @@ export function Hero() {
               </TabsList>
 
               <TabsContent value="job" className="space-y-3 sm:space-y-4 mt-0">
+                {demoAttempts === 0 && (
+                  <Alert className="bg-blue-950/30 border-blue-800/50">
+                    <AlertCircle className="h-4 w-4 text-blue-400" />
+                    <AlertDescription className="text-blue-300 text-xs sm:text-sm">
+                      Try a free demo analysis! After this, sign in for unlimited access.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                {demoAttempts > 0 && (
+                  <Alert className="bg-amber-950/30 border-amber-800/50">
+                    <AlertCircle className="h-4 w-4 text-amber-400" />
+                    <AlertDescription className="text-amber-300 text-xs sm:text-sm">
+                      Demo used ({demoAttempts}/1). Sign in for full access to unlimited analyses.
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <Input
                   type="url"
                   placeholder="Paste job posting URL or description..."
@@ -78,6 +148,7 @@ export function Hero() {
                   onChange={(e) => setJobInput(e.target.value)}
                   className="h-11 sm:h-12 text-sm sm:text-base bg-neutral-950/80 border border-neutral-700/50 text-white placeholder:text-neutral-500 focus-visible:ring-0 focus-visible:border-neutral-500/50"
                   onKeyDown={(e) => e.key === 'Enter' && jobInput.trim() && handleAction('job')}
+                  disabled={isLoading}
                 />
                 <Button
                   onClick={() => handleAction('job')}
@@ -96,6 +167,75 @@ export function Hero() {
                     </>
                   )}
                 </Button>
+
+                {/* Demo Result */}
+                {showDemoResult && (
+                  <div className="mt-4 pt-4 border-t border-neutral-800/50 space-y-4 animate-in fade-in slide-in-from-bottom-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-base sm:text-lg font-semibold text-white">Demo Analysis Result</h3>
+                      <Badge className="bg-green-900/30 text-green-400 border-green-800/50">
+                        {demoJobAnalysis.grade} Level
+                      </Badge>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-medium text-neutral-300 mb-2">Job Title</h4>
+                        <p className="text-sm text-white">{demoJobAnalysis.title} at {demoJobAnalysis.company}</p>
+                      </div>
+                      {demoJobAnalysis.positives.length > 0 && (
+                        <div>
+                          <h4 className="text-xs sm:text-sm font-medium text-green-400 mb-2">Positives</h4>
+                          <ul className="space-y-1">
+                            {demoJobAnalysis.positives.map((item, idx) => (
+                              <li key={idx} className="text-xs sm:text-sm text-neutral-300 flex items-start gap-2">
+                                <span className="text-green-500 mt-0.5">•</span>
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {demoJobAnalysis.suggestions.length > 0 && (
+                        <div>
+                          <h4 className="text-xs sm:text-sm font-medium text-amber-400 mb-2">Suggestions</h4>
+                          <ul className="space-y-1">
+                            {demoJobAnalysis.suggestions.map((item, idx) => (
+                              <li key={idx} className="text-xs sm:text-sm text-neutral-300 flex items-start gap-2">
+                                <span className="text-amber-500 mt-0.5">•</span>
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                    <div className="pt-3 border-t border-neutral-800/50">
+                      <p className="text-xs text-neutral-500 mb-3 text-center">
+                        This is a demo preview. For full AI-powered analysis with detailed insights, sign in to your account.
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 border-neutral-800/50 hover:bg-neutral-900/50"
+                          onClick={() => {
+                            setShowDemoResult(false);
+                            setJobInput('');
+                          }}
+                        >
+                          Try Again
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="flex-1 bg-blue-600 hover:bg-blue-700"
+                          onClick={() => router.push('/auth/signin?callbackUrl=/dashboard&action=job')}
+                        >
+                          Sign In for Full Access
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="resume" className="space-y-3 sm:space-y-4 mt-0">
@@ -106,6 +246,7 @@ export function Hero() {
                   onChange={(e) => setResumeInput(e.target.value)}
                   className="h-11 sm:h-12 text-sm sm:text-base bg-neutral-950/80 border border-neutral-700/50 text-white placeholder:text-neutral-500 focus-visible:ring-0 focus-visible:border-neutral-500/50"
                   onKeyDown={(e) => e.key === 'Enter' && resumeInput.trim() && handleAction('resume')}
+                  disabled={isLoading}
                 />
                 <Button
                   onClick={() => handleAction('resume')}
