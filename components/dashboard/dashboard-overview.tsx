@@ -12,7 +12,6 @@ import {
   TrendingUp,
   Sparkles,
   ArrowRight,
-  Clock,
   Target,
   Zap,
   Award
@@ -44,14 +43,9 @@ export function DashboardOverview() {
     try {
       setIsLoading(true);
       
-      // Fetch applications stats and recent chats in parallel
-      const [appsResponse, chatsResponse] = await Promise.all([
-        fetch('/api/applications?stats=true'),
-        fetch('/api/chat/history?limit=3')
-      ]);
-      
+      // Fetch applications stats
+      const appsResponse = await fetch('/api/applications?stats=true');
       const appsData = await appsResponse.json();
-      const chatsData = await chatsResponse.json();
       
       const appsStats = appsData.success ? appsData.stats : null;
       const interviewsCount = appsStats?.byStatus?.reduce((sum: number, s: any) => {
@@ -66,24 +60,10 @@ export function DashboardOverview() {
         ? Math.round((interviewsCount / totalApplied) * 100) 
         : 0;
       
-      // Prepare recent activity
-      const recentActivity = [];
-      if (chatsData.success && chatsData.chats?.length > 0) {
-        chatsData.chats.slice(0, 3).forEach((chat: any) => {
-          recentActivity.push({
-            id: chat.id,
-            type: 'chat' as const,
-            title: chat.title || 'Chat conversation',
-            time: formatTime(chat.updatedAt || chat.createdAt),
-          });
-        });
-      }
-      
       setStats({
         totalApplications: appsStats?.total || 0,
         interviewsCount,
         conversionRate,
-        recentActivity,
       });
     } catch (error) {
       console.error('Failed to fetch dashboard stats:', error);
@@ -92,20 +72,6 @@ export function DashboardOverview() {
     }
   };
 
-  const formatTime = (date: string | Date) => {
-    const d = typeof date === 'string' ? new Date(date) : date;
-    const now = new Date();
-    const diffMs = now.getTime() - d.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
 
   const quickActions = [
     {
@@ -202,14 +168,16 @@ export function DashboardOverview() {
         </GlassCard>
       </div>
 
-      {/* Quick Actions */}
-      <GlassCard className="p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-            <Zap className="h-5 w-5 text-yellow-400" />
-            Quick Actions
-          </h3>
-        </div>
+      {/* Quick Actions & Tips */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {/* Quick Actions */}
+        <GlassCard className="p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <Zap className="h-5 w-5 text-yellow-400" />
+              Quick Actions
+            </h3>
+          </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {quickActions.map((action, index) => (
             <button
@@ -231,44 +199,6 @@ export function DashboardOverview() {
             </button>
           ))}
         </div>
-      </GlassCard>
-
-      {/* Recent Activity & Tips */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {/* Recent Activity */}
-        <GlassCard className="p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-400" />
-              Recent Activity
-            </h3>
-          </div>
-          {stats?.recentActivity && stats.recentActivity.length > 0 ? (
-            <div className="space-y-3">
-              {stats.recentActivity.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-neutral-900/50 border border-neutral-800/50 hover:border-neutral-700/50 transition-colors"
-                >
-                  <div className="p-2 rounded-lg bg-blue-600/20">
-                    {activity.type === 'chat' && <Sparkles className="h-4 w-4 text-blue-400" />}
-                    {activity.type === 'application' && <Briefcase className="h-4 w-4 text-blue-400" />}
-                    {activity.type === 'analysis' && <FileText className="h-4 w-4 text-blue-400" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">{activity.title}</p>
-                    <p className="text-xs text-neutral-400">{activity.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-neutral-500">
-              <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p className="text-sm">No recent activity</p>
-              <p className="text-xs mt-1">Start by analyzing a job or chatting with AI</p>
-            </div>
-          )}
         </GlassCard>
 
         {/* Tips & Motivation */}

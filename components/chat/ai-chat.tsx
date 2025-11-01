@@ -109,7 +109,7 @@ export function AIChat() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-full gap-3 sm:gap-4">
+    <div className="flex flex-col lg:flex-row h-full gap-3 sm:gap-4 max-w-7xl mx-auto w-full">
       {/* Chat History Sidebar */}
       <div className="w-full lg:w-64 shrink-0">
         <ChatSidebar

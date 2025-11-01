@@ -3,7 +3,13 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { SessionProvider } from '@/components/providers/session-provider';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ 
+  subsets: ['latin', 'cyrillic'],
+  display: 'swap',
+  fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+  adjustFontFallback: true,
+  variable: '--font-inter',
+});
 
 export const metadata: Metadata = {
   title: 'JobInsight AI - AI-Powered Job Application Analysis',
@@ -17,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.className} bg-black text-white`}>
+      <body className={`${inter.variable} ${inter.className} font-sans bg-black text-white`}>
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>

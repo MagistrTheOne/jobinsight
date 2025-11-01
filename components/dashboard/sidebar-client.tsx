@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Briefcase, FileText, Mail, BarChart3, Bot, Sparkles, TrendingUp, Workflow, DollarSign, Home, History, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Briefcase, FileText, Mail, BarChart3, Bot, Sparkles, TrendingUp, Workflow, DollarSign, Home, History, Menu, X, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useEffect, useState } from "react";
+import { GlassCard } from "@/components/ui/glass-card";
 
 interface NavItem {
   title: string;
@@ -38,6 +40,12 @@ export function DashboardSidebar() {
     }
     return false;
   });
+  const [recentActivity, setRecentActivity] = useState<Array<{
+    id: string;
+    type: 'application' | 'analysis' | 'chat';
+    title: string;
+    time: string;
+  }>>([]);
 
   const toggleCollapse = () => {
     const newState = !isCollapsed;
@@ -47,6 +55,47 @@ export function DashboardSidebar() {
       window.dispatchEvent(new Event('sidebar-toggle'));
     }
   };
+
+  useEffect(() => {
+    // Fetch recent activity
+    const fetchRecentActivity = async () => {
+      try {
+        const chatsResponse = await fetch('/api/chat/history?limit=3');
+        const chatsData = await chatsResponse.json();
+        
+        if (chatsData.success && chatsData.chats?.length > 0) {
+          const activity = chatsData.chats.slice(0, 3).map((chat: any) => {
+            const d = typeof chat.updatedAt === 'string' ? new Date(chat.updatedAt) : chat.updatedAt || new Date();
+            const now = new Date();
+            const diffMs = now.getTime() - d.getTime();
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            let timeStr = 'Just now';
+            if (diffMins >= 1 && diffMins < 60) timeStr = `${diffMins}m ago`;
+            else if (diffHours < 24) timeStr = `${diffHours}h ago`;
+            else if (diffDays < 7) timeStr = `${diffDays}d ago`;
+            else timeStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+            return {
+              id: chat.id,
+              type: 'chat' as const,
+              title: chat.title || 'Chat conversation',
+              time: timeStr,
+            };
+          });
+          setRecentActivity(activity);
+        }
+      } catch (error) {
+        console.error('Failed to fetch recent activity:', error);
+      }
+    };
+
+    if (!isCollapsed) {
+      fetchRecentActivity();
+    }
+  }, [isCollapsed]);
 
   const navItems: NavItem[] = [
     {
@@ -247,6 +296,51 @@ export function DashboardSidebar() {
         </TooltipProvider>
       </ScrollArea>
 
+      {/* Recent Activity - only show when not collapsed */}
+      {!isCollapsed && (
+        <>
+          <Separator className="bg-neutral-800/50" />
+          <div className="px-2 sm:px-3 py-3">
+            <div className="flex items-center gap-2 mb-3 px-2">
+              <Clock className="h-4 w-4 text-blue-400" />
+              <h3 className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">
+                Recent Activity
+              </h3>
+            </div>
+            {recentActivity.length > 0 ? (
+              <div className="space-y-2">
+                {recentActivity.map((activity) => (
+                  <button
+                    key={activity.id}
+                    onClick={() => {
+                      if (activity.type === 'chat') {
+                        router.push('/dashboard?tab=chat');
+                      }
+                    }}
+                    className="w-full flex items-center gap-2 p-2 rounded-lg bg-neutral-900/50 border border-neutral-800/50 hover:border-neutral-700/50 hover:bg-neutral-900/70 transition-colors text-left group"
+                  >
+                    <div className="p-1.5 rounded bg-blue-600/20 flex-shrink-0">
+                      <Sparkles className="h-3 w-3 text-blue-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-white truncate group-hover:text-blue-300 transition-colors">
+                        {activity.title}
+                      </p>
+                      <p className="text-xs text-neutral-500">{activity.time}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4 text-neutral-500">
+                <Clock className="h-6 w-6 mx-auto mb-2 opacity-50" />
+                <p className="text-xs">No recent activity</p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
       {/* Footer with Usage Limits and User Button */}
       <div className={cn(
         "border-t border-neutral-800/50 space-y-2 sm:space-y-3",
@@ -259,9 +353,14 @@ export function DashboardSidebar() {
           </div>
         )}
         
-        {/* User Button */}
+        {/* User Button with Glass Effect */}
         <div className={cn("flex", isCollapsed ? "justify-center" : "justify-start")}>
-          <UserButton />
+          <GlassCard className={cn(
+            "p-0 w-full border-0 bg-transparent shadow-none",
+            isCollapsed && "flex justify-center"
+          )}>
+            <UserButton />
+          </GlassCard>
         </div>
       </div>
     </>
