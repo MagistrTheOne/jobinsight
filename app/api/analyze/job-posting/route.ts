@@ -5,6 +5,7 @@ import { scrapeJobPosting } from '@/lib/scraper';
 import { rateLimit } from '@/lib/rate-limit';
 import { checkUsageLimit, getCurrentPeriodStart } from '@/lib/usage-limits';
 import { incrementUsageLimit } from '@/lib/db/queries';
+import { getClientIp } from '@/lib/get-ip';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limiting
-    const identifier = request.ip || 'anonymous';
+    const identifier = getClientIp(request);
     const rateLimitResult = await rateLimit(identifier, 5, 60000); // 5 requests per minute
     
     if (!rateLimitResult.success) {

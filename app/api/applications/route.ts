@@ -8,6 +8,7 @@ import {
 } from '@/lib/db/queries';
 import { createJobPosting } from '@/lib/db/queries';
 import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/get-ip';
 
 export async function GET(request: NextRequest) {
   try {
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const identifier = request.ip || 'anonymous';
+    const identifier = getClientIp(request);
     const rateLimitResult = await rateLimit(identifier, 10, 60000);
     if (!rateLimitResult.success) {
       return NextResponse.json(

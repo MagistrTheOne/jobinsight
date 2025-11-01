@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { LandingNav } from '@/components/landing/nav';
 import { Hero } from '@/components/landing/hero';
@@ -10,7 +10,7 @@ import { Footer } from '@/components/landing/footer';
 import { SectionDivider } from '@/components/landing/section-divider';
 import { useAuthStore } from '@/store/auth-store';
 
-export default function LandingPage() {
+function LandingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
@@ -37,6 +37,18 @@ export default function LandingPage() {
       <Pricing />
       <Footer />
     </div>
+  );
+}
+
+export default function LandingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0b0b0b] text-white flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <LandingContent />
+    </Suspense>
   );
 }
 

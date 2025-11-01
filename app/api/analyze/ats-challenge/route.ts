@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { generateATSChallengeReport } from '@/lib/advanced-ats-analysis';
 import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/get-ip';
 import { checkUsageLimit, getCurrentPeriodStart } from '@/lib/usage-limits';
 import { incrementUsageLimit } from '@/lib/db/queries';
 
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limiting
-    const identifier = request.ip || 'anonymous';
+    const identifier = getClientIp(request);
     const rateLimitResult = await rateLimit(identifier, 5, 60000);
     
     if (!rateLimitResult.success) {

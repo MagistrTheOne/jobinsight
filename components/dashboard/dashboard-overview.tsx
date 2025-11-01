@@ -64,6 +64,7 @@ export function DashboardOverview() {
         totalApplications: appsStats?.total || 0,
         interviewsCount,
         conversionRate,
+        recentActivity: [],
       });
     } catch (error) {
       console.error('Failed to fetch dashboard stats:', error);

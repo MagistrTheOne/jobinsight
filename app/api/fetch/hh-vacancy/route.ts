@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { scrapeJobPosting } from '@/lib/scraper';
 import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/get-ip';
 
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
-    const identifier = request.ip || 'anonymous';
+    const identifier = getClientIp(request);
     const rateLimitResult = await rateLimit(identifier, 10, 60000); // 10 requests per minute
     
     if (!rateLimitResult.success) {

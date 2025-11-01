@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     // Generate AI response using GigaChat
     // TODO: Integrate with email API to get full context (previous messages, application details)
-    const aiResponse = await gigachatAPI.sendChatMessage([
+    const aiResponse = await gigachatAPI.sendMessage([
       {
         role: 'system',
         content: 'Ты профессиональный помощник для ответов HR-менеджерам. Создавай вежливые, профессиональные ответы на основе контекста переписки и заявки на работу.',
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     ]);
 
     // Analyze sentiment and intent
-    const analysis = await gigachatAPI.sendChatMessage([
+    const analysis = await gigachatAPI.sendMessage([
       {
         role: 'system',
         content: 'Анализируй тон и намерение сообщений от HR. Определяй sentiment (positive/neutral/negative) и intent (interview_request/rejection/offer/question/follow_up).',

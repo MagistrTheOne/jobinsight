@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { gigachatAPI } from '@/lib/gigachat';
 import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/get-ip';
 import { checkUsageLimit, getCurrentPeriodStart } from '@/lib/usage-limits';
 import { incrementUsageLimit } from '@/lib/db/queries';
 
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const identifier = request.ip || 'anonymous';
+    const identifier = getClientIp(request);
     const rateLimitResult = await rateLimit(identifier, 5, 60000); // 5 requests per minute
     
     if (!rateLimitResult.success) {

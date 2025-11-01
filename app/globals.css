@@ -213,11 +213,18 @@
 /* ---------- BASE LAYER ---------- */
 @layer base {
   * {
-    @apply border-border transition-colors duration-200 ease-out;
+    border-color: hsl(var(--border));
+    transition-property: color, background-color, border-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
   }
 
   html, body {
-    @apply min-h-screen bg-background text-foreground antialiased;
+    min-height: 100vh;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     background: var(--background);
   }
 
@@ -312,9 +319,19 @@
   }
 
   .glass-card {
-    @apply bg-glass border border-glass rounded-[var(--radius)] shadow-lg;
+    background-color: var(--glass);
+    backdrop-filter: blur(var(--glass-blur))
+      saturate(var(--glass-saturation))
+      contrast(var(--glass-contrast));
+    -webkit-backdrop-filter: blur(var(--glass-blur))
+      saturate(var(--glass-saturation))
+      contrast(var(--glass-contrast));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
     box-shadow: 0 0 20px oklch(0.145 0 0 / 0.2),
-                inset 0 0 10px oklch(1 0 0 / 0.03);
+                inset 0 0 10px oklch(1 0 0 / 0.03),
+                0 10px 15px -3px rgb(0 0 0 / 0.1),
+                0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
 
   .glass-hover:hover {
@@ -327,7 +344,9 @@
 /* ---------- UTILITIES LAYER ---------- */
 @layer utilities {
   .text-gradient {
-    @apply bg-clip-text text-transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     background-image: linear-gradient(
       90deg,
       oklch(0.7 0.25 250) 0%,
@@ -356,9 +375,10 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }

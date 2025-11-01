@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate counter-offer email using GigaChat
-    const counterOfferEmail = await gigachatAPI.sendChatMessage([
+    const counterOfferEmail = await gigachatAPI.sendMessage([
       {
         role: 'system',
         content: 'Ты профессиональный переговорщик по зарплате. Создавай вежливые, но убедительные письма с counter-offer для HR. Письма должны быть профессиональными, обоснованными и конструктивными.',
@@ -45,7 +45,7 @@ ${marketAverage ? `Среднерыночная зарплата: ${marketAverag
     ]);
 
     // Generate negotiation strategy
-    const strategy = await gigachatAPI.sendChatMessage([
+    const strategy = await gigachatAPI.sendMessage([
       {
         role: 'system',
         content: 'Дай краткую стратегию переговоров по зарплате (2-3 пункта)',

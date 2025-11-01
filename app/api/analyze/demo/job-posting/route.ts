@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { gigachatAPI } from '@/lib/gigachat';
 import { scrapeJobPosting } from '@/lib/scraper';
 import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/get-ip';
 
 // In-memory storage for demo attempts tracking (by IP)
 // В production можно использовать Redis для этого
@@ -21,7 +22,7 @@ setInterval(() => {
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting - более строгий для демо
-    const identifier = request.ip || 'anonymous';
+    const identifier = getClientIp(request);
     const rateLimitResult = await rateLimit(identifier, 2, 60000); // 2 requests per minute
     
     if (!rateLimitResult.success) {

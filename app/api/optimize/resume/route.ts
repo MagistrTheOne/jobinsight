@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { gigachatAPI } from '@/lib/gigachat';
 import { scrapeJobPosting } from '@/lib/scraper';
 import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/get-ip';
 
 export async function POST(request: NextRequest) {
   try {
-    const identifier = request.ip || 'anonymous';
+    const identifier = getClientIp(request);
     const rateLimitResult = await rateLimit(identifier, 3, 60000);
     
     if (!rateLimitResult.success) {

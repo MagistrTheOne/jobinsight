@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     // TODO: Integrate with real salary data API (Glassdoor, Payscale, etc.)
     // For now, use GigaChat to analyze market average based on job title and location
     
-    const marketAnalysis = await gigachatAPI.sendChatMessage([
+    const marketAnalysis = await gigachatAPI.sendMessage([
       {
         role: 'system',
         content: 'Ты эксперт по анализу рынка труда и зарплат. Анализируй предложения по зарплате, сравнивай с рынком и давай рекомендации по переговорам.',
