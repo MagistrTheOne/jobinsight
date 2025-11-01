@@ -54,9 +54,20 @@ export function AIChat() {
 
   const handleSendMessage = useCallback(
     async (message: string) => {
+      // Optimistic update: сразу добавляем сообщение пользователя
+      const tempUserMessageId = `temp-${Date.now()}-${Math.random()}`
+      const optimisticUserMessage: Message = {
+        id: tempUserMessageId,
+        role: "user",
+        content: message,
+        createdAt: new Date(),
+      }
+      
+      setMessages((prev) => [...prev, optimisticUserMessage])
       setLoading(true)
       setError(null)
       setUpgradeRequired(false)
+      
       try {
         const res = await fetch("/api/chat", {
           method: "POST",
@@ -66,27 +77,32 @@ export function AIChat() {
         const data = await res.json()
 
         if (!res.ok) {
+          // Если ошибка - удаляем optimistic сообщение
+          setMessages((prev) => prev.filter((m) => m.id !== tempUserMessageId))
           if (data.upgradeRequired) setUpgradeRequired(true)
           throw new Error(data.error || "Ошибка отправки сообщения")
         }
 
-                setMessages(data.messages || [])
-                if (data.newChat && data.chatId) {
-                  setCurrentChatId(data.chatId)
-                  // Update URL
-                  const newUrl = new URL(window.location.href);
-                  newUrl.searchParams.set('chatId', data.chatId);
-                  window.history.pushState({}, '', newUrl.toString());
-                  window.dispatchEvent(new Event("chat-created"))
-                } else if (data.chatId && data.chatId !== currentChatId) {
-                  // Update URL if chat changed
-                  const newUrl = new URL(window.location.href);
-                  newUrl.searchParams.set('chatId', data.chatId);
-                  window.history.pushState({}, '', newUrl.toString());
-                  window.dispatchEvent(new CustomEvent("chat-updated", { detail: { chatId: data.chatId } }));
-                }
-                window.dispatchEvent(new Event("usage-refresh"))
+        // Заменяем optimistic сообщение на реальные данные из API
+        setMessages(data.messages || [])
+        
+        if (data.newChat && data.chatId) {
+          setCurrentChatId(data.chatId)
+          // Update URL
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.set('chatId', data.chatId);
+          window.history.pushState({}, '', newUrl.toString());
+          window.dispatchEvent(new Event("chat-created"))
+        } else if (data.chatId && data.chatId !== currentChatId) {
+          // Update URL if chat changed
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.set('chatId', data.chatId);
+          window.history.pushState({}, '', newUrl.toString());
+          window.dispatchEvent(new CustomEvent("chat-updated", { detail: { chatId: data.chatId } }));
+        }
+        window.dispatchEvent(new Event("usage-refresh"))
       } catch (e: any) {
+        // При ошибке optimistic сообщение уже удалено, просто показываем ошибку
         setError(e.message || "Что-то пошло не так")
       } finally {
         setLoading(false)

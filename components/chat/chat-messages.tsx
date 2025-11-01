@@ -102,11 +102,13 @@ const MessageBubble = memo(
     onCopy: (content: string, id: string) => void
   }) => {
     const isUser = message.role === "user"
+    const isOptimistic = message.id.startsWith("temp-")
     return (
       <div
         className={cn(
-          "group flex gap-2.5",
+          "group flex gap-2.5 animate-fade-in",
           isUser ? "justify-end" : "justify-start",
+          isOptimistic && "opacity-80"
         )}
       >
         {!isUser && (
@@ -182,7 +184,7 @@ const MarkdownContent = memo(({ children }: { children: string }) => (
 MarkdownContent.displayName = "MarkdownContent"
 
 const TypingIndicator = () => (
-  <div className="mt-4 flex justify-start gap-2.5">
+  <div className="flex justify-start gap-2.5 animate-fade-in">
     <Avatar className="h-7 w-7 shrink-0 border border-white/10">
       <AvatarFallback className="bg-white/10 text-white backdrop-blur-sm">
         <Bot className="h-3.5 w-3.5" />
@@ -192,15 +194,22 @@ const TypingIndicator = () => (
       <div className="mb-1 px-2 text-[10px] font-medium text-neutral-500">
         AI Hunter
       </div>
-      <div className="rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 backdrop-blur-sm">
-        <div className="flex gap-1.5">
-          {[0, 150, 300].map((d) => (
-            <div
-              key={d}
-              className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/60"
-              style={{ animationDelay: `${d}ms` }}
-            />
-          ))}
+      <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm shadow-sm">
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1.5">
+            {[0, 150, 300].map((d) => (
+              <div
+                key={d}
+                className="h-2 w-2 animate-bounce rounded-full bg-white/70"
+                style={{ 
+                  animationDelay: `${d}ms`,
+                  animationDuration: '1.4s',
+                  animationIterationCount: 'infinite',
+                }}
+              />
+            ))}
+          </div>
+          <span className="text-xs text-neutral-400 ml-1">печатает...</span>
         </div>
       </div>
     </div>
