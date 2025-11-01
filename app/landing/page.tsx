@@ -5,7 +5,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { LandingNav } from '@/components/landing/nav';
 import { Hero } from '@/components/landing/hero';
 import { Features } from '@/components/landing/features';
-import { ResumeDemo } from '@/components/landing/resume-demo';
 import { Pricing } from '@/components/landing/pricing';
 import { Footer } from '@/components/landing/footer';
 import { SectionDivider } from '@/components/landing/section-divider';
@@ -34,8 +33,6 @@ export default function LandingPage() {
       <Hero />
       <SectionDivider />
       <Features />
-      <SectionDivider />
-      <ResumeDemo />
       <SectionDivider />
       <Pricing />
       <Footer />

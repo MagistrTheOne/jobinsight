@@ -8,6 +8,9 @@ import { FileUpload } from '@/components/file-upload';
 import { CoverLetterGenerator } from '@/components/cover-letter-generator';
 import { ResumeAnalysisResults } from '@/components/resume-analysis';
 import { ATSCompatibilityChecker } from '@/components/ats-compatibility-checker';
+import { SkillsGapAnalyzer } from '@/components/advanced/skills-gap-analyzer';
+import { ImpactOptimizer } from '@/components/advanced/impact-optimizer';
+import { ATSChallengeReportComponent } from '@/components/advanced/ats-challenge-report';
 import { JobResponseOptimizer } from '@/components/job-response-optimizer';
 import { UserButton } from '@/components/auth/user-button';
 import { UsageLimits } from '@/components/usage/usage-limits';
@@ -301,11 +304,12 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
                 <Tabs value={activeTab} onValueChange={(value) => router.replace(`/dashboard?tab=${value}`)} className="w-full">
-                  <TabsList className="grid w-full grid-cols-5 max-w-3xl mx-auto mb-8">
+                  <TabsList className="grid w-full grid-cols-6 max-w-4xl mx-auto mb-8">
                     <TabsTrigger value="job-analysis">Job Analysis</TabsTrigger>
                     <TabsTrigger value="job-content">Job Content</TabsTrigger>
                     <TabsTrigger value="resume-analysis">Resume</TabsTrigger>
                     <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
+                    <TabsTrigger value="advanced">Advanced</TabsTrigger>
                     <TabsTrigger value="ai-chat">AI Assistant</TabsTrigger>
                   </TabsList>
 
@@ -386,6 +390,53 @@ export default function DashboardPage() {
                         jobUrl={currentJobUrl}
                         userInfo={coverLetterUserInfo}
                       />
+                    )}
+                  </TabsContent>
+
+                  {/* Advanced ATS Tools Tab */}
+                  <TabsContent value="advanced" className="space-y-6">
+                    {resumeContent && jobAnalysis && (() => {
+                      // Формируем полное описание вакансии из доступных данных
+                      const jobDescription = jobContentText || 
+                        `${jobAnalysis.requirements?.realistic?.join(', ') || ''}
+                        ${jobAnalysis.requirements?.unrealistic?.join(', ') || ''}
+                        ${jobAnalysis.atsKeywords?.join(', ') || ''}
+                        ${jobAnalysis.recommendedSkills?.join(', ') || ''}
+                        ${jobAnalysis.companyInsights || ''}
+                        ${jobAnalysis.workLifeBalance || ''}
+                        ${jobAnalysis.salaryInsight || ''}`.trim();
+                      
+                      return (
+                        <>
+                          <SkillsGapAnalyzer 
+                            resumeContent={resumeContent}
+                            jobDescription={jobDescription}
+                          />
+                          
+                          <ImpactOptimizer
+                            resumeContent={resumeContent}
+                            jobDescription={jobDescription}
+                          />
+                          
+                          <ATSChallengeReportComponent
+                            resumeContent={resumeContent}
+                            jobDescription={jobDescription}
+                          />
+                        </>
+                      );
+                    })()}
+                    {(!resumeContent || !jobAnalysis) && (
+                      <GlassCard>
+                        <div className="text-center py-8">
+                          <p className="text-gray-400 mb-4">
+                            Для использования продвинутых инструментов необходимо:
+                          </p>
+                          <ul className="text-left text-sm text-gray-400 space-y-2 max-w-md mx-auto">
+                            <li>• Проанализировать вакансию (вкладка Job Analysis)</li>
+                            <li>• Проанализировать резюме (вкладка Resume)</li>
+                          </ul>
+                        </div>
+                      </GlassCard>
                     )}
                   </TabsContent>
 

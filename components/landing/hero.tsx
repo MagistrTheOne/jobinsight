@@ -5,28 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GlassCard } from '@/components/ui/glass-card';
-import { Sparkles, FileText, Briefcase, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { Sparkles, FileText, Briefcase, ArrowRight, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 
-// Demo job analysis result
-const demoJobAnalysis = {
-  title: "Senior Frontend Developer",
-  company: "Tech Company Inc.",
-  grade: "Senior",
-  redFlags: [],
-  positives: [
-    "Clear job requirements",
-    "Competitive salary range",
-    "Remote work option available",
-  ],
-  suggestions: [
-    "Emphasize your React and TypeScript experience",
-    "Highlight any team leadership experience",
-  ],
-};
+// Real analysis result will come from API
 
 export function Hero() {
   const router = useRouter();
@@ -36,6 +21,8 @@ export function Hero() {
   const [isLoading, setIsLoading] = useState(false);
   const [showDemoResult, setShowDemoResult] = useState(false);
   const [demoAttempts, setDemoAttempts] = useState(0);
+  const [demoAnalysis, setDemoAnalysis] = useState<any>(null);
+  const [demoError, setDemoError] = useState<string>('');
 
   // Load demo attempts from localStorage
   useEffect(() => {
@@ -49,16 +36,62 @@ export function Hero() {
     if (!jobInput.trim()) return;
 
     setIsLoading(true);
-    // Simulate analysis
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setShowDemoResult(true);
-    setIsLoading(false);
+    setDemoError('');
+    setDemoAnalysis(null);
+    setShowDemoResult(false);
 
-    // Increment demo attempts
-    const newAttempts = demoAttempts + 1;
-    setDemoAttempts(newAttempts);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('landing-demo-attempts', newAttempts.toString());
+    try {
+      // Real API call - тратим реальные токены GigaChat
+      const response = await fetch('/api/analyze/demo/job-posting', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: jobInput.trim().startsWith('http') ? jobInput.trim() : null,
+          jobContent: jobInput.trim().startsWith('http') ? null : jobInput.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.demoUsed || data.upgradeRequired) {
+          // Demo уже использован - редирект на авторизацию
+          setDemoError(data.message || 'Demo limit reached');
+          const newAttempts = demoAttempts + 1;
+          setDemoAttempts(newAttempts);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('landing-demo-attempts', newAttempts.toString());
+          }
+          setTimeout(() => {
+            router.push('/auth/signin?callbackUrl=/dashboard&action=job');
+          }, 2000);
+        } else {
+          setDemoError(data.message || data.error || 'Analysis failed');
+        }
+        setIsLoading(false);
+        return;
+      }
+
+      if (data.success && data.analysis) {
+        setDemoAnalysis(data.analysis);
+        setShowDemoResult(true);
+        
+        // Increment demo attempts locally
+        const newAttempts = demoAttempts + 1;
+        setDemoAttempts(newAttempts);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('landing-demo-attempts', newAttempts.toString());
+        }
+      } else {
+        setDemoError('Failed to analyze job posting');
+      }
+    } catch (error: any) {
+      console.error('Demo analysis error:', error);
+      setDemoError(error.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -168,25 +201,44 @@ export function Hero() {
                   )}
                 </Button>
 
-                {/* Demo Result */}
-                {showDemoResult && (
+                {/* Error Display */}
+                {demoError && (
+                  <Alert variant="destructive" className="mt-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{demoError}</AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Demo Result - Real Analysis */}
+                {showDemoResult && demoAnalysis && (
                   <div className="mt-4 pt-4 border-t border-neutral-800/50 space-y-4 animate-in fade-in slide-in-from-bottom-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-base sm:text-lg font-semibold text-white">Demo Analysis Result</h3>
-                      <Badge className="bg-green-900/30 text-green-400 border-green-800/50">
-                        {demoJobAnalysis.grade} Level
-                      </Badge>
+                      {demoAnalysis.jobGrade && (
+                        <Badge className="bg-green-900/30 text-green-400 border-green-800/50">
+                          {demoAnalysis.jobGrade.level} Level
+                        </Badge>
+                      )}
                     </div>
-                    <div className="space-y-3">
-                      <div>
-                        <h4 className="text-xs sm:text-sm font-medium text-neutral-300 mb-2">Job Title</h4>
-                        <p className="text-sm text-white">{demoJobAnalysis.title} at {demoJobAnalysis.company}</p>
+                    
+                    {demoAnalysis.overallScore && (
+                      <div className="p-3 bg-neutral-900/30 rounded-lg border border-neutral-800/50">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs sm:text-sm text-neutral-300">Overall Score</span>
+                          <span className="text-sm sm:text-base font-semibold text-white">{demoAnalysis.overallScore}</span>
+                        </div>
                       </div>
-                      {demoJobAnalysis.positives.length > 0 && (
+                    )}
+
+                    <div className="space-y-3">
+                      {demoAnalysis.requirements?.realistic && demoAnalysis.requirements.realistic.length > 0 && (
                         <div>
-                          <h4 className="text-xs sm:text-sm font-medium text-green-400 mb-2">Positives</h4>
+                          <h4 className="text-xs sm:text-sm font-medium text-green-400 mb-2 flex items-center gap-1">
+                            <CheckCircle className="h-3.5 w-3.5" />
+                            Realistic Requirements
+                          </h4>
                           <ul className="space-y-1">
-                            {demoJobAnalysis.positives.map((item, idx) => (
+                            {demoAnalysis.requirements.realistic.slice(0, 3).map((item: string, idx: number) => (
                               <li key={idx} className="text-xs sm:text-sm text-neutral-300 flex items-start gap-2">
                                 <span className="text-green-500 mt-0.5">•</span>
                                 <span>{item}</span>
@@ -195,23 +247,41 @@ export function Hero() {
                           </ul>
                         </div>
                       )}
-                      {demoJobAnalysis.suggestions.length > 0 && (
+                      
+                      {demoAnalysis.redFlags && demoAnalysis.redFlags.length > 0 && (
                         <div>
-                          <h4 className="text-xs sm:text-sm font-medium text-amber-400 mb-2">Suggestions</h4>
+                          <h4 className="text-xs sm:text-sm font-medium text-red-400 mb-2 flex items-center gap-1">
+                            <AlertCircle className="h-3.5 w-3.5" />
+                            Red Flags
+                          </h4>
                           <ul className="space-y-1">
-                            {demoJobAnalysis.suggestions.map((item, idx) => (
+                            {demoAnalysis.redFlags.slice(0, 3).map((item: string, idx: number) => (
                               <li key={idx} className="text-xs sm:text-sm text-neutral-300 flex items-start gap-2">
-                                <span className="text-amber-500 mt-0.5">•</span>
+                                <span className="text-red-500 mt-0.5">•</span>
                                 <span>{item}</span>
                               </li>
                             ))}
                           </ul>
                         </div>
                       )}
+
+                      {demoAnalysis.recommendedSkills && demoAnalysis.recommendedSkills.length > 0 && (
+                        <div>
+                          <h4 className="text-xs sm:text-sm font-medium text-amber-400 mb-2">Recommended Skills</h4>
+                          <div className="flex flex-wrap gap-1.5">
+                            {demoAnalysis.recommendedSkills.slice(0, 6).map((skill: string, idx: number) => (
+                              <Badge key={idx} variant="outline" className="bg-neutral-900/50 text-neutral-300 border-neutral-700/50 text-xs">
+                                {skill}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
+
                     <div className="pt-3 border-t border-neutral-800/50">
                       <p className="text-xs text-neutral-500 mb-3 text-center">
-                        This is a demo preview. For full AI-powered analysis with detailed insights, sign in to your account.
+                        This was your free demo using real AI analysis. Sign in for unlimited access with full detailed insights.
                       </p>
                       <div className="flex gap-2">
                         <Button
@@ -221,9 +291,10 @@ export function Hero() {
                           onClick={() => {
                             setShowDemoResult(false);
                             setJobInput('');
+                            setDemoAnalysis(null);
                           }}
                         >
-                          Try Again
+                          Clear
                         </Button>
                         <Button
                           size="sm"

@@ -141,7 +141,7 @@ class GigaChatAPI {
     }
   }
 
-  async sendMessage(messages: GigaChatMessage[], model: string = 'GigaChat', retries: number = 2): Promise<string> {
+  async sendMessage(messages: GigaChatMessage[], model: string = process.env.GIGACHAT_MODEL || 'GigaChat', retries: number = 2): Promise<string> {
     let lastError: any = null;
     
     for (let attempt = 0; attempt <= retries; attempt++) {
@@ -149,9 +149,12 @@ class GigaChatAPI {
         const accessToken = await this.getAccessToken();
 
         // Валидация размера сообщений перед отправкой
+        // GigaChat 2.0 поддерживает до 200 страниц A4 (~128k токенов)
+        // Более консервативный лимит: ~100k символов для безопасности
+        const MAX_CONTENT_LENGTH = 100000;
         const totalContentLength = messages.reduce((sum, msg) => sum + msg.content.length, 0);
-        if (totalContentLength > 32000) {
-          console.warn(`⚠️  Content length (${totalContentLength}) exceeds recommended limit (32000). Truncating...`);
+        if (totalContentLength > MAX_CONTENT_LENGTH) {
+          console.warn(`⚠️  Content length (${totalContentLength}) exceeds limit (${MAX_CONTENT_LENGTH}). Truncating...`);
           
           // Обрезаем самое длинное user сообщение, если оно слишком большое
           const userMessages = messages.filter(m => m.role === 'user');
@@ -159,7 +162,7 @@ class GigaChatAPI {
             const longestUserMsg = userMessages.reduce((longest, msg) => 
               msg.content.length > longest.content.length ? msg : longest
             );
-            const maxUserContentLength = 25000; // Оставляем место для system messages
+            const maxUserContentLength = MAX_CONTENT_LENGTH - 10000; // Оставляем место для system messages
             if (longestUserMsg.content.length > maxUserContentLength) {
               longestUserMsg.content = longestUserMsg.content.substring(0, maxUserContentLength) + '... [truncated]';
             }
@@ -181,7 +184,9 @@ class GigaChatAPI {
             model,
             messages,
             temperature: 0.7,
-            max_tokens: 2048
+            // GigaChat 2.0 поддерживает большие контексты, увеличиваем max_tokens
+            // Для анализа резюме и вакансий нужны детальные ответы
+            max_tokens: parseInt(process.env.GIGACHAT_MAX_TOKENS || '4096', 10)
           },
           {
             headers: {
@@ -407,13 +412,14 @@ ${analysisContext}
 
   async optimizeResumeForJob(resumeContent: string, jobContent: string, jobAnalysis?: any, currentResume?: string): Promise<string> {
     // Валидация размера
-    const MAX_RESUME_LENGTH = 20000;
+    // GigaChat 2.0 поддерживает большие тексты
+    const MAX_RESUME_LENGTH = 80000;
     let processedResumeContent = resumeContent.trim();
     if (processedResumeContent.length > MAX_RESUME_LENGTH) {
       processedResumeContent = processedResumeContent.substring(0, MAX_RESUME_LENGTH) + '... [truncated]';
     }
 
-    const MAX_JOB_CONTENT_LENGTH = 10000;
+    const MAX_JOB_CONTENT_LENGTH = 40000;
     let processedJobContent = jobContent.trim();
     if (processedJobContent.length > MAX_JOB_CONTENT_LENGTH) {
       processedJobContent = processedJobContent.substring(0, MAX_JOB_CONTENT_LENGTH) + '... [truncated]';
@@ -460,8 +466,9 @@ ${processedResumeContent}
 
   async analyzeResume(resumeContent: string, jobContent?: string): Promise<any> {
     // Валидация и обрезка контента резюме перед отправкой
-    const MAX_RESUME_LENGTH = 25000;
-    const MAX_JOB_CONTENT_LENGTH = 10000;
+    // GigaChat 2.0 поддерживает большие тексты (до 200 страниц A4)
+    const MAX_RESUME_LENGTH = 80000; // Увеличено для поддержки длинных резюме
+    const MAX_JOB_CONTENT_LENGTH = 40000; // Увеличено для длинных описаний вакансий
     
     let processedResumeContent = resumeContent.trim();
     if (processedResumeContent.length > MAX_RESUME_LENGTH) {
