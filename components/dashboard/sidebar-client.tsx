@@ -324,9 +324,18 @@ export function DashboardSidebar() {
                 </h3>
               </div>
               <button
-                onClick={() => {
-                  router.push('/dashboard?tab=chat');
-                  window.dispatchEvent(new Event('chat-create-new'));
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // Очищаем URL от chatId и переходим на чат
+                  const newUrl = new URL(window.location.href);
+                  newUrl.searchParams.set('tab', 'chat');
+                  newUrl.searchParams.delete('chatId');
+                  router.push(newUrl.toString());
+                  // Даем время для обновления URL, затем отправляем событие
+                  setTimeout(() => {
+                    window.dispatchEvent(new Event('chat-create-new'));
+                  }, 100);
                 }}
                 className="p-1 rounded hover:bg-white/5 transition-colors group"
                 title="Новый чат"
@@ -392,9 +401,18 @@ export function DashboardSidebar() {
               <div className="text-center py-3">
                 <p className="text-[10px] text-neutral-600">Нет недавних чатов</p>
                 <button
-                  onClick={() => {
-                    router.push('/dashboard?tab=chat');
-                    window.dispatchEvent(new Event('chat-create-new'));
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Очищаем URL от chatId и переходим на чат
+                    const newUrl = new URL(window.location.href);
+                    newUrl.searchParams.set('tab', 'chat');
+                    newUrl.searchParams.delete('chatId');
+                    router.push(newUrl.toString());
+                    // Даем время для обновления URL, затем отправляем событие
+                    setTimeout(() => {
+                      window.dispatchEvent(new Event('chat-create-new'));
+                    }, 100);
                   }}
                   className="mt-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
                 >

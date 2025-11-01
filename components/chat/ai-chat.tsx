@@ -72,8 +72,16 @@ export function AIChat() {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chatId: currentChatId, message }),
+          body: JSON.stringify({ chatId: currentChatId || null, message }),
         })
+        
+        if (!res.ok) {
+          // Если 404 - значит API endpoint не найден
+          if (res.status === 404) {
+            throw new Error("API endpoint не найден. Проверьте, что сервер запущен.")
+          }
+        }
+        
         const data = await res.json()
 
         if (!res.ok) {
@@ -196,6 +204,13 @@ export function AIChat() {
       setCurrentChatId(null);
       setMessages([]);
       setError(null);
+      setUpgradeRequired(false);
+      // Очищаем URL от chatId
+      if (typeof window !== 'undefined') {
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('chatId');
+        window.history.pushState({}, '', newUrl.toString());
+      }
     };
 
     window.addEventListener('chat-create-new', handleCreateNew);
