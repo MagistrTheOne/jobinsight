@@ -24,6 +24,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const lang = localStorage.getItem('language') || 'ru';
+                document.documentElement.lang = lang;
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={`${inter.variable} ${inter.className} font-sans bg-black text-white`}>
         <ThemeProvider>
           <SessionProvider>{children}</SessionProvider>

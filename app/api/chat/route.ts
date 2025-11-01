@@ -81,6 +81,36 @@ export async function POST(request: NextRequest) {
     // Prepare messages for GigaChat (include existing conversation)
     const messagesForAI = [...existingMessages, { role: 'user' as const, content: message }];
 
+    // Check if user message needs tools
+    const toolDetection = await detectTool(message, existingMessages);
+    
+    let toolResult = null;
+    let finalUserMessage = message;
+
+    // If tool is needed, execute it and include results in message
+    if (toolDetection.needsTool && toolDetection.tool) {
+      toolResult = await executeTool(toolDetection.tool, userId);
+      
+      if (toolResult.success) {
+        // Format tool results for AI
+        let toolResultsText = '';
+        
+        if (toolDetection.tool.tool === 'web_search' && toolResult.data?.results) {
+          toolResultsText = `\n\n=== Результаты поиска в интернете ===\n${formatSearchResults(toolResult.data.results)}\n\nТеперь ответь на вопрос пользователя, используя эту информацию:`;
+        } else {
+          toolResultsText = `\n\n=== Результат выполнения инструмента "${toolDetection.tool.tool}" ===\n${JSON.stringify(toolResult.data, null, 2)}\n\nИспользуй эту информацию для ответа:`;
+        }
+        
+        finalUserMessage = `${message}\n\n${toolResultsText}`;
+      } else {
+        // Tool execution failed, inform user
+        finalUserMessage = `${message}\n\n[Примечание: Не удалось выполнить инструмент "${toolDetection.tool.tool}": ${toolResult.error}]`;
+      }
+      
+      // Update messages with tool-enhanced message
+      messagesForAI[messagesForAI.length - 1] = { role: 'user' as const, content: finalUserMessage };
+    }
+
     // Send to GigaChat API
     const assistantResponse = await sendChatMessage(messagesForAI, systemPrompt);
 

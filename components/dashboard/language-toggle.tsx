@@ -23,7 +23,8 @@ export function LanguageToggle() {
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('language', language);
-      window.dispatchEvent(new Event('language-change'));
+      document.documentElement.lang = language;
+      window.dispatchEvent(new CustomEvent('language-change', { detail: { language } }));
     }
   }, [language]);
 

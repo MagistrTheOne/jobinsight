@@ -14,6 +14,7 @@ import {
   emailMessages,
   automationRules,
   salaryNegotiations,
+  integrations,
   type NewUser, 
   type NewAnalysisHistory,
   type NewSubscription,
@@ -28,6 +29,7 @@ import {
   type NewEmailMessage,
   type NewAutomationRule,
   type NewSalaryNegotiation,
+  type NewIntegration,
 } from './schema';
 import { eq, desc, and, or, gte, lte, sql, ilike } from 'drizzle-orm';
 

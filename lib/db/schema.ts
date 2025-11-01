@@ -338,3 +338,27 @@ export type NewAutomationRule = typeof automationRules.$inferInsert;
 export type SalaryNegotiation = typeof salaryNegotiations.$inferSelect;
 export type NewSalaryNegotiation = typeof salaryNegotiations.$inferInsert;
 
+// Integrations - подключенные внешние сервисы
+export const integrations = pgTable("integrations", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  type: text("type").$type<"email" | "hh_ru" | "linkedin" | "google_search" | "github" | "telegram">().notNull(),
+  name: text("name").notNull(), // Название интеграции (например, "Моя рабочая почта")
+  credentials: jsonb("credentials").notNull(), // Зашифрованные credentials (API keys, tokens, etc.)
+  config: jsonb("config"), // Дополнительные настройки
+  isActive: integer("is_active").default(1),
+  lastSyncAt: timestamp("last_sync_at"), // Последняя синхронизация
+  expiresAt: timestamp("expires_at"), // Когда истекает токен (для OAuth)
+  error: text("error"), // Последняя ошибка синхронизации
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
+}, (table) => ({
+  userIdIdx: index("integrations_user_id_idx").on(table.userId),
+  typeIdx: index("integrations_type_idx").on(table.type),
+  isActiveIdx: index("integrations_is_active_idx").on(table.isActive),
+  userTypeIdx: index("integrations_user_type_idx").on(table.userId, table.type),
+}));
+
+export type Integration = typeof integrations.$inferSelect;
+export type NewIntegration = typeof integrations.$inferInsert;
+
