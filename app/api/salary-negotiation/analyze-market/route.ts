@@ -1,0 +1,78 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth-helpers';
+import { getApplicationById } from '@/lib/db/queries';
+import { gigachatAPI } from '@/lib/gigachat';
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { applicationId, targetSalary, initialOffer } = await request.json();
+
+    const application = await getApplicationById(applicationId, session.user.id);
+    if (!application) {
+      return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+    }
+
+    // TODO: Integrate with real salary data API (Glassdoor, Payscale, etc.)
+    // For now, use GigaChat to analyze market average based on job title and location
+    
+    const marketAnalysis = await gigachatAPI.sendChatMessage([
+      {
+        role: 'system',
+        content: 'Ты эксперт по анализу рынка труда и зарплат. Анализируй предложения по зарплате, сравнивай с рынком и давай рекомендации по переговорам.',
+      },
+      {
+        role: 'user',
+        content: `Проанализируй зарплату для позиции:
+
+Позиция: ${application.title}
+Компания: ${application.company}
+Предложенная зарплата: ${initialOffer}
+Целевая зарплата кандидата: ${targetSalary}
+
+Дай:
+1. Оценку среднерыночной зарплаты для этой позиции
+2. Рекомендации по переговорам
+3. Стратегию достижения целевой зарплаты
+
+Формат: JSON с полями marketAverage, recommendation, strategy`,
+      },
+    ]);
+
+    // Parse AI response
+    let marketAverage = 'N/A';
+    let recommendation = '';
+
+    try {
+      const cleaned = marketAnalysis.replace(/```json\n?/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      marketAverage = parsed.marketAverage || 'N/A';
+      recommendation = parsed.recommendation || parsed.strategy || '';
+    } catch {
+      // Fallback: use raw response
+      recommendation = marketAnalysis;
+      // Try to extract number from response
+      const match = marketAnalysis.match(/\$[\d,]+|\d+[\d,]*\s*(k|тыс|thousand)/i);
+      if (match) {
+        marketAverage = match[0];
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      marketAverage,
+      recommendation,
+    });
+  } catch (error: any) {
+    console.error('Error analyzing market:', error);
+    return NextResponse.json(
+      { error: 'Failed to analyze market', message: error.message },
+      { status: 500 }
+    );
+  }
+}
+

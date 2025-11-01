@@ -4,6 +4,21 @@ import { GlassCard } from '@/components/ui/glass-card';
 
 const features = [
   {
+    title: 'HR Communication Autopilot',
+    description:
+      'AI-powered automatic email responses to HR. Analyze sentiment, detect intent, and generate professional replies automatically.',
+  },
+  {
+    title: 'Application Pipeline Automation',
+    description:
+      'Automate your entire application pipeline with intelligent triggers and actions. Set rules and let AI handle the rest.',
+  },
+  {
+    title: 'Salary Negotiation AI',
+    description:
+      'AI-powered salary negotiation assistant with market analysis, counter-offer generation, and strategic recommendations.',
+  },
+  {
     title: 'Application Tracking System',
     description:
       'Track all your job applications in one place with status management, follow-up reminders, and detailed statistics.',

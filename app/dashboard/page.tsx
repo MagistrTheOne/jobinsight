@@ -26,6 +26,9 @@ import { useAuthStore } from '@/store/auth-store';
 import { HistoryPanel } from '@/components/analysis/history-panel';
 import { AIChat } from '@/components/chat/ai-chat';
 import { ApplicationTracker } from '@/components/applications/application-tracker';
+import { HRAutopilot } from '@/components/automation/hr-autopilot';
+import { SalaryNegotiationAI } from '@/components/automation/salary-negotiation';
+import { PipelineAutomation } from '@/components/automation/pipeline-automation';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function DashboardPage() {
@@ -307,13 +310,16 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
                 <Tabs value={activeTab} onValueChange={(value) => router.replace(`/dashboard?tab=${value}`)} className="w-full">
-                  <TabsList className="grid w-full grid-cols-7 max-w-5xl mx-auto mb-8">
+                  <TabsList className="grid w-full grid-cols-10 max-w-6xl mx-auto mb-8">
                     <TabsTrigger value="job-analysis">Job Analysis</TabsTrigger>
                     <TabsTrigger value="job-content">Job Content</TabsTrigger>
                     <TabsTrigger value="resume-analysis">Resume</TabsTrigger>
                     <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
                     <TabsTrigger value="advanced">Advanced</TabsTrigger>
                     <TabsTrigger value="applications">Applications</TabsTrigger>
+                    <TabsTrigger value="hr-autopilot">HR Autopilot</TabsTrigger>
+                    <TabsTrigger value="salary-ai">Salary AI</TabsTrigger>
+                    <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
                     <TabsTrigger value="ai-chat">AI Assistant</TabsTrigger>
                   </TabsList>
 
@@ -447,6 +453,21 @@ export default function DashboardPage() {
                           {/* Applications Tracking Tab */}
                           <TabsContent value="applications" className="space-y-6">
                             <ApplicationTracker />
+                          </TabsContent>
+
+                          {/* HR Autopilot Tab */}
+                          <TabsContent value="hr-autopilot" className="space-y-6">
+                            <HRAutopilot />
+                          </TabsContent>
+
+                          {/* Salary Negotiation AI Tab */}
+                          <TabsContent value="salary-ai" className="space-y-6">
+                            <SalaryNegotiationAI />
+                          </TabsContent>
+
+                          {/* Pipeline Automation Tab */}
+                          <TabsContent value="pipeline" className="space-y-6">
+                            <PipelineAutomation />
                           </TabsContent>
 
                           {/* AI Chat Assistant Tab */}

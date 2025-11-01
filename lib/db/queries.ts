@@ -10,6 +10,10 @@ import {
   applications,
   applicationStatusHistory,
   resumeVersions,
+  emailThreads,
+  emailMessages,
+  automationRules,
+  salaryNegotiations,
   type NewUser, 
   type NewAnalysisHistory,
   type NewSubscription,
@@ -20,6 +24,10 @@ import {
   type NewApplication,
   type NewApplicationStatusHistory,
   type NewResumeVersion,
+  type NewEmailThread,
+  type NewEmailMessage,
+  type NewAutomationRule,
+  type NewSalaryNegotiation,
 } from './schema';
 import { eq, desc, and, or, gte, lte, sql, ilike } from 'drizzle-orm';
 
@@ -598,5 +606,139 @@ export async function getDefaultResumeVersion(userId: string) {
     )
     .limit(1);
   return resume;
+}
+
+// Email Threads queries
+export async function getUserEmailThreads(userId: string) {
+  const results = await db
+    .select({
+      thread: emailThreads,
+      application: {
+        id: applications.id,
+        title: applications.title,
+        company: applications.company,
+        status: applications.status,
+      },
+    })
+    .from(emailThreads)
+    .leftJoin(applications, eq(emailThreads.applicationId, applications.id))
+    .where(eq(applications.userId, userId))
+    .orderBy(desc(emailThreads.lastMessageDate));
+
+  return results.map(r => ({
+    ...r.thread,
+    application: r.application,
+  }));
+}
+
+export async function getThreadMessages(threadId: string, userId: string) {
+  // Verify thread belongs to user
+  const thread = await db
+    .select()
+    .from(emailThreads)
+    .leftJoin(applications, eq(emailThreads.applicationId, applications.id))
+    .where(and(eq(emailThreads.id, threadId), eq(applications.userId, userId)))
+    .limit(1);
+
+  if (!thread[0]) {
+    return [];
+  }
+
+  return await db
+    .select()
+    .from(emailMessages)
+    .where(eq(emailMessages.threadId, threadId))
+    .orderBy(emailMessages.createdAt);
+}
+
+export async function getEmailMessage(messageId: string, userId: string) {
+  const result = await db
+    .select({
+      message: emailMessages,
+    })
+    .from(emailMessages)
+    .leftJoin(emailThreads, eq(emailMessages.threadId, emailThreads.id))
+    .leftJoin(applications, eq(emailThreads.applicationId, applications.id))
+    .where(and(eq(emailMessages.id, messageId), eq(applications.userId, userId)))
+    .limit(1);
+  
+  return result[0]?.message || null;
+}
+
+export async function createEmailMessage(messageData: NewEmailMessage) {
+  const [message] = await db.insert(emailMessages).values(messageData).returning();
+  return message;
+}
+
+export async function updateEmailMessage(messageId: string, updateData: Partial<NewEmailMessage>) {
+  const [updated] = await db
+    .update(emailMessages)
+    .set(updateData)
+    .where(eq(emailMessages.id, messageId))
+    .returning();
+  return updated;
+}
+
+// Automation Rules queries
+export async function getUserAutomationRules(userId: string) {
+  return await db
+    .select()
+    .from(automationRules)
+    .where(eq(automationRules.userId, userId))
+    .orderBy(desc(automationRules.createdAt));
+}
+
+export async function createAutomationRule(ruleData: NewAutomationRule) {
+  const [rule] = await db.insert(automationRules).values(ruleData).returning();
+  return rule;
+}
+
+export async function updateAutomationRule(id: string, userId: string, updateData: Partial<NewAutomationRule>) {
+  const [updated] = await db
+    .update(automationRules)
+    .set({ ...updateData, updatedAt: new Date() })
+    .where(and(eq(automationRules.id, id), eq(automationRules.userId, userId)))
+    .returning();
+  return updated;
+}
+
+// Salary Negotiations queries
+export async function createSalaryNegotiation(negotiationData: NewSalaryNegotiation) {
+  const [negotiation] = await db.insert(salaryNegotiations).values(negotiationData).returning();
+  return negotiation;
+}
+
+export async function getSalaryNegotiationByApplicationId(applicationId: string, userId: string) {
+  const result = await db
+    .select({
+      negotiation: salaryNegotiations,
+    })
+    .from(salaryNegotiations)
+    .leftJoin(applications, eq(salaryNegotiations.applicationId, applications.id))
+    .where(and(eq(salaryNegotiations.applicationId, applicationId), eq(applications.userId, userId)))
+    .limit(1);
+  
+  return result[0]?.negotiation || null;
+}
+
+export async function updateSalaryNegotiation(id: string, userId: string, updateData: Partial<NewSalaryNegotiation>) {
+  // Verify ownership
+  const negotiation = await db
+    .select()
+    .from(salaryNegotiations)
+    .leftJoin(applications, eq(salaryNegotiations.applicationId, applications.id))
+    .where(and(eq(salaryNegotiations.id, id), eq(applications.userId, userId)))
+    .limit(1);
+
+  if (!negotiation[0]) {
+    throw new Error('Negotiation not found');
+  }
+
+  const [updated] = await db
+    .update(salaryNegotiations)
+    .set({ ...updateData, updatedAt: new Date() })
+    .where(eq(salaryNegotiations.id, id))
+    .returning();
+  return updated;
 }
 

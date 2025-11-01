@@ -8,10 +8,14 @@ export const users = pgTable("users", {
   emailVerified: timestamp("email_verified"),
   name: text("name"),
   image: text("image"),
+  role: text("role").$type<"admin" | "user">().default("user"),
+  verified: integer("verified").default(0), // 1 = verified (синяя галка)
+  title: text("title"), // Должность (CEO, etc.)
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
 }, (table) => ({
   emailIdx: index("email_idx").on(table.email),
+  roleIdx: index("users_role_idx").on(table.role),
 }));
 
 // Better Auth accounts table (for OAuth providers - using existing plural table name)
@@ -88,14 +92,14 @@ export const analysisHistory = pgTable("analysis_history", {
 export const subscriptions = pgTable("subscriptions", {
   id: text("id").primaryKey(),
   userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
-  plan: text("plan").$type<"free" | "pro">().notNull().default("free"),
+  plan: text("plan").$type<"free" | "pro" | "enterprise">().notNull().default("free"),
   polarCustomerId: text("polar_customer_id"),
   polarSubscriptionId: text("polar_subscription_id"),
   status: text("status").$type<"active" | "cancelled" | "expired">().notNull().default("active"),
   currentPeriodStart: timestamp("current_period_start"),
   currentPeriodEnd: timestamp("current_period_end"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
 }, (table) => ({
   userIdIdx: index("subscriptions_user_id_idx").on(table.userId),
   statusIdx: index("subscriptions_status_idx").on(table.status),
@@ -240,4 +244,97 @@ export type ApplicationStatusHistory = typeof applicationStatusHistory.$inferSel
 export type NewApplicationStatusHistory = typeof applicationStatusHistory.$inferInsert;
 export type ResumeVersion = typeof resumeVersions.$inferSelect;
 export type NewResumeVersion = typeof resumeVersions.$inferInsert;
+
+// Email Threads - переписка с HR по заявкам
+export const emailThreads = pgTable("email_threads", {
+  id: text("id").primaryKey(),
+  applicationId: text("application_id").references(() => applications.id, { onDelete: "cascade" }).notNull(),
+  subject: text("subject").notNull(),
+  fromEmail: text("from_email").notNull(), // HR email
+  toEmail: text("to_email").notNull(), // Candidate email
+  threadId: text("thread_id"), // Для группировки писем в тред
+  latestMessageId: text("latest_message_id"), // ID последнего сообщения
+  lastMessageDate: timestamp("last_message_date").notNull(),
+  unreadCount: integer("unread_count").default(0),
+  isAutomated: integer("is_automated").default(0), // Автоматически ли отвечали
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
+}, (table) => ({
+  applicationIdIdx: index("email_threads_application_id_idx").on(table.applicationId),
+  threadIdIdx: index("email_threads_thread_id_idx").on(table.threadId),
+  lastMessageDateIdx: index("email_threads_last_message_date_idx").on(table.lastMessageDate),
+}));
+
+// Email Messages - отдельные сообщения в переписке
+export const emailMessages = pgTable("email_messages", {
+  id: text("id").primaryKey(),
+  threadId: text("thread_id").references(() => emailThreads.id, { onDelete: "cascade" }).notNull(),
+  messageId: text("message_id").notNull().unique(), // External message ID (Gmail, etc.)
+  fromEmail: text("from_email").notNull(),
+  toEmail: text("to_email").notNull(),
+  subject: text("subject").notNull(),
+  body: text("body").notNull(),
+  bodyHtml: text("body_html"), // HTML версия
+  isIncoming: integer("is_incoming").notNull(), // 1 = от HR, 0 = от нас
+  isAutomated: integer("is_automated").default(0), // Автоматически ли отправлено
+  aiSuggestion: text("ai_suggestion"), // AI предложение ответа (для входящих)
+  sentiment: text("sentiment").$type<"positive" | "neutral" | "negative">(), // AI анализ тона
+  intent: text("intent"), // AI определение намерения: interview_request, rejection, offer, etc.
+  needsResponse: integer("needs_response").default(0), // Требует ли ответа
+  respondedAt: timestamp("responded_at"), // Когда ответили
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  threadIdIdx: index("email_messages_thread_id_idx").on(table.threadId),
+  messageIdIdx: index("email_messages_message_id_idx").on(table.messageId),
+  isIncomingIdx: index("email_messages_is_incoming_idx").on(table.isIncoming),
+  needsResponseIdx: index("email_messages_needs_response_idx").on(table.needsResponse),
+  createdAtIdx: index("email_messages_created_at_idx").on(table.createdAt),
+}));
+
+// Automation Rules - правила автоматизации действий
+export const automationRules = pgTable("automation_rules", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  name: text("name").notNull(), // "Auto reply to interview requests"
+  trigger: text("trigger").$type<"status_change" | "email_received" | "follow_up_due" | "offer_received">().notNull(),
+  triggerConditions: jsonb("trigger_conditions"), // Условия триггера
+  actions: jsonb("actions").notNull(), // Массив действий
+  isActive: integer("is_active").default(1),
+  applicationId: text("application_id").references(() => applications.id, { onDelete: "cascade" }), // null = для всех заявок
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
+}, (table) => ({
+  userIdIdx: index("automation_rules_user_id_idx").on(table.userId),
+  triggerIdx: index("automation_rules_trigger_idx").on(table.trigger),
+  isActiveIdx: index("automation_rules_is_active_idx").on(table.isActive),
+  applicationIdIdx: index("automation_rules_application_id_idx").on(table.applicationId),
+}));
+
+// Salary Negotiations - переговоры о зарплате
+export const salaryNegotiations = pgTable("salary_negotiations", {
+  id: text("id").primaryKey(),
+  applicationId: text("application_id").references(() => applications.id, { onDelete: "cascade" }).notNull(),
+  initialOffer: text("initial_offer"), // Первоначальное предложение HR
+  targetSalary: text("target_salary"), // Целевая зарплата кандидата
+  currentOffer: text("current_offer"), // Текущее предложение
+  marketAverage: text("market_average"), // Средняя по рынку
+  negotiationStage: text("negotiation_stage").$type<"initial" | "counter_offered" | "negotiating" | "accepted" | "declined">().default("initial"),
+  aiRecommendation: text("ai_recommendation"), // AI рекомендация по переговорам
+  counterOfferDraft: text("counter_offer_draft"), // Черновик counter-offer
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
+}, (table) => ({
+  applicationIdIdx: index("salary_negotiations_application_id_idx").on(table.applicationId),
+  negotiationStageIdx: index("salary_negotiations_stage_idx").on(table.negotiationStage),
+}));
+
+export type EmailThread = typeof emailThreads.$inferSelect;
+export type NewEmailThread = typeof emailThreads.$inferInsert;
+export type EmailMessage = typeof emailMessages.$inferSelect;
+export type NewEmailMessage = typeof emailMessages.$inferInsert;
+export type AutomationRule = typeof automationRules.$inferSelect;
+export type NewAutomationRule = typeof automationRules.$inferInsert;
+export type SalaryNegotiation = typeof salaryNegotiations.$inferSelect;
+export type NewSalaryNegotiation = typeof salaryNegotiations.$inferInsert;
 
