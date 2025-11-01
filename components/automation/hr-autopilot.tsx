@@ -208,7 +208,9 @@ export function HRAutopilot() {
   };
 
   const getIntentColor = (intent?: string) => {
-    if (!intent) return 'bg-neutral-800/50';
+    // Ensure intent is a string
+    const intentStr = typeof intent === 'string' ? intent : (intent ? String(intent) : undefined);
+    if (!intentStr) return 'bg-neutral-800/50';
     const colors: Record<string, string> = {
       interview_request: 'bg-green-900/30 text-green-300',
       rejection: 'bg-red-900/30 text-red-300',
