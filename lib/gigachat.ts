@@ -295,11 +295,45 @@ class GigaChatAPI {
       
       // Валидация и нормализация данных
       const validLevels = ['Junior', 'Middle', 'Senior', 'Lead', 'Unknown'];
+      
+      // Ensure level is a string
+      let levelValue: string = 'Unknown';
+      if (typeof grade.level === 'string') {
+        levelValue = validLevels.includes(grade.level) ? grade.level : 'Unknown';
+      } else if (grade.level && typeof grade.level === 'object') {
+        // Handle case where level might be an object like {positive: true}
+        levelValue = 'Unknown';
+      }
+      
+      // Ensure score is a number
+      let scoreValue = 3;
+      if (typeof grade.score === 'number') {
+        scoreValue = Math.max(1, Math.min(5, grade.score));
+      } else if (typeof grade.score === 'string') {
+        scoreValue = Math.max(1, Math.min(5, parseInt(grade.score) || 3));
+      }
+      
+      // Ensure confidence is a number
+      let confidenceValue = 50;
+      if (typeof grade.confidence === 'number') {
+        confidenceValue = Math.max(0, Math.min(100, grade.confidence));
+      } else if (typeof grade.confidence === 'string') {
+        confidenceValue = Math.max(0, Math.min(100, parseInt(grade.confidence) || 50));
+      }
+      
+      // Ensure reasoning is a string
+      let reasoningValue = 'Оценка на основе анализа требований';
+      if (typeof grade.reasoning === 'string') {
+        reasoningValue = grade.reasoning;
+      } else if (grade.reasoning) {
+        reasoningValue = String(grade.reasoning);
+      }
+      
       return {
-        level: validLevels.includes(grade.level) ? grade.level : 'Unknown',
-        score: Math.max(1, Math.min(5, parseInt(grade.score) || 3)),
-        confidence: Math.max(0, Math.min(100, parseInt(grade.confidence) || 50)),
-        reasoning: grade.reasoning || 'Оценка на основе анализа требований'
+        level: levelValue,
+        score: scoreValue,
+        confidence: confidenceValue,
+        reasoning: reasoningValue
       };
     } catch (error) {
       console.error('Failed to parse job grade JSON:', error);
@@ -352,11 +386,43 @@ class GigaChatAPI {
       }
       const analysis = JSON.parse(jsonString);
       
-      // Добавляем оценку грейда к анализу
-      return {
-        ...analysis,
+      // Normalize all fields to ensure they are strings/arrays, not objects
+      const normalizedAnalysis: any = {
+        redFlags: Array.isArray(analysis.redFlags) 
+          ? analysis.redFlags.map((f: any) => typeof f === 'string' ? f : String(f))
+          : [],
+        requirements: {
+          realistic: Array.isArray(analysis.requirements?.realistic)
+            ? analysis.requirements.realistic.map((r: any) => typeof r === 'string' ? r : String(r))
+            : [],
+          unrealistic: Array.isArray(analysis.requirements?.unrealistic)
+            ? analysis.requirements.unrealistic.map((r: any) => typeof r === 'string' ? r : String(r))
+            : []
+        },
+        salaryInsight: typeof analysis.salaryInsight === 'string' 
+          ? analysis.salaryInsight 
+          : String(analysis.salaryInsight || 'Не удалось проанализировать зарплатные ожидания'),
+        workLifeBalance: typeof analysis.workLifeBalance === 'string'
+          ? analysis.workLifeBalance
+          : String(analysis.workLifeBalance || 'Не удалось оценить work-life balance'),
+        companyInsights: typeof analysis.companyInsights === 'string'
+          ? analysis.companyInsights
+          : String(analysis.companyInsights || 'Не удалось получить инсайты о компании'),
+        atsKeywords: Array.isArray(analysis.atsKeywords)
+          ? analysis.atsKeywords.map((k: any) => typeof k === 'string' ? k : String(k))
+          : [],
+        recommendedSkills: Array.isArray(analysis.recommendedSkills)
+          ? analysis.recommendedSkills.map((s: any) => typeof s === 'string' ? s : String(s))
+          : [],
+        overallScore: typeof analysis.overallScore === 'string'
+          ? analysis.overallScore
+          : typeof analysis.overallScore === 'number'
+          ? String(analysis.overallScore)
+          : String(analysis.overallScore || 'Не удалось оценить (0/10)'),
         jobGrade
       };
+      
+      return normalizedAnalysis;
     } catch (error) {
       // If JSON parsing fails, try to return a structured response with fallback
       console.error('Failed to parse job analysis JSON:', error);
