@@ -35,8 +35,8 @@ export async function checkUsageLimit(
   // Get user subscription
   const subscription = await getUserSubscription(userId);
   
-  // Pro users have unlimited access
-  if (subscription?.plan === 'pro' && subscription?.status === 'active') {
+  // Pro and Enterprise users have unlimited access
+  if ((subscription?.plan === 'pro' || subscription?.plan === 'enterprise') && subscription?.status === 'active') {
     return {
       allowed: true,
       remaining: Infinity,

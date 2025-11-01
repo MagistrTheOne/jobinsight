@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut, LayoutDashboard } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { User, LogOut, LayoutDashboard, CheckCircle2, Crown, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth-store";
 import { useAnalysisStore } from "@/store/analysis-store";
@@ -19,6 +21,30 @@ import { useAnalysisStore } from "@/store/analysis-store";
 export function UserButton() {
   const { user, isAuthenticated, isLoading, clearAuth } = useAuthStore();
   const { clearCurrent } = useAnalysisStore();
+  const [subscriptionInfo, setSubscriptionInfo] = useState<{
+    plan: 'free' | 'pro' | 'enterprise';
+    verified: boolean;
+    title?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      Promise.all([
+        fetch('/api/usage/limits').then(res => res.json()),
+        fetch('/api/user/info').then(res => res.json())
+      ])
+        .then(([usageData, userData]) => {
+          if (usageData.success && userData.success) {
+            setSubscriptionInfo({
+              plan: usageData.plan || 'free',
+              verified: userData.user.verified || false,
+              title: userData.user.title,
+            });
+          }
+        })
+        .catch(console.error);
+    }
+  }, [isAuthenticated, user]);
 
   if (isLoading) {
     return (
@@ -61,11 +87,39 @@ export function UserButton() {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-sm font-semibold text-white truncate group-hover:text-blue-300 transition-colors">
-              {userName}
-            </p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-semibold text-white truncate group-hover:text-blue-300 transition-colors">
+                {userName}
+              </p>
+              {subscriptionInfo?.verified && (
+                <CheckCircle2 className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              {subscriptionInfo && (
+                <Badge 
+                  variant="outline" 
+                  className={`text-[10px] px-1.5 py-0 border-none ${
+                    subscriptionInfo.plan === 'enterprise' 
+                      ? 'bg-linear-to-r from-purple-600/20 to-pink-600/20 text-purple-300' 
+                      : subscriptionInfo.plan === 'pro'
+                      ? 'bg-linear-to-r from-blue-600/20 to-purple-600/20 text-blue-300'
+                      : 'bg-neutral-800/50 text-neutral-400'
+                  }`}
+                >
+                  {subscriptionInfo.plan === 'enterprise' && <Crown className="h-2.5 w-2.5 mr-0.5" />}
+                  {subscriptionInfo.plan === 'pro' && <Sparkles className="h-2.5 w-2.5 mr-0.5" />}
+                  {subscriptionInfo.plan === 'enterprise' ? 'Enterprise' : subscriptionInfo.plan === 'pro' ? 'Pro' : 'Free'}
+                </Badge>
+              )}
+              {subscriptionInfo?.title && (
+                <span className="text-[10px] text-neutral-500 truncate">
+                  {subscriptionInfo.title}
+                </span>
+              )}
+            </div>
             {user.email && (
-              <p className="text-xs text-neutral-400 truncate">
+              <p className="text-xs text-neutral-400 truncate mt-0.5">
                 {user.email}
               </p>
             )}
@@ -74,8 +128,36 @@ export function UserButton() {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 bg-neutral-900 border-neutral-800" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none text-white">{user.name}</p>
+          <div className="flex flex-col space-y-2">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium leading-none text-white">{user.name}</p>
+              {subscriptionInfo?.verified && (
+                <CheckCircle2 className="h-4 w-4 text-blue-500 shrink-0" />
+              )}
+            </div>
+            {subscriptionInfo && (
+              <div className="flex items-center gap-2">
+                <Badge 
+                  variant="outline" 
+                  className={`text-xs px-2 py-0.5 border-none ${
+                    subscriptionInfo.plan === 'enterprise' 
+                      ? 'bg-linear-to-r from-purple-600/20 to-pink-600/20 text-purple-300' 
+                      : subscriptionInfo.plan === 'pro'
+                      ? 'bg-linear-to-r from-blue-600/20 to-purple-600/20 text-blue-300'
+                      : 'bg-neutral-800/50 text-neutral-400'
+                  }`}
+                >
+                  {subscriptionInfo.plan === 'enterprise' && <Crown className="h-3 w-3 mr-1" />}
+                  {subscriptionInfo.plan === 'pro' && <Sparkles className="h-3 w-3 mr-1" />}
+                  {subscriptionInfo.plan === 'enterprise' ? 'Enterprise' : subscriptionInfo.plan === 'pro' ? 'Pro' : 'Free'} Plan
+                </Badge>
+                {subscriptionInfo.title && (
+                  <span className="text-xs text-neutral-500">
+                    {subscriptionInfo.title}
+                  </span>
+                )}
+              </div>
+            )}
             <p className="text-xs leading-none text-neutral-400">
               {user.email}
             </p>

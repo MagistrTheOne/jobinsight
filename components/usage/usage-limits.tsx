@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Loader2, Infinity, FileText, Briefcase, Mail } from 'lucide-react';
 
 interface UsageData {
-  plan: 'free' | 'pro';
+  plan: 'free' | 'pro' | 'enterprise';
   resume: { used: number; limit: number; remaining: number };
   job: { used: number; limit: number; remaining: number };
   coverLetter: { used: number; limit: number; remaining: number };
@@ -65,13 +65,18 @@ export function UsageLimits() {
     return null;
   }
 
-  // Pro users see unlimited badge
-  if (usage.plan === 'pro') {
+  // Pro and Enterprise users see unlimited badge
+  if (usage.plan === 'pro' || usage.plan === 'enterprise') {
+    const planName = usage.plan === 'enterprise' ? 'Enterprise' : 'Pro';
+    const badgeClass = usage.plan === 'enterprise' 
+      ? 'bg-linear-to-r from-purple-600 to-pink-600' 
+      : 'bg-linear-to-r from-blue-600 to-purple-600';
+    
     return (
       <GlassCard className="p-3 bg-neutral-950/60 backdrop-blur-sm border border-neutral-800/50">
-        <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
+        <Badge className={`${badgeClass} text-white border-0`}>
           <Infinity className="h-3 w-3 mr-1" />
-          Pro - Unlimited
+          {planName} - Unlimited
         </Badge>
       </GlassCard>
     );
@@ -91,8 +96,10 @@ export function UsageLimits() {
     limit: number; 
     remaining: number;
   }) => {
-    const percentage = (used / limit) * 100;
-    const isNearLimit = percentage >= 80;
+    // Handle unlimited (limit = -1)
+    const isUnlimited = limit === -1;
+    const percentage = isUnlimited ? 0 : (used / limit) * 100;
+    const isNearLimit = !isUnlimited && percentage >= 80;
     
     return (
       <div className="space-y-1.5">
@@ -102,13 +109,15 @@ export function UsageLimits() {
             <span>{label}</span>
           </div>
           <span className={`font-medium ${isNearLimit ? 'text-amber-400' : 'text-neutral-400'}`}>
-            {used}/{limit}
+            {isUnlimited ? '∞' : `${used}/${limit}`}
           </span>
         </div>
-        <Progress 
-          value={percentage} 
-          className={`h-1.5 ${isNearLimit ? 'bg-amber-900/30' : ''}`}
-        />
+        {!isUnlimited && (
+          <Progress 
+            value={percentage} 
+            className={`h-1.5 ${isNearLimit ? 'bg-amber-900/30' : ''}`}
+          />
+        )}
       </div>
     );
   };
@@ -117,9 +126,9 @@ export function UsageLimits() {
     <GlassCard className="p-3 bg-neutral-950/60 backdrop-blur-sm border border-neutral-800/50">
       <div className="space-y-2.5">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-neutral-300">Monthly Usage</span>
-          <Badge variant="outline" className="text-xs border-neutral-700/50 text-neutral-400">
-            Free Plan
+          <span className="text-xs font-medium text-neutral-300">Месячное использование</span>
+          <Badge variant="outline" className="text-xs border-neutral-700/50 text-neutral-400 capitalize">
+            {usage.plan === 'free' ? 'Бесплатный' : usage.plan === 'pro' ? 'Pro' : usage.plan === 'enterprise' ? 'Enterprise' : 'Free'} план
           </Badge>
         </div>
         

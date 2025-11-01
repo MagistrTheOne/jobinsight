@@ -31,19 +31,19 @@ export async function GET(request: NextRequest) {
       success: true,
       plan,
       resume: {
-        used: resumeUsage.used,
-        limit: resumeUsage.limit,
-        remaining: resumeUsage.remaining,
+        used: resumeUsage.used === Infinity ? 0 : resumeUsage.used,
+        limit: resumeUsage.limit === Infinity ? -1 : resumeUsage.limit,
+        remaining: resumeUsage.remaining === Infinity ? -1 : resumeUsage.remaining,
       },
       job: {
-        used: jobUsage.used,
-        limit: jobUsage.limit,
-        remaining: jobUsage.remaining,
+        used: jobUsage.used === Infinity ? 0 : jobUsage.used,
+        limit: jobUsage.limit === Infinity ? -1 : jobUsage.limit,
+        remaining: jobUsage.remaining === Infinity ? -1 : jobUsage.remaining,
       },
       coverLetter: {
-        used: coverLetterUsage.used,
-        limit: coverLetterUsage.limit,
-        remaining: coverLetterUsage.remaining,
+        used: coverLetterUsage.used === Infinity ? 0 : coverLetterUsage.used,
+        limit: coverLetterUsage.limit === Infinity ? -1 : coverLetterUsage.limit,
+        remaining: coverLetterUsage.remaining === Infinity ? -1 : coverLetterUsage.remaining,
       },
       periodStart: getCurrentPeriodStart().toISOString(),
     });
