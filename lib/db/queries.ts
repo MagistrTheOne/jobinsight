@@ -6,14 +6,22 @@ import {
   usageLimits,
   chats,
   chatMessages,
+  jobPostings,
+  applications,
+  applicationStatusHistory,
+  resumeVersions,
   type NewUser, 
   type NewAnalysisHistory,
   type NewSubscription,
   type NewUsageLimits,
   type NewChat,
   type NewChatMessage,
+  type NewJobPosting,
+  type NewApplication,
+  type NewApplicationStatusHistory,
+  type NewResumeVersion,
 } from './schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc, and, or, gte, lte, sql, ilike } from 'drizzle-orm';
 
 // User queries
 export async function getUserById(id: string) {
@@ -286,5 +294,309 @@ export async function updateChatTitle(chatId: string, title: string) {
     .where(eq(chats.id, chatId))
     .returning();
   return updated;
+}
+
+// Job Postings queries
+export async function createJobPosting(jobData: NewJobPosting) {
+  const [job] = await db.insert(jobPostings).values(jobData).returning();
+  return job;
+}
+
+export async function getJobPostingById(id: string, userId: string) {
+  const [job] = await db
+    .select()
+    .from(jobPostings)
+    .where(
+      and(
+        eq(jobPostings.id, id),
+        eq(jobPostings.userId, userId)
+      )
+    )
+    .limit(1);
+  return job;
+}
+
+export async function getUserJobPostings(userId: string, limit = 100) {
+  return await db
+    .select()
+    .from(jobPostings)
+    .where(eq(jobPostings.userId, userId))
+    .orderBy(desc(jobPostings.createdAt))
+    .limit(limit);
+}
+
+// Applications queries
+export async function createApplication(applicationData: NewApplication) {
+  const [application] = await db.insert(applications).values(applicationData).returning();
+  
+  // Создаем запись в истории статусов
+  await db.insert(applicationStatusHistory).values({
+    id: crypto.randomUUID(),
+    applicationId: application.id,
+    status: application.status,
+    notes: 'Initial status',
+  });
+  
+  return application;
+}
+
+export async function getApplicationById(id: string, userId: string) {
+  const [application] = await db
+    .select()
+    .from(applications)
+    .where(
+      and(
+        eq(applications.id, id),
+        eq(applications.userId, userId)
+      )
+    )
+    .limit(1);
+  
+  if (!application) return null;
+  
+  // Получаем историю статусов
+  const statusHistory = await db
+    .select()
+    .from(applicationStatusHistory)
+    .where(eq(applicationStatusHistory.applicationId, id))
+    .orderBy(desc(applicationStatusHistory.createdAt));
+  
+  // Получаем связанную вакансию, если есть
+  let jobPosting = null;
+  if (application.jobPostingId) {
+    jobPosting = await getJobPostingById(application.jobPostingId, userId);
+  }
+  
+  return {
+    ...application,
+    statusHistory,
+    jobPosting,
+  };
+}
+
+export async function getUserApplications(userId: string, filters?: {
+  status?: string;
+  company?: string;
+  favorite?: boolean;
+  limit?: number;
+}) {
+  const conditions = [eq(applications.userId, userId)];
+  
+  if (filters?.status) {
+    conditions.push(eq(applications.status, filters.status as any));
+  }
+  
+  if (filters?.company) {
+    conditions.push(ilike(applications.company, `%${filters.company}%`));
+  }
+  
+  if (filters?.favorite !== undefined) {
+    conditions.push(eq(applications.isFavorite, filters.favorite ? 1 : 0));
+  }
+  
+  return await db
+    .select()
+    .from(applications)
+    .where(and(...conditions))
+    .orderBy(desc(applications.appliedDate || applications.createdAt))
+    .limit(filters?.limit || 100);
+}
+
+export async function updateApplication(id: string, userId: string, updateData: Partial<NewApplication>) {
+  const oldApplication = await db
+    .select()
+    .from(applications)
+    .where(
+      and(
+        eq(applications.id, id),
+        eq(applications.userId, userId)
+      )
+    )
+    .limit(1);
+  
+  if (!oldApplication[0]) {
+    throw new Error('Application not found');
+  }
+  
+  const [updated] = await db
+    .update(applications)
+    .set({ ...updateData, updatedAt: new Date() })
+    .where(
+      and(
+        eq(applications.id, id),
+        eq(applications.userId, userId)
+      )
+    )
+    .returning();
+  
+  // Если статус изменился, добавляем в историю
+  if (updateData.status && updateData.status !== oldApplication[0].status) {
+    await db.insert(applicationStatusHistory).values({
+      id: crypto.randomUUID(),
+      applicationId: id,
+      status: updateData.status,
+      notes: updateData.notes || 'Status changed',
+    });
+  }
+  
+  return updated;
+}
+
+export async function deleteApplication(id: string, userId: string) {
+  await db
+    .delete(applications)
+    .where(
+      and(
+        eq(applications.id, id),
+        eq(applications.userId, userId)
+      )
+    );
+}
+
+export async function getApplicationsNeedingFollowUp(userId: string) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  return await db
+    .select()
+    .from(applications)
+    .where(
+      and(
+        eq(applications.userId, userId),
+        lte(applications.nextFollowUp, today),
+        or(
+          eq(applications.status, 'applied'),
+          eq(applications.status, 'viewed'),
+          eq(applications.status, 'phone_screen'),
+          eq(applications.status, 'interview')
+        )
+      )
+    )
+    .orderBy(applications.nextFollowUp);
+}
+
+// Application Statistics
+export async function getApplicationStats(userId: string, startDate?: Date, endDate?: Date) {
+  const conditions = [eq(applications.userId, userId)];
+  
+  if (startDate) {
+    conditions.push(gte(applications.appliedDate || applications.createdAt, startDate));
+  }
+  if (endDate) {
+    conditions.push(lte(applications.appliedDate || applications.createdAt, endDate));
+  }
+  
+  const stats = await db
+    .select({
+      status: applications.status,
+      count: sql<number>`COUNT(*)::int`,
+    })
+    .from(applications)
+    .where(and(...conditions))
+    .groupBy(applications.status);
+  
+  const total = await db
+    .select({ count: sql<number>`COUNT(*)::int` })
+    .from(applications)
+    .where(and(...conditions));
+  
+  return {
+    byStatus: stats,
+    total: total[0]?.count || 0,
+  };
+}
+
+// Resume Versions queries
+export async function createResumeVersion(resumeData: NewResumeVersion) {
+  // Если это дефолтное резюме, снимаем флаг с других
+  if (resumeData.isDefault === 1) {
+    await db
+      .update(resumeVersions)
+      .set({ isDefault: 0 })
+      .where(
+        and(
+          eq(resumeVersions.userId, resumeData.userId),
+          eq(resumeVersions.isDefault, 1)
+        )
+      );
+  }
+  
+  const [resume] = await db.insert(resumeVersions).values(resumeData).returning();
+  return resume;
+}
+
+export async function getUserResumeVersions(userId: string) {
+  return await db
+    .select()
+    .from(resumeVersions)
+    .where(eq(resumeVersions.userId, userId))
+    .orderBy(desc(resumeVersions.isDefault), desc(resumeVersions.updatedAt));
+}
+
+export async function getResumeVersionById(id: string, userId: string) {
+  const [resume] = await db
+    .select()
+    .from(resumeVersions)
+    .where(
+      and(
+        eq(resumeVersions.id, id),
+        eq(resumeVersions.userId, userId)
+      )
+    )
+    .limit(1);
+  return resume;
+}
+
+export async function updateResumeVersion(id: string, userId: string, updateData: Partial<NewResumeVersion>) {
+  // Если устанавливаем как дефолтное, снимаем флаг с других
+  if (updateData.isDefault === 1) {
+    await db
+      .update(resumeVersions)
+      .set({ isDefault: 0 })
+      .where(
+        and(
+          eq(resumeVersions.userId, userId),
+          eq(resumeVersions.isDefault, 1),
+          sql`${resumeVersions.id} != ${id}`
+        )
+      );
+  }
+  
+  const [updated] = await db
+    .update(resumeVersions)
+    .set({ ...updateData, updatedAt: new Date() })
+    .where(
+      and(
+        eq(resumeVersions.id, id),
+        eq(resumeVersions.userId, userId)
+      )
+    )
+    .returning();
+  return updated;
+}
+
+export async function deleteResumeVersion(id: string, userId: string) {
+  await db
+    .delete(resumeVersions)
+    .where(
+      and(
+        eq(resumeVersions.id, id),
+        eq(resumeVersions.userId, userId)
+      )
+    );
+}
+
+export async function getDefaultResumeVersion(userId: string) {
+  const [resume] = await db
+    .select()
+    .from(resumeVersions)
+    .where(
+      and(
+        eq(resumeVersions.userId, userId),
+        eq(resumeVersions.isDefault, 1)
+      )
+    )
+    .limit(1);
+  return resume;
 }
 

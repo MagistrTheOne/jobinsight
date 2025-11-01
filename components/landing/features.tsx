@@ -4,6 +4,21 @@ import { GlassCard } from '@/components/ui/glass-card';
 
 const features = [
   {
+    title: 'Application Tracking System',
+    description:
+      'Track all your job applications in one place with status management, follow-up reminders, and detailed statistics.',
+  },
+  {
+    title: 'AI Follow-up & Thank You Emails',
+    description:
+      'Generate professional follow-up emails after applying and personalized thank you letters after interviews with AI assistance.',
+  },
+  {
+    title: 'Interview Preparation & Practice',
+    description:
+      'AI-powered interview prep: generate practice questions, practice answers, and get real-time feedback on your responses.',
+  },
+  {
     title: 'Job Red Flag Detection',
     description:
       'Identify problematic job postings, unrealistic requirements, and potential warning signs before applying.',
@@ -24,24 +39,29 @@ const features = [
       'Get actionable recommendations to improve your resume based on job requirements and industry best practices.',
   },
   {
+    title: 'Multiple Resume Versions',
+    description:
+      'Manage different versions of your resume for different job types, with templates and optimization tracking.',
+  },
+  {
     title: 'Job Grade Assessment',
     description:
       'Automatically determine job level (Junior/Middle/Senior) even with vague or misleading titles.',
   },
   {
-    title: 'Real-time Processing',
+    title: 'Skills Gap Analysis',
     description:
-      'Instant analysis and optimization with lightning-fast AI processing.',
+      'Identify missing skills and get personalized recommendations to bridge the gap between your resume and job requirements.',
   },
   {
-    title: 'Keyword Optimization',
+    title: 'Impact-Based Optimization',
     description:
-      'Identify missing keywords and skills to maximize your chances of passing ATS filters.',
+      'Focus on impact, not just project count. Get AI-powered suggestions to showcase measurable results and achievements.',
   },
   {
-    title: 'Smart Recommendations',
+    title: 'ATS Challenge Report',
     description:
-      'Receive intelligent suggestions on skills to highlight, experience to emphasize, and improvements to make.',
+      'Understand how ATS systems evaluate your resume and get insights to overcome automated filters effectively.',
   },
 ];
 

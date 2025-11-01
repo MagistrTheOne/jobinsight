@@ -11,11 +11,11 @@ const demoAttempts = new Map<string, { count: number; lastAttempt: number }>();
 setInterval(() => {
   const now = Date.now();
   const oneDay = 24 * 60 * 60 * 1000;
-  for (const [ip, data] of demoAttempts.entries()) {
+  Array.from(demoAttempts.entries()).forEach(([ip, data]) => {
     if (now - data.lastAttempt > oneDay) {
       demoAttempts.delete(ip);
     }
-  }
+  });
 }, 60 * 60 * 1000); // Проверка каждый час
 
 export async function POST(request: NextRequest) {

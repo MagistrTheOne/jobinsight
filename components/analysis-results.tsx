@@ -1,22 +1,99 @@
 "use client";
 
+import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, TrendingUp, Users, DollarSign, Clock, Target, Award, BarChart3 } from 'lucide-react';
+import { TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, TrendingUp, Users, DollarSign, Clock, Target, Award, BarChart3, Plus, Loader2 } from 'lucide-react';
 import { JobAnalysis } from '@/lib/types';
+import { ApplicationDialog } from '@/components/applications/application-dialog';
 
 interface AnalysisResultsProps {
   analysis: JobAnalysis;
+  jobUrl?: string;
+  jobContent?: string;
 }
 
-export function AnalysisResults({ analysis }: AnalysisResultsProps) {
+export function AnalysisResults({ analysis, jobUrl, jobContent }: AnalysisResultsProps) {
   const scoreText = String(analysis.overallScore || '0');
   const scoreValue = parseInt(scoreText.match(/\d+/)?.[0] || '0', 10);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Extract company name from job content or URL
+  const getCompanyName = () => {
+    // Try to extract from jobContent first
+    if (jobContent) {
+      const companyMatch = jobContent.match(/компани[яи][:\s]+([^\n,\r]+)/i) || 
+                          jobContent.match(/company[:\s]+([^\n,\r]+)/i) ||
+                          jobContent.match(/работодатель[:\s]+([^\n,\r]+)/i);
+      if (companyMatch) return companyMatch[1].trim();
+    }
+    
+    // Try to extract from URL (hh.ru format)
+    if (jobUrl && jobUrl.includes('hh.ru')) {
+      const urlMatch = jobUrl.match(/\/vacancy\/(\d+)/);
+      if (urlMatch) {
+        // Company might be in the page, but we can't access it here
+        // User will need to fill it manually
+      }
+    }
+    
+    // Try from companyInsights as fallback
+    if (analysis.companyInsights) {
+      const match = analysis.companyInsights.match(/(?:company|компания)[:\s]+([^\n,]+)/i);
+      if (match) return match[1].trim();
+    }
+    
+    return '';
+  };
+
+  // Extract job title from job content or analysis
+  const getJobTitle = () => {
+    if (jobContent) {
+      // Try common patterns
+      const titleMatch = jobContent.match(/(?:должность|позиция|вакансия|position|title)[:\s]+([^\n,\r]+)/i) ||
+                        jobContent.match(/^([^\n]+)\n/); // First line often contains title
+      if (titleMatch) return titleMatch[1].trim();
+    }
+    return '';
+  };
+
+  const handleAddToApplications = () => {
+    setIsDialogOpen(true);
+  };
 
   return (
     <div className="space-y-6 w-full max-w-4xl mx-auto">
+      {/* Quick Add Button */}
+      <GlassCard variant="muted">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-1">Track This Application</h3>
+            <p className="text-sm text-gray-400">Save this job to your applications tracker</p>
+          </div>
+          <Button
+            onClick={handleAddToApplications}
+            disabled={isSaving}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" />
+                Add to Applications
+              </>
+            )}
+          </Button>
+        </div>
+      </GlassCard>
+
       {/* Overall Score */}
       <GlassCard variant="accent">
         <div className="flex items-center justify-between mb-4">
@@ -182,6 +259,22 @@ export function AnalysisResults({ analysis }: AnalysisResultsProps) {
           </div>
         </GlassCard>
       </div>
+
+      {/* Application Dialog */}
+      <ApplicationDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        defaultData={{
+          title: getJobTitle() || 'Unknown Position',
+          company: getCompanyName() || '',
+          url: jobUrl || undefined,
+          jobAnalysis: analysis,
+        }}
+        onSaved={() => {
+          setIsSaving(false);
+          setIsDialogOpen(false);
+        }}
+      />
     </div>
   );
 }

@@ -535,6 +535,152 @@ ${processedResumeContent}
       throw error;
     }
   }
+
+  async generateFollowUpEmail(applicationData: {
+    company: string;
+    position: string;
+    appliedDate: string;
+    notes?: string;
+    status?: string;
+  }): Promise<string> {
+    const messages: GigaChatMessage[] = [
+      {
+        role: 'system',
+        content: `Ты профессиональный писатель деловых писем. Создавай вежливые, профессиональные follow-up письма для HR-менеджеров после отправки отклика на вакансию. Письма должны быть краткими, вежливыми и демонстрировать заинтересованность в позиции.`
+      },
+      {
+        role: 'user',
+        content: `Создай профессиональное follow-up письмо для HR-менеджера компании ${applicationData.company} по позиции "${applicationData.position}".
+
+Контекст:
+- Дата отклика: ${applicationData.appliedDate}
+- Текущий статус: ${applicationData.status || 'applied'}
+${applicationData.notes ? `- Заметки: ${applicationData.notes}` : ''}
+
+Требования к письму:
+1. Вежливое и профессиональное обращение
+2. Краткое напоминание о своем отклике (название позиции, дата)
+3. Выражение заинтересованности в позиции
+4. Предложение предоставить дополнительную информацию при необходимости
+5. Профессиональное завершение с контактами
+
+Формат: Только текст письма, без темы (subject).`
+      }
+    ];
+
+    return await this.sendMessage(messages);
+  }
+
+  async generateThankYouEmail(interviewData: {
+    company: string;
+    position: string;
+    interviewerName?: string;
+    interviewDate: string;
+    interviewType: 'phone_screen' | 'interview' | 'technical_interview' | 'final_interview';
+    notes?: string;
+    keyPoints?: string[];
+  }): Promise<string> {
+    const interviewTypeNames: Record<string, string> = {
+      phone_screen: 'телефонного собеседования',
+      interview: 'собеседования',
+      technical_interview: 'технического собеседования',
+      final_interview: 'финального собеседования'
+    };
+
+    const messages: GigaChatMessage[] = [
+      {
+        role: 'system',
+        content: `Ты профессиональный писатель деловых писем. Создавай персональные thank you письма после интервью, которые показывают благодарность, энтузиазм и заинтересованность в позиции. Письма должны быть теплыми, но профессиональными.`
+      },
+      {
+        role: 'user',
+        content: `Создай персональное thank you письмо после ${interviewTypeNames[interviewData.interviewType] || 'собеседования'} в компании ${interviewData.company} на позицию "${interviewData.position}".
+
+Контекст:
+- Дата собеседования: ${interviewData.interviewDate}
+- Тип собеседования: ${interviewTypeNames[interviewData.interviewType]}
+${interviewData.interviewerName ? `- Собеседующий: ${interviewData.interviewerName}` : ''}
+${interviewData.notes ? `- Заметки о собеседовании: ${interviewData.notes}` : ''}
+${interviewData.keyPoints && interviewData.keyPoints.length > 0 ? `- Ключевые моменты обсуждения: ${interviewData.keyPoints.join(', ')}` : ''}
+
+Требования к письму:
+1. Персональное обращение ${interviewData.interviewerName ? `к ${interviewData.interviewerName}` : 'к команде'}
+2. Выражение благодарности за время и возможность
+3. Краткое упоминание ключевых моментов обсуждения (если есть)
+4. Подтверждение заинтересованности в позиции
+5. Профессиональное завершение
+
+Формат: Только текст письма, без темы (subject).`
+      }
+    ];
+
+    return await this.sendMessage(messages);
+  }
+
+  async generateInterviewQuestions(jobDescription: string, jobAnalysis?: any): Promise<string> {
+    const analysisContext = jobAnalysis ? `
+Дополнительный контекст:
+- Грейд позиции: ${jobAnalysis.jobGrade?.level || 'не определен'}
+- Требуемые навыки: ${jobAnalysis.recommendedSkills?.join(', ') || 'нет'}
+- ATS ключевые слова: ${jobAnalysis.atsKeywords?.join(', ') || 'нет'}
+` : '';
+
+    const messages: GigaChatMessage[] = [
+      {
+        role: 'system',
+        content: `Ты эксперт по подготовке к собеседованиям. Генерируй релевантные вопросы для практики интервью, основанные на описании вакансии. Включай технические, поведенческие и ситуационные вопросы.`
+      },
+      {
+        role: 'user',
+        content: `Создай список вопросов для подготовки к собеседованию на основе этой вакансии:
+
+ОПИСАНИЕ ВАКАНСИИ:
+${jobDescription}
+${analysisContext}
+
+Требования:
+1. 5-7 технических вопросов по навыкам из вакансии
+2. 3-5 поведенческих вопросов (STAR метод)
+3. 2-3 вопроса о мотивации и интересе к позиции
+4. 1-2 ситуационных вопроса
+5. 2-3 вопроса, которые кандидат может задать интервьюеру
+
+Формат: Список вопросов с кратким указанием типа (Технический/Поведенческий/Ситуационный/Вопрос для интервьюера).`
+      }
+    ];
+
+    return await this.sendMessage(messages);
+  }
+
+  async evaluateInterviewAnswer(question: string, answer: string, jobDescription: string): Promise<string> {
+    const messages: GigaChatMessage[] = [
+      {
+        role: 'system',
+        content: `Ты эксперт по оценке ответов на собеседованиях. Анализируй ответы кандидатов, давай конструктивную обратную связь и рекомендации по улучшению. Используй метод STAR для поведенческих вопросов.`
+      },
+      {
+        role: 'user',
+        content: `Оцени этот ответ на вопрос интервью и дай обратную связь:
+
+ВОПРОС: ${question}
+
+ОТВЕТ КАНДИДАТА: ${answer}
+
+КОНТЕКСТ ВАКАНСИИ:
+${jobDescription}
+
+Предоставь оценку в следующем формате:
+1. Сильные стороны ответа (2-3 пункта)
+2. Что можно улучшить (2-3 пункта)
+3. Конкретные рекомендации для улучшения
+4. Оценка (1-10) с кратким обоснованием
+
+Будь конструктивным и полезным.`
+      }
+    ];
+
+    return await this.sendMessage(messages);
+  }
 }
 
 export const gigachatAPI = new GigaChatAPI();

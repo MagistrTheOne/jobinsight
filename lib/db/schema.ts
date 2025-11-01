@@ -152,3 +152,92 @@ export type NewChat = typeof chats.$inferInsert;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type NewChatMessage = typeof chatMessages.$inferInsert;
 
+// Job Postings - сохраненные вакансии для отслеживания
+export const jobPostings = pgTable("job_postings", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  title: text("title").notNull(),
+  company: text("company"),
+  url: text("url"),
+  description: text("description"), // Полное описание вакансии
+  location: text("location"),
+  salary: text("salary"),
+  jobType: text("job_type"), // full-time, part-time, contract, etc.
+  jobGrade: text("job_grade"), // Junior, Middle, Senior, Lead
+  source: text("source"), // hh.ru, linkedin, direct, etc.
+  rawData: jsonb("raw_data"), // Сырые данные для будущего использования
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
+}, (table) => ({
+  userIdIdx: index("job_postings_user_id_idx").on(table.userId),
+  companyIdx: index("job_postings_company_idx").on(table.company),
+  createdAtIdx: index("job_postings_created_at_idx").on(table.createdAt),
+  sourceIdx: index("job_postings_source_idx").on(table.source),
+}));
+
+// Applications - отклики на вакансии
+export const applications = pgTable("applications", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  jobPostingId: text("job_posting_id").references(() => jobPostings.id, { onDelete: "cascade" }),
+  title: text("title").notNull(), // Название позиции
+  company: text("company").notNull(),
+  status: text("status").$type<"saved" | "applied" | "viewed" | "phone_screen" | "interview" | "technical_interview" | "final_interview" | "offer" | "rejected" | "withdrawn">().notNull().default("saved"),
+  appliedDate: timestamp("applied_date"),
+  applicationUrl: text("application_url"), // URL отклика
+  resumeVersion: text("resume_version"), // ID версии резюме, которое использовали
+  coverLetter: text("cover_letter"), // Текст cover letter для этого отклика
+  notes: text("notes"), // Заметки пользователя
+  salaryOffer: text("salary_offer"), // Предложенная зарплата
+  nextFollowUp: timestamp("next_follow_up"), // Дата следующего follow-up
+  isFavorite: integer("is_favorite").default(0), // 0 или 1 для boolean
+  tags: jsonb("tags"), // Массив тегов ["urgent", "dream-job", etc.]
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
+}, (table) => ({
+  userIdIdx: index("applications_user_id_idx").on(table.userId),
+  jobPostingIdIdx: index("applications_job_posting_id_idx").on(table.jobPostingId),
+  statusIdx: index("applications_status_idx").on(table.status),
+  appliedDateIdx: index("applications_applied_date_idx").on(table.appliedDate),
+  nextFollowUpIdx: index("applications_next_follow_up_idx").on(table.nextFollowUp),
+}));
+
+// Application Status History - история изменения статусов
+export const applicationStatusHistory = pgTable("application_status_history", {
+  id: text("id").primaryKey(),
+  applicationId: text("application_id").references(() => applications.id, { onDelete: "cascade" }).notNull(),
+  status: text("status").notNull(),
+  notes: text("notes"), // Заметки при смене статуса
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  applicationIdIdx: index("application_status_history_application_id_idx").on(table.applicationId),
+  createdAtIdx: index("application_status_history_created_at_idx").on(table.createdAt),
+}));
+
+// Resume Versions - управление версиями резюме
+export const resumeVersions = pgTable("resume_versions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  title: text("title").notNull(), // "Frontend Developer", "Full Stack Engineer", etc.
+  content: text("content").notNull(), // Полный текст резюме
+  template: text("template").default("modern"), // modern, classic, creative, technical
+  isDefault: integer("is_default").default(0), // 0 или 1
+  optimizedFor: text("optimized_for"), // ID вакансии, под которую оптимизировано
+  tags: jsonb("tags"), // Теги для категоризации
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
+}, (table) => ({
+  userIdIdx: index("resume_versions_user_id_idx").on(table.userId),
+  isDefaultIdx: index("resume_versions_is_default_idx").on(table.isDefault),
+  createdAtIdx: index("resume_versions_created_at_idx").on(table.createdAt),
+}));
+
+export type JobPosting = typeof jobPostings.$inferSelect;
+export type NewJobPosting = typeof jobPostings.$inferInsert;
+export type Application = typeof applications.$inferSelect;
+export type NewApplication = typeof applications.$inferInsert;
+export type ApplicationStatusHistory = typeof applicationStatusHistory.$inferSelect;
+export type NewApplicationStatusHistory = typeof applicationStatusHistory.$inferInsert;
+export type ResumeVersion = typeof resumeVersions.$inferSelect;
+export type NewResumeVersion = typeof resumeVersions.$inferInsert;
+

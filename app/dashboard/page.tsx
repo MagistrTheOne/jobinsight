@@ -16,6 +16,8 @@ import { UserButton } from '@/components/auth/user-button';
 import { UsageLimits } from '@/components/usage/usage-limits';
 import { UpgradeModal } from '@/components/usage/upgrade-modal';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { GlassCard } from '@/components/ui/glass-card';
 import { CircleAlert as AlertCircle, Briefcase, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { JobAnalysis, ResumeAnalysis, UserInfo } from '@/lib/types';
@@ -23,6 +25,7 @@ import { useAnalysisStore } from '@/store/analysis-store';
 import { useAuthStore } from '@/store/auth-store';
 import { HistoryPanel } from '@/components/analysis/history-panel';
 import { AIChat } from '@/components/chat/ai-chat';
+import { ApplicationTracker } from '@/components/applications/application-tracker';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function DashboardPage() {
@@ -304,12 +307,13 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
                 <Tabs value={activeTab} onValueChange={(value) => router.replace(`/dashboard?tab=${value}`)} className="w-full">
-                  <TabsList className="grid w-full grid-cols-6 max-w-4xl mx-auto mb-8">
+                  <TabsList className="grid w-full grid-cols-7 max-w-5xl mx-auto mb-8">
                     <TabsTrigger value="job-analysis">Job Analysis</TabsTrigger>
                     <TabsTrigger value="job-content">Job Content</TabsTrigger>
                     <TabsTrigger value="resume-analysis">Resume</TabsTrigger>
                     <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
                     <TabsTrigger value="advanced">Advanced</TabsTrigger>
+                    <TabsTrigger value="applications">Applications</TabsTrigger>
                     <TabsTrigger value="ai-chat">AI Assistant</TabsTrigger>
                   </TabsList>
 
@@ -319,7 +323,7 @@ export default function DashboardPage() {
                       onAnalyze={handleJobAnalysis} 
                       isLoading={isLoading}
                     />
-                    {jobAnalysis && <AnalysisResults analysis={jobAnalysis} />}
+                    {jobAnalysis && <AnalysisResults analysis={jobAnalysis} jobUrl={currentJobUrl} jobContent={jobContentText} />}
                   </TabsContent>
 
                   {/* Job Content Analysis Tab */}
@@ -331,7 +335,7 @@ export default function DashboardPage() {
                       title="Job Content Analysis"
                       placeholder="Paste the job posting content here..."
                     />
-                    {jobAnalysis && <AnalysisResults analysis={jobAnalysis} />}
+                    {jobAnalysis && <AnalysisResults analysis={jobAnalysis} jobUrl={currentJobUrl} jobContent={jobContentText} />}
                   </TabsContent>
 
                   {/* Resume Analysis Tab */}
@@ -440,11 +444,16 @@ export default function DashboardPage() {
                     )}
                   </TabsContent>
 
-                  {/* AI Chat Assistant Tab */}
-                  <TabsContent value="ai-chat" className="space-y-6">
-                    <AIChat />
-                  </TabsContent>
-                </Tabs>
+                          {/* Applications Tracking Tab */}
+                          <TabsContent value="applications" className="space-y-6">
+                            <ApplicationTracker />
+                          </TabsContent>
+
+                          {/* AI Chat Assistant Tab */}
+                          <TabsContent value="ai-chat" className="space-y-6">
+                            <AIChat />
+                          </TabsContent>
+                        </Tabs>
           </div>
           
           {/* History Panel */}
