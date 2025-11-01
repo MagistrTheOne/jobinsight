@@ -412,7 +412,7 @@ export function ApplicationDialog({
             <Button
               type="submit"
               disabled={isLoading}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
               {isLoading ? (
                 <>
