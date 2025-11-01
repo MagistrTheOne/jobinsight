@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 export const runtime = 'nodejs';
 
-export async function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
   // Публичные маршруты
@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/dashboard') || 
       (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth'))) {
     // Проверка авторизации будет выполняться на уровне API routes
-    // Middleware просто пропускает запрос
+    // Proxy просто пропускает запрос
     return NextResponse.next();
   }
   
@@ -43,3 +43,4 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
+
