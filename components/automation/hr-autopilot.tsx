@@ -366,7 +366,7 @@ export function HRAutopilot() {
                                     <Button
                                       size="sm"
                                       onClick={() => handleSendAutoResponse(message, message.aiSuggestion!)}
-                                      className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
+                                      className="bg-linear-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
                                     >
                                       <Send className="h-3 w-3 mr-1" />
                                       Send
@@ -423,7 +423,7 @@ export function HRAutopilot() {
                   Configure automatic actions based on triggers
                 </p>
               </div>
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600">
+              <Button className="bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                 <Zap className="mr-2 h-4 w-4" />
                 New Rule
               </Button>
