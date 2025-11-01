@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth-helpers';
+import { auth } from '@/lib/auth';
 import { getSalaryNegotiationByApplicationId } from '@/lib/db/queries';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { applicationId: string } }
+  { params }: { params: Promise<{ applicationId: string }> }
 ) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
@@ -12,8 +12,9 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { applicationId } = await params;
     const negotiation = await getSalaryNegotiationByApplicationId(
-      params.applicationId,
+      applicationId,
       session.user.id
     );
 

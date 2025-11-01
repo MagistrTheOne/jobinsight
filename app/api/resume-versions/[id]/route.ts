@@ -9,7 +9,7 @@ import { rateLimit } from '@/lib/rate-limit';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
@@ -17,7 +17,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const resume = await getResumeVersionById(params.id, session.user.id);
+    const { id } = await params;
+    const resume = await getResumeVersionById(id, session.user.id);
     
     if (!resume) {
       return NextResponse.json({ error: 'Resume version not found' }, { status: 404 });
@@ -35,7 +36,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
@@ -52,6 +53,7 @@ export async function PATCH(
       );
     }
 
+    const { id } = await params;
     const body = await request.json();
     const updateData: any = {};
 
@@ -62,7 +64,7 @@ export async function PATCH(
     if (body.optimizedFor !== undefined) updateData.optimizedFor = body.optimizedFor;
     if (body.tags !== undefined) updateData.tags = Array.isArray(body.tags) && body.tags.length > 0 ? body.tags : null;
 
-    const updated = await updateResumeVersion(params.id, session.user.id, updateData);
+    const updated = await updateResumeVersion(id, session.user.id, updateData);
 
     return NextResponse.json({ success: true, resume: updated });
   } catch (error: any) {
@@ -76,7 +78,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
@@ -84,7 +86,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await deleteResumeVersion(params.id, session.user.id);
+    const { id } = await params;
+    await deleteResumeVersion(id, session.user.id);
 
     return NextResponse.json({ success: true, message: 'Resume version deleted' });
   } catch (error: any) {

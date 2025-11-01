@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth-helpers';
+import { auth } from '@/lib/auth';
 import { getThreadMessages } from '@/lib/db/queries';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { threadId: string } }
+  { params }: { params: Promise<{ threadId: string }> }
 ) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
@@ -12,7 +12,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const messages = await getThreadMessages(params.threadId, session.user.id);
+    const { threadId } = await params;
+    const messages = await getThreadMessages(threadId, session.user.id);
 
     return NextResponse.json({
       success: true,

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth-helpers';
+import { auth } from '@/lib/auth';
 import { updateAutomationRule } from '@/lib/db/queries';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
@@ -14,7 +14,8 @@ export async function PATCH(
 
     const { isActive } = await request.json();
 
-    const rule = await updateAutomationRule(params.id, session.user.id, {
+    const { id } = await params;
+    const rule = await updateAutomationRule(id, session.user.id, {
       isActive: isActive ? 1 : 0,
     });
 

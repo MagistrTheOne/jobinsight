@@ -4,7 +4,7 @@ import { getChatById, deleteChat } from '@/lib/db/queries';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { chatId: string } }
+  { params }: { params: Promise<{ chatId: string }> }
 ) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
@@ -16,7 +16,8 @@ export async function GET(
       );
     }
 
-    const chat = await getChatById(params.chatId, session.user.id);
+    const { chatId } = await params;
+    const chat = await getChatById(chatId, session.user.id);
     if (!chat) {
       return NextResponse.json(
         { error: 'Chat not found' },
@@ -44,7 +45,7 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { chatId: string } }
+  { params }: { params: Promise<{ chatId: string }> }
 ) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
@@ -56,7 +57,8 @@ export async function DELETE(
       );
     }
 
-    await deleteChat(params.chatId, session.user.id);
+    const { chatId } = await params;
+    await deleteChat(chatId, session.user.id);
 
     return NextResponse.json({
       success: true,

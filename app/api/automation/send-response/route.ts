@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth-helpers';
+import { auth } from '@/lib/auth';
 import { getEmailMessage, createEmailMessage, updateEmailMessage } from '@/lib/db/queries';
 
 export async function POST(request: NextRequest) {
