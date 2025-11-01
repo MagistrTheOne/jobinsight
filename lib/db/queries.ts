@@ -791,7 +791,10 @@ export async function deleteIntegration(id: string, userId: string) {
     .where(and(eq(integrations.id, id), eq(integrations.userId, userId)));
 }
 
-export async function getUserIntegrationByType(userId: string, type: string) {
+export async function getUserIntegrationByType(
+  userId: string, 
+  type: 'email' | 'hh_ru' | 'linkedin' | 'google_search' | 'github' | 'telegram'
+) {
   const [integration] = await db
     .select()
     .from(integrations)

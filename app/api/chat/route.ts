@@ -123,12 +123,16 @@ export async function POST(request: NextRequest) {
 
     // Get updated chat with all messages
     const updatedChat = await getChatById(currentChatId, userId);
+    
+    // Dispatch event for frontend to refresh chat list
+    // Note: This is server-side, events are handled client-side
 
     return NextResponse.json({
       success: true,
       chatId: currentChatId,
       messages: updatedChat?.messages || [],
       newChat: isNewChat,
+      chatTitle: updatedChat?.title,
     });
 
   } catch (error: any) {

@@ -48,7 +48,7 @@ export async function webSearch(query: string, maxResults: number = 5): Promise<
 
     // Option 2: Use Google Custom Search API (fallback)
     const googleApiKey = process.env.GOOGLE_SEARCH_API_KEY;
-    const googleCx = process.env.GOOGLE_SEARCH_ENGINE_ID;
+    const googleCx = process.env.GOOGLE_SEARCH_ENGINE_ID || '4640afe7d8a674032'; // Default from user's config
 
     if (googleApiKey && googleCx) {
       const url = new URL('https://www.googleapis.com/customsearch/v1');
@@ -78,6 +78,9 @@ export async function webSearch(query: string, maxResults: number = 5): Promise<
         },
       };
     }
+    
+    // Option 3: Use Google Custom Search Element (client-side fallback, но не работает в server-side API)
+    // Для этого нужно использовать на фронтенде или создать отдельный endpoint
 
     // If no API keys configured
     return {

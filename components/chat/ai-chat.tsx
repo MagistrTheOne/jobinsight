@@ -70,12 +70,22 @@ export function AIChat() {
           throw new Error(data.error || "Ошибка отправки сообщения")
         }
 
-        setMessages(data.messages || [])
-        if (data.newChat && data.chatId) {
-          setCurrentChatId(data.chatId)
-          window.dispatchEvent(new Event("chat-created"))
-        }
-        window.dispatchEvent(new Event("usage-refresh"))
+                setMessages(data.messages || [])
+                if (data.newChat && data.chatId) {
+                  setCurrentChatId(data.chatId)
+                  // Update URL
+                  const newUrl = new URL(window.location.href);
+                  newUrl.searchParams.set('chatId', data.chatId);
+                  window.history.pushState({}, '', newUrl.toString());
+                  window.dispatchEvent(new Event("chat-created"))
+                } else if (data.chatId && data.chatId !== currentChatId) {
+                  // Update URL if chat changed
+                  const newUrl = new URL(window.location.href);
+                  newUrl.searchParams.set('chatId', data.chatId);
+                  window.history.pushState({}, '', newUrl.toString());
+                  window.dispatchEvent(new CustomEvent("chat-updated", { detail: { chatId: data.chatId } }));
+                }
+                window.dispatchEvent(new Event("usage-refresh"))
       } catch (e: any) {
         setError(e.message || "Что-то пошло не так")
       } finally {
@@ -116,14 +126,54 @@ export function AIChat() {
     )
   }
 
-  // Load chat from URL on mount - using ref to avoid dependency issues
+  // Load chat from URL on mount and listen for chat selection events
   useEffect(() => {
-    const initialChatId = currentChatId;
-    if (initialChatId) {
-      loadChat(initialChatId);
+    const params = new URLSearchParams(window.location.search);
+    const urlChatId = params.get('chatId');
+    
+    if (urlChatId && urlChatId !== currentChatId) {
+      setCurrentChatId(urlChatId);
+      loadChat(urlChatId);
     }
+    
+    // Listen for chat selection events from sidebar
+    const handleChatSelected = (e: CustomEvent<{ chatId: string }>) => {
+      const chatId = e.detail.chatId;
+      if (chatId && chatId !== currentChatId) {
+        setCurrentChatId(chatId);
+        loadChat(chatId);
+        // Update URL without page reload
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.set('chatId', chatId);
+        window.history.pushState({}, '', newUrl.toString());
+      }
+    };
+    
+    window.addEventListener('chat-selected', handleChatSelected as EventListener);
+    
+    return () => {
+      window.removeEventListener('chat-selected', handleChatSelected as EventListener);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  
+  // Listen for URL changes (browser back/forward)
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const urlChatId = params.get('chatId');
+      if (urlChatId && urlChatId !== currentChatId) {
+        setCurrentChatId(urlChatId);
+        loadChat(urlChatId);
+      } else if (!urlChatId && currentChatId) {
+        setCurrentChatId(null);
+        setMessages([]);
+      }
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [currentChatId, loadChat]);
 
   useEffect(() => {
     const handleCreateNew = () => {
