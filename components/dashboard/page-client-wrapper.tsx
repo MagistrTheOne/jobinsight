@@ -1,14 +1,17 @@
-import { Suspense } from 'react';
-import { DashboardPageWrapper } from '@/components/dashboard/page-client-wrapper';
+"use client";
 
-export default function DashboardPage() {
+import { Suspense } from "react";
+import { DashboardPageContent } from "./page-content";
+
+export function DashboardPageWrapper() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white">Loading...</div>
       </div>
     }>
-      <DashboardPageWrapper />
+      <DashboardPageContent />
     </Suspense>
   );
 }
+

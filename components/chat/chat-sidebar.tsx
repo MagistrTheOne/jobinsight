@@ -126,33 +126,33 @@ export function ChatSidebar({ currentChatId, onSelectChat, onDeleteChat }: ChatS
           ) : (
             <div className="space-y-1">
               {chats.map((chat) => (
-                <button
+                <div
                   key={chat.id}
-                  onClick={() => onSelectChat(chat.id)}
                   className={cn(
-                    "w-full flex items-center justify-between p-2.5 rounded-lg text-left transition-colors group",
+                    "w-full flex items-center justify-between p-2.5 rounded-lg transition-colors group",
                     currentChatId === chat.id
-                      ? "bg-neutral-800/80 text-white"
-                      : "hover:bg-neutral-900/50 text-neutral-300"
+                      ? "bg-neutral-800/80"
+                      : "hover:bg-neutral-900/50"
                   )}
                 >
-                  <div className="flex-1 min-w-0 pr-2">
-                    <div className="text-sm font-medium truncate">
+                  <button
+                    onClick={() => onSelectChat(chat.id)}
+                    className="flex-1 min-w-0 pr-2 text-left"
+                  >
+                    <div className="text-sm font-medium truncate text-white">
                       {chat.title}
                     </div>
                     <div className="text-xs text-neutral-500 mt-0.5">
                       {formatDate(chat.updatedAt)}
                     </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-red-400"
+                  </button>
+                  <button
                     onClick={(e) => handleDelete(chat.id, e)}
+                    className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-red-400 flex items-center justify-center rounded hover:bg-neutral-800/50"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </button>
+                  </button>
+                </div>
               ))}
             </div>
           )}

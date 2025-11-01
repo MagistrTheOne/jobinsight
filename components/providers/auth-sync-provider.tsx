@@ -1,45 +1,24 @@
 "use client";
 
-import { useEffect } from 'react';
-import { authClient } from '@/lib/auth-client';
-import { useAuthStore } from '@/store/auth-store';
+import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+
+// Динамический импорт клиентского компонента синхронизации
+// Это гарантирует, что useSession hook будет вызываться только на клиенте
+const AuthSyncClient = dynamic(
+  () => import('./auth-sync-client').then(mod => ({ default: mod.AuthSyncClient })),
+  { ssr: false }
+);
 
 /**
- * Компонент для синхронизации Better Auth session с Zustand store в реальном времени
- * Автоматически обновляет store при изменении сессии Better Auth
+ * Провайдер для синхронизации Better Auth session с Zustand store
+ * Использует динамический импорт для предотвращения SSR ошибок
  */
 export function AuthSyncProvider({ children }: { children: React.ReactNode }) {
-  const { setSession, setLoading, clearAuth, setUser } = useAuthStore();
-  const { data: session, isPending } = authClient.useSession();
-
-  useEffect(() => {
-    // Устанавливаем состояние загрузки
-    setLoading(isPending);
-
-    // Синхронизируем сессию с store в реальном времени
-    if (!isPending) {
-      if (session?.user) {
-        setSession({
-          user: {
-            id: session.user.id,
-            email: session.user.email || '',
-            name: session.user.name || '',
-            image: session.user.image || undefined,
-          },
-          expiresAt: session.session?.expiresAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        });
-        setUser({
-          id: session.user.id,
-          email: session.user.email || '',
-          name: session.user.name || '',
-          image: session.user.image || undefined,
-        });
-      } else {
-        // Если сессии нет, очищаем store
-        clearAuth();
-      }
-    }
-  }, [session, isPending, setSession, setLoading, clearAuth, setUser]);
-
-  return <>{children}</>;
+  return (
+    <>
+      <AuthSyncClient />
+      {children}
+    </>
+  );
 }

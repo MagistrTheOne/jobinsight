@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./db";
 import { users, sessions, accounts, verifications } from "./db/schema";
+import bcrypt from "bcryptjs";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -63,6 +64,23 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
+    password: {
+      hash: async (password: string) => {
+        return await bcrypt.hash(password, 10);
+      },
+      verify: async ({ password, hash }: { password: string; hash: string }) => {
+        if (!password || !hash) {
+          console.error('Password verification failed: missing password or hash', { password: !!password, hash: !!hash });
+          return false;
+        }
+        try {
+          return await bcrypt.compare(password, hash);
+        } catch (error) {
+          console.error('Password verification error:', error);
+          return false;
+        }
+      },
+    },
     sendResetPassword: async ({ user, url, token }, request) => {
       // TODO: Implement email sending service (e.g., Resend, SendGrid, etc.)
       // For now, log the reset link (in production, send via email service)

@@ -109,9 +109,9 @@ export function AIChat() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-300px)] min-h-[600px] gap-4">
-      {/* Sidebar */}
-      <div className="w-64 shrink-0">
+    <div className="flex flex-col lg:flex-row h-full gap-3 sm:gap-4">
+      {/* Chat History Sidebar */}
+      <div className="w-full lg:w-64 shrink-0">
         <ChatSidebar
           currentChatId={currentChatId || undefined}
           onSelectChat={handleSelectChat}
@@ -120,7 +120,7 @@ export function AIChat() {
       </div>
 
       {/* Main Chat Area */}
-      <GlassCard className="flex-1 flex flex-col bg-neutral-950/60 backdrop-blur-sm border border-neutral-800/50">
+      <GlassCard className="flex-1 flex flex-col bg-neutral-950/60 backdrop-blur-sm border border-neutral-800/50 h-full min-h-[500px] lg:min-h-0">
         {/* Error Display */}
         {error && (
           <div className="p-4 border-b border-neutral-800/50">
