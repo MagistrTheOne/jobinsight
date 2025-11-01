@@ -77,12 +77,12 @@ export function UserButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="relative w-full flex items-center gap-3 p-2 rounded-lg bg-gradient-to-br from-blue-600/20 to-purple-600/20 backdrop-blur-sm border border-blue-500/30 hover:border-blue-500/50 transition-all group">
+        <button className="relative w-full flex items-center gap-3 p-2 rounded-lg bg-linear-to-br from-blue-600/20 to-purple-600/20 backdrop-blur-sm border border-blue-500/30 hover:border-blue-500/50 transition-all group">
           <Avatar className="h-8 w-8 shrink-0">
             {user.image ? (
               <AvatarImage src={user.image} alt={userName} />
             ) : null}
-            <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white text-xs">
+            <AvatarFallback className="bg-linear-to-br from-blue-600 to-purple-600 text-white text-xs">
               {userInitials}
             </AvatarFallback>
           </Avatar>
