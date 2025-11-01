@@ -88,7 +88,11 @@ export async function scrapeResume(url: string): Promise<ScrapedResume> {
     if ((urlObj.hostname.includes('hh.ru') || urlObj.hostname.includes('headhunter.ru')) && url.includes('resume')) {
       try {
         return await parseHHResume(url);
-      } catch (error) {
+      } catch (error: any) {
+        // Если это ошибка авторизации/приватности, пробрасываем её дальше
+        if (error.message?.includes('авторизации') || error.message?.includes('приватным')) {
+          throw error;
+        }
         // Если не удалось через API, пробуем парсить HTML
         console.warn('HH API failed, trying HTML parsing:', error);
       }
@@ -108,6 +112,10 @@ export async function scrapeResume(url: string): Promise<ScrapedResume> {
     });
 
     if (!response.ok) {
+      // Если это 403/401, возвращаем понятную ошибку
+      if (response.status === 403 || response.status === 401) {
+        throw new Error('Это резюме требует авторизации или является приватным. Пожалуйста, скопируйте текст резюме вручную.');
+      }
       throw new Error(`Failed to fetch content: ${response.status} ${response.statusText}`);
     }
 

@@ -38,11 +38,40 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Resume fetch error:', error);
+    
+    // Обрабатываем специфичные ошибки
+    const errorMessage = error.message || 'Unknown error occurred';
+    
+    // Если это ошибка авторизации или приватного резюме
+    if (errorMessage.includes('авторизации') || errorMessage.includes('приватным') || errorMessage.includes('403') || errorMessage.includes('401')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Private or authorized resume',
+          message: 'Это резюме требует авторизации или является приватным. Пожалуйста, скопируйте текст резюме вручную.'
+        },
+        { status: 403 }
+      );
+    }
+    
+    // Если это ошибка неверного URL
+    if (errorMessage.includes('Invalid URL') || errorMessage.includes('Invalid')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid URL',
+          message: errorMessage
+        },
+        { status: 400 }
+      );
+    }
+    
+    // Для остальных ошибок возвращаем 500
     return NextResponse.json(
       {
         success: false,
         error: 'Failed to fetch resume',
-        message: error.message || 'Unknown error occurred'
+        message: errorMessage
       },
       { status: 500 }
     );
