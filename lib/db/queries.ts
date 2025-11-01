@@ -750,3 +750,53 @@ export async function updateSalaryNegotiation(id: string, userId: string, update
   return updated;
 }
 
+// Integrations queries
+export async function getUserIntegrations(userId: string) {
+  return await db
+    .select()
+    .from(integrations)
+    .where(and(eq(integrations.userId, userId), eq(integrations.isActive, 1)))
+    .orderBy(desc(integrations.createdAt));
+}
+
+export async function getIntegrationById(id: string, userId: string) {
+  const [integration] = await db
+    .select()
+    .from(integrations)
+    .where(and(eq(integrations.id, id), eq(integrations.userId, userId)))
+    .limit(1);
+  return integration;
+}
+
+export async function createIntegration(integrationData: NewIntegration) {
+  const [created] = await db
+    .insert(integrations)
+    .values(integrationData)
+    .returning();
+  return created;
+}
+
+export async function updateIntegration(id: string, userId: string, integrationData: Partial<NewIntegration>) {
+  const [updated] = await db
+    .update(integrations)
+    .set({ ...integrationData, updatedAt: new Date() })
+    .where(and(eq(integrations.id, id), eq(integrations.userId, userId)))
+    .returning();
+  return updated;
+}
+
+export async function deleteIntegration(id: string, userId: string) {
+  await db
+    .delete(integrations)
+    .where(and(eq(integrations.id, id), eq(integrations.userId, userId)));
+}
+
+export async function getUserIntegrationByType(userId: string, type: string) {
+  const [integration] = await db
+    .select()
+    .from(integrations)
+    .where(and(eq(integrations.userId, userId), eq(integrations.type, type), eq(integrations.isActive, 1)))
+    .limit(1);
+  return integration;
+}
+
