@@ -73,27 +73,27 @@ function SignInContent() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-black text-white flex items-center justify-center p-3 sm:p-4 md:p-6">
       <GlassCard className="w-full max-w-md">
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-5 md:space-y-6">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-            <p className="text-gray-300">Sign in to your JobInsight AI account</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1.5 sm:mb-2">Welcome Back</h1>
+            <p className="text-sm sm:text-base text-gray-300">Sign in to your JobInsight AI account</p>
           </div>
 
           {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+            <Alert variant="destructive" className="py-2 sm:py-3">
+              <AlertDescription className="text-xs sm:text-sm">{error}</AlertDescription>
             </Alert>
           )}
 
           {/* OAuth Providers */}
-          <div className="space-y-3">
+          <div className="space-y-2.5 sm:space-y-3">
             <Button
               type="button"
               onClick={() => handleOAuthSignIn('google')}
               disabled={isLoading}
-              className="w-full bg-white text-gray-900 hover:bg-gray-100"
+              className="w-full h-10 sm:h-11 bg-white text-gray-900 hover:bg-gray-100 text-sm sm:text-base"
             >
               <Mail className="mr-2 h-4 w-4" />
               Continue with Google
@@ -103,7 +103,7 @@ function SignInContent() {
               type="button"
               onClick={() => handleOAuthSignIn('github')}
               disabled={isLoading}
-              className="w-full bg-gray-900 text-white hover:bg-gray-800 border border-gray-700"
+              className="w-full h-10 sm:h-11 bg-gray-900 text-white hover:bg-gray-800 border border-gray-700 text-sm sm:text-base"
             >
               <Github className="mr-2 h-4 w-4" />
               Continue with GitHub
@@ -120,9 +120,9 @@ function SignInContent() {
           </div>
 
           {/* Credentials Form */}
-          <form onSubmit={handleCredentialsSignIn} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-white">Email</Label>
+          <form onSubmit={handleCredentialsSignIn} className="space-y-3 sm:space-y-4">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="email" className="text-white text-sm sm:text-base">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -131,17 +131,17 @@ function SignInContent() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="bg-gray-900/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:border-white/50"
+                className="h-10 sm:h-11 bg-gray-900/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:border-white/50 text-sm sm:text-base"
                 disabled={isLoading}
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-white">Password</Label>
+                <Label htmlFor="password" className="text-white text-sm sm:text-base">Password</Label>
                 <a
                   href="/auth/forgot-password"
-                  className="text-sm text-blue-400 hover:text-blue-300 underline"
+                  className="text-xs sm:text-sm text-blue-400 hover:text-blue-300 underline"
                 >
                   Forgot password?
                 </a>
@@ -154,7 +154,7 @@ function SignInContent() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="bg-gray-900/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:border-white/50"
+                className="h-10 sm:h-11 bg-gray-900/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:border-white/50 text-sm sm:text-base"
                 disabled={isLoading}
               />
             </div>
@@ -162,7 +162,7 @@ function SignInContent() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="w-full h-10 sm:h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-sm sm:text-base"
             >
               {isLoading ? (
                 <>
@@ -175,7 +175,7 @@ function SignInContent() {
             </Button>
           </form>
 
-          <div className="text-center text-sm text-gray-300">
+          <div className="text-center text-xs sm:text-sm text-gray-300">
             Don't have an account?{' '}
             <a href="/auth/signup" className="text-white hover:text-gray-200 underline font-medium">
               Sign up

@@ -52,8 +52,8 @@ export function ChatInput({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-1.5">
-      <div className="flex items-end gap-2">
+    <form onSubmit={handleSubmit} className="w-full space-y-1 sm:space-y-1.5">
+      <div className="flex items-end gap-1.5 sm:gap-2">
         <Textarea
           ref={textareaRef}
           value={message}
@@ -63,26 +63,26 @@ export function ChatInput({
           disabled={isLoading || disabled}
           rows={1}
           className={cn(
-            "min-h-[52px] max-h-[200px] resize-none rounded-2xl px-4 py-3 pr-14 shadow-sm",
+            "min-h-[44px] sm:min-h-[52px] max-h-[200px] resize-none rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 pr-11 sm:pr-14 shadow-sm",
             "bg-white/10 border-white/20 text-white placeholder:text-neutral-400 backdrop-blur-md",
             "focus-visible:ring-1 focus-visible:ring-white/30 focus-visible:border-white/30",
-            "disabled:opacity-50",
+            "disabled:opacity-50 text-sm sm:text-base",
           )}
         />
         <Button
           type="submit"
           size="icon"
           disabled={!message.trim() || isLoading || disabled}
-          className="h-[52px] w-[52px] shrink-0 rounded-xl bg-white/15 border border-white/20 text-white shadow-sm hover:bg-white/25 disabled:cursor-not-allowed disabled:opacity-50 backdrop-blur-md transition-all"
+          className="h-[44px] w-[44px] sm:h-[52px] sm:w-[52px] shrink-0 rounded-lg sm:rounded-xl bg-white/15 border border-white/20 text-white shadow-sm hover:bg-white/25 disabled:cursor-not-allowed disabled:opacity-50 backdrop-blur-md transition-all"
         >
           {isLoading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
           ) : (
-            <Send className="h-5 w-5" />
+            <Send className="h-4 w-4 sm:h-5 sm:w-5" />
           )}
         </Button>
       </div>
-      <p className="text-center text-[10px] text-neutral-500">
+      <p className="text-center text-[9px] sm:text-[10px] text-neutral-500 px-2">
         Enter — отправить • Shift + Enter — новая строка
       </p>
     </form>

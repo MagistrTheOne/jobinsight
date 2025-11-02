@@ -48,14 +48,14 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   if (displayMessages.length === 0) {
     return (
       <ScrollArea className="h-full w-full">
-        <div className="flex min-h-[60vh] flex-col items-center justify-center text-center px-4">
-          <div className="mb-5 rounded-full bg-white/5 border border-white/10 p-3 backdrop-blur-sm">
-            <Bot className="h-12 w-12 text-white" />
+        <div className="flex min-h-[50vh] sm:min-h-[60vh] flex-col items-center justify-center text-center px-3 sm:px-4">
+          <div className="mb-4 sm:mb-5 rounded-full bg-white/5 border border-white/10 p-2.5 sm:p-3 backdrop-blur-sm">
+            <Bot className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
           </div>
-          <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+          <h3 className="text-base sm:text-lg md:text-xl font-semibold text-white mb-1.5 sm:mb-2 px-2">
             Начните разговор с AI Hunter
           </h3>
-          <p className="text-xs sm:text-sm text-neutral-500 max-w-lg">
+          <p className="text-[11px] sm:text-xs md:text-sm text-neutral-500 max-w-lg px-3">
             Я помогу вам составить резюме, подготовиться к собеседованию или найти подходящие вакансии
           </p>
         </div>
@@ -65,8 +65,8 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
 
   return (
     <ScrollArea className="h-full w-full">
-      <div className="mx-auto max-w-4xl px-4 py-4 sm:py-6">
-        <div className="space-y-4 sm:space-y-6">
+      <div className="mx-auto max-w-4xl px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6">
+        <div className="space-y-3 sm:space-y-4 md:space-y-6">
           {displayMessages.map((m) => (
             <MessageBubble
               key={m.id}
@@ -112,16 +112,16 @@ const MessageBubble = memo(
         )}
       >
         {!isUser && (
-          <Avatar className="h-7 w-7 shrink-0 border border-white/10">
+          <Avatar className="h-6 w-6 sm:h-7 sm:w-7 shrink-0 border border-white/10">
             <AvatarFallback className="bg-white/10 text-white backdrop-blur-sm">
-              <Bot className="h-3.5 w-3.5" />
+              <Bot className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </AvatarFallback>
           </Avatar>
         )}
 
         <div
           className={cn(
-            "flex max-w-[90%] flex-col md:max-w-[80%]",
+            "flex max-w-[85%] sm:max-w-[90%] flex-col md:max-w-[80%]",
             isUser ? "items-end" : "items-start",
           )}
         >
@@ -135,27 +135,27 @@ const MessageBubble = memo(
           </div>
 
           {isUser ? (
-            <div className="relative rounded-lg bg-white/10 border border-white/10 px-3.5 py-2.5 text-white shadow-sm backdrop-blur-sm">
-              <div className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed">
+            <div className="relative rounded-lg bg-white/10 border border-white/10 px-2.5 sm:px-3.5 py-2 sm:py-2.5 text-white shadow-sm backdrop-blur-sm">
+              <div className="whitespace-pre-wrap wrap-break-word text-xs sm:text-sm leading-relaxed">
                 {message.content}
               </div>
             </div>
           ) : (
-            <div className="relative rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 shadow-sm backdrop-blur-sm">
+            <div className="relative rounded-lg border border-white/10 bg-white/5 px-2.5 sm:px-3.5 py-2 sm:py-2.5 shadow-sm backdrop-blur-sm">
               <MarkdownContent>{message.content}</MarkdownContent>
               <Button
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "absolute -top-1 -right-1 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100",
+                  "absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 h-5 w-5 sm:h-6 sm:w-6 opacity-0 transition-opacity group-hover:opacity-100",
                   "text-neutral-500 hover:text-white hover:bg-white/10",
                 )}
                 onClick={() => onCopy(message.content, message.id)}
               >
                 {copiedId === message.id ? (
-                  <Check className="h-3 w-3" />
+                  <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 ) : (
-                  <Copy className="h-3 w-3" />
+                  <Copy className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 )}
               </Button>
             </div>
@@ -163,9 +163,9 @@ const MessageBubble = memo(
         </div>
 
         {isUser && (
-          <Avatar className="h-7 w-7 shrink-0 border border-white/10">
+          <Avatar className="h-6 w-6 sm:h-7 sm:w-7 shrink-0 border border-white/10">
             {userImage && <AvatarImage src={userImage} alt={userName} />}
-            <AvatarFallback className="bg-white/10 text-white backdrop-blur-sm">
+            <AvatarFallback className="bg-white/10 text-white backdrop-blur-sm text-xs sm:text-sm">
               {userName.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
