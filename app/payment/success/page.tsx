@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Loader2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const paymentId = searchParams.get('payment_id');
@@ -98,6 +98,23 @@ export default function PaymentSuccessPage() {
         </div>
       </GlassCard>
     </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center px-4">
+        <GlassCard className="max-w-md w-full p-8 bg-black/40 border-white/10 backdrop-blur-xl">
+          <div className="text-center">
+            <Loader2 className="h-16 w-16 mx-auto mb-4 text-blue-400 animate-spin" />
+            <h1 className="text-2xl font-bold text-white mb-2">Загрузка...</h1>
+          </div>
+        </GlassCard>
+      </div>
+    }>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }
 
