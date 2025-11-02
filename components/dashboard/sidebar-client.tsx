@@ -213,9 +213,9 @@ export function DashboardSidebar() {
       </div>
 
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-2 sm:px-3 py-4">
+      <ScrollArea className="flex-1 px-2 sm:px-3 py-3 sm:py-4">
         <TooltipProvider delayDuration={300}>
-          <nav className="space-y-1">
+          <nav className="space-y-0.5 sm:space-y-1">
             {navItems.map((item) => {
               const isActive = activeTab === item.href.split('tab=')[1];
               const button = (
@@ -223,24 +223,24 @@ export function DashboardSidebar() {
                   key={item.href}
                   onClick={() => handleNavigation(item.href)}
                   className={cn(
-                    "w-full flex items-center rounded-md text-xs font-medium transition-all relative",
+                    "w-full flex items-center rounded-md text-[11px] sm:text-xs font-medium transition-all relative",
                     "hover:bg-white/5 hover:text-white",
                     isActive
                       ? "bg-white/10 text-white border border-white/10"
                       : "text-neutral-400 border border-transparent",
                     isCollapsed 
-                      ? "justify-center px-2 py-2" 
-                      : "gap-2.5 px-2.5 py-2"
+                      ? "justify-center px-1.5 sm:px-2 py-1.5 sm:py-2" 
+                      : "gap-2 sm:gap-2.5 px-2 sm:px-2.5 py-1.5 sm:py-2"
                   )}
                 >
-                  <div className="flex items-center shrink-0 [&_svg]:h-3.5 [&_svg]:w-3.5">
+                  <div className="flex items-center shrink-0 [&_svg]:h-3 w-3 sm:[&_svg]:h-3.5 sm:[&_svg]:w-3.5">
                     {item.icon}
                   </div>
                   {!isCollapsed && (
                     <>
-                      <span className="truncate">{item.title}</span>
+                      <span className="truncate text-[11px] sm:text-xs">{item.title}</span>
                       {item.badge && (
-                        <span className="ml-auto px-1.5 py-0.5 text-[10px] rounded bg-blue-500/20 text-blue-400 border border-blue-500/20">
+                        <span className="ml-auto px-1 sm:px-1.5 py-0.5 text-[9px] sm:text-[10px] rounded bg-blue-500/20 text-blue-400 border border-blue-500/20">
                           {item.badge}
                         </span>
                       )}
@@ -449,7 +449,7 @@ export function DashboardSidebar() {
       {/* Desktop Sidebar */}
       <aside 
         className={cn(
-          "hidden lg:flex h-screen flex-col bg-black/60 backdrop-blur-2xl border-r border-white/5 fixed left-0 top-0 z-40 transition-all duration-300 w-full",
+          "hidden lg:flex h-screen flex-col bg-black/60 backdrop-blur-2xl border-r border-white/5 fixed left-0 top-0 z-40 transition-all duration-300",
           isCollapsed ? "w-16" : "w-64"
         )}
       >
@@ -468,7 +468,7 @@ export function DashboardSidebar() {
               <Menu className="h-5 w-5 text-white" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0 bg-black/95 backdrop-blur-xl border-neutral-800/50">
+          <SheetContent side="left" className="w-[280px] sm:w-64 p-0 bg-black/95 backdrop-blur-xl border-neutral-800/50">
             <div className="flex flex-col h-full">
               <SidebarContent />
             </div>
