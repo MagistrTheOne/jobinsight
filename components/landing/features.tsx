@@ -82,27 +82,27 @@ const features = [
 
 export function Features() {
   return (
-    <section id="features" className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#0b0b0b] text-white min-h-[600px] sm:min-h-[700px] flex items-center">
+    <section id="features" className="py-12 sm:py-16 md:py-20 lg:py-24 px-3 sm:px-4 md:px-6 lg:px-8 bg-[#0b0b0b] text-white min-h-[500px] sm:min-h-[600px] md:min-h-[700px] flex items-center">
       <div className="container mx-auto max-w-7xl w-full">
-        <div className="text-center mb-12 sm:mb-16 lg:mb-20 px-4">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 tracking-tight">
+        <div className="text-center mb-8 sm:mb-12 md:mb-16 lg:mb-20 px-2 sm:px-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3 md:mb-4 tracking-tight px-2">
             Powerful Features for Your Job Search
           </h2>
-          <p className="text-base sm:text-lg lg:text-xl text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-neutral-400 max-w-2xl mx-auto leading-relaxed px-3">
             Everything you need to optimize your job applications and land your dream position.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
           {features.map((feature, index) => (
             <GlassCard
               key={index}
-              className="p-5 sm:p-6 lg:p-7 bg-neutral-950/60 backdrop-blur-sm border border-neutral-800/50 rounded-lg hover:border-neutral-700/50 transition-all duration-300 h-full flex flex-col"
+              className="p-4 sm:p-5 md:p-6 lg:p-7 bg-neutral-950/60 backdrop-blur-sm border border-neutral-800/50 rounded-lg hover:border-neutral-700/50 transition-all duration-300 h-full flex flex-col"
             >
-              <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-white leading-snug">
+              <h3 className="text-sm sm:text-base md:text-lg font-semibold mb-1.5 sm:mb-2 md:mb-3 text-white leading-snug">
                 {feature.title}
               </h3>
-              <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed flex-grow">
+              <p className="text-[11px] sm:text-xs md:text-sm text-neutral-400 leading-relaxed flex-grow">
                 {feature.description}
               </p>
             </GlassCard>

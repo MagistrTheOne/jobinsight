@@ -32,50 +32,49 @@ export function DashboardNavbar() {
       <Breadcrumbs />
       
       {/* Main Navbar - Centered and Compact */}
-      <div className="h-11 flex items-center justify-center px-4 sm:px-6 gap-3 border-t border-white/5">
-        {/* Mobile Menu Button */}
-        <div className="lg:hidden shrink-0 absolute left-3">
-          {/* Menu button is handled by Sidebar Sheet */}
-        </div>
-
+      <div className="h-10 sm:h-11 flex items-center justify-center px-2 sm:px-4 md:px-6 gap-2 sm:gap-3 border-t border-white/5">
         {/* Search - Centered */}
         <form onSubmit={handleSearch} className="flex-1 max-w-2xl min-w-0 flex justify-center">
           <div className="relative w-full max-w-2xl">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
+            <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-neutral-400" />
             <Input
               type="text"
-              placeholder="Поиск по чатам, вакансиям, резюме..."
+              placeholder="Поиск..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-3 h-9 text-sm bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/10 w-full backdrop-blur-sm"
+              className="pl-8 sm:pl-10 pr-2 sm:pr-3 h-8 sm:h-9 text-xs sm:text-sm bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white/20 focus:ring-1 focus:ring-white/10 w-full backdrop-blur-sm"
             />
           </div>
         </form>
 
         {/* Right Side Actions - Compact */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {/* Usage Limits - Mobile only */}
           <div className="lg:hidden">
             <UsageLimits />
           </div>
 
           {/* Language Toggle */}
-          <LanguageToggle />
+          <div className="hidden sm:block">
+            <LanguageToggle />
+          </div>
 
           {/* Theme Toggle */}
           <ThemeToggle />
 
           {/* Landing/Dashboard Toggle */}
-          <LandingToggle />
+          <div className="hidden md:block">
+            <LandingToggle />
+          </div>
 
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9 bg-white/5 border border-white/10 hover:bg-white/10 text-white">
-                <Bell className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 bg-white/5 border border-white/10 hover:bg-white/10 text-white">
+                <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-72 bg-black/95 backdrop-blur-xl border-white/10">
+            <DropdownMenuContent align="end" className="w-64 sm:w-72 bg-black/95 backdrop-blur-xl border-white/10">
               <DropdownMenuLabel className="text-xs text-white">Уведомления</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-white/5" />
               <div className="p-4 text-center text-xs text-neutral-500">

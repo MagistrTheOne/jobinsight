@@ -33,7 +33,9 @@ export default function DashboardLayoutClient({ children }: DashboardLayoutClien
       <DashboardSidebar />
       <div 
         className={cn(
-          "flex flex-1 flex-col overflow-hidden transition-all duration-300",
+          "flex flex-1 flex-col overflow-hidden transition-all duration-300 w-full",
+          // Mobile: sidebar скрыт, контент на всю ширину
+          // Desktop: контент смещается в зависимости от состояния sidebar
           isCollapsed ? "lg:ml-16" : "lg:ml-64"
         )}
       >

@@ -71,45 +71,45 @@ export function Pricing() {
   };
 
   return (
-    <section id="pricing" className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#0b0b0b] text-white min-h-[600px] sm:min-h-[700px] flex items-center">
+    <section id="pricing" className="py-12 sm:py-16 md:py-20 lg:py-24 px-3 sm:px-4 md:px-6 lg:px-8 bg-[#0b0b0b] text-white min-h-[500px] sm:min-h-[600px] md:min-h-[700px] flex items-center">
       <div className="container mx-auto max-w-7xl w-full">
-        <div className="text-center mb-12 sm:mb-16 lg:mb-20 px-4">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 tracking-tight">
+        <div className="text-center mb-8 sm:mb-12 md:mb-16 lg:mb-20 px-2 sm:px-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3 md:mb-4 tracking-tight px-2">
             Simple, Transparent Pricing
           </h2>
-          <p className="text-base sm:text-lg lg:text-xl text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-neutral-400 max-w-2xl mx-auto leading-relaxed px-3">
             Choose the plan that works best for your job search.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 lg:gap-8 max-w-6xl mx-auto">
           {plans.map((plan, index) => (
             <GlassCard
               key={index}
-              className={`p-6 sm:p-7 lg:p-8 bg-neutral-950/60 backdrop-blur-sm border rounded-lg h-full flex flex-col transition-all duration-300 ${
+              className={`p-5 sm:p-6 md:p-7 lg:p-8 bg-neutral-950/60 backdrop-blur-sm border rounded-lg h-full flex flex-col transition-all duration-300 ${
                 index === 1
-                  ? 'border-neutral-700/50 lg:scale-105 lg:shadow-xl'
+                  ? 'border-neutral-700/50 md:scale-105 md:shadow-xl'
                   : 'border-neutral-800/50 hover:border-neutral-700/50'
               }`}
             >
-              <div className="text-center mb-6 sm:mb-8">
-                <h3 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-3 text-white">{plan.name}</h3>
+              <div className="text-center mb-5 sm:mb-6 md:mb-8">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2 sm:mb-3 text-white">{plan.name}</h3>
                 <div className="flex items-baseline justify-center gap-1 mb-2">
-                  <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white">
+                  <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white">
                     {plan.price === 'Custom' ? plan.price : `$${plan.price}`}
                   </span>
                   {plan.period && (
-                    <span className="text-sm sm:text-base text-neutral-500">/{plan.period}</span>
+                    <span className="text-xs sm:text-sm md:text-base text-neutral-500">/{plan.period}</span>
                   )}
                 </div>
-                <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed px-2">{plan.description}</p>
+                <p className="text-[11px] sm:text-xs md:text-sm text-neutral-400 leading-relaxed px-2">{plan.description}</p>
               </div>
 
-              <ul className="space-y-2 sm:space-y-2.5 mb-6 sm:mb-8 grow">
+              <ul className="space-y-1.5 sm:space-y-2 md:space-y-2.5 mb-5 sm:mb-6 md:mb-8 grow">
                 {plan.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-2.5 sm:gap-3">
-                    <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-neutral-500 mt-0.5 shrink-0" />
-                    <span className="text-xs sm:text-sm text-neutral-300 leading-relaxed">{feature}</span>
+                  <li key={idx} className="flex items-start gap-2 sm:gap-2.5 md:gap-3">
+                    <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-neutral-500 mt-0.5 shrink-0" />
+                    <span className="text-[11px] sm:text-xs md:text-sm text-neutral-300 leading-relaxed">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -117,11 +117,11 @@ export function Pricing() {
               {index === 1 ? (
                 <div className="mt-auto">
                   {isAuthenticated ? (
-                    <CheckoutButton plan="pro" className="w-full h-10 sm:h-11 text-sm sm:text-base font-medium transition-all bg-neutral-800 hover:bg-neutral-700 text-white" />
+                    <CheckoutButton plan="pro" className="w-full h-9 sm:h-10 md:h-11 text-xs sm:text-sm md:text-base font-medium transition-all bg-neutral-800 hover:bg-neutral-700 text-white" />
                   ) : (
                     <Button
                       onClick={handleProClick}
-                      className="w-full h-10 sm:h-11 text-sm sm:text-base font-medium transition-all bg-neutral-800 hover:bg-neutral-700 text-white"
+                      className="w-full h-9 sm:h-10 md:h-11 text-xs sm:text-sm md:text-base font-medium transition-all bg-neutral-800 hover:bg-neutral-700 text-white"
                     >
                       {plan.cta}
                     </Button>
@@ -129,7 +129,7 @@ export function Pricing() {
                 </div>
               ) : (
                 <Link href="/auth/signup" className="mt-auto">
-                  <Button className={`w-full h-10 sm:h-11 text-sm sm:text-base font-medium transition-all ${
+                  <Button className={`w-full h-9 sm:h-10 md:h-11 text-xs sm:text-sm md:text-base font-medium transition-all ${
                     'bg-neutral-800/80 hover:bg-neutral-700 text-white'
                   }`}>
                     {plan.cta}

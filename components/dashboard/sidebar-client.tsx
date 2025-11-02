@@ -449,7 +449,7 @@ export function DashboardSidebar() {
       {/* Desktop Sidebar */}
       <aside 
         className={cn(
-          "hidden lg:flex h-screen flex-col bg-black/60 backdrop-blur-2xl border-r border-white/5 fixed left-0 top-0 z-40 transition-all duration-300",
+          "hidden lg:flex h-screen flex-col bg-black/60 backdrop-blur-2xl border-r border-white/5 fixed left-0 top-0 z-40 transition-all duration-300 w-full",
           isCollapsed ? "w-16" : "w-64"
         )}
       >
