@@ -110,7 +110,9 @@ export const auth = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET || "",
-  baseURL: process.env.BETTER_AUTH_URL || process.env.NEXTAUTH_URL || "http://localhost:3000",
+  // baseURL может быть не указан - Better Auth попытается определить автоматически из request headers
+  // Для production лучше указать BETTER_AUTH_URL, но это не критично если есть fallback
+  baseURL: process.env.BETTER_AUTH_URL || process.env.NEXTAUTH_URL || undefined,
   basePath: "/api/auth",
 });
 
