@@ -30,11 +30,10 @@ GIGACHAT_SCOPE=GIGACHAT_API_PERS
 #### 2. Better Auth:
 ```
 BETTER_AUTH_SECRET=QZaSDiGGyKZEpccjdtjMfVcCOZws2UwK
-BETTER_AUTH_URL=https://your-app.vercel.app
-NEXT_PUBLIC_BETTER_AUTH_URL=https://your-app.vercel.app
-NEXTAUTH_URL=https://your-app.vercel.app
 ```
-⚠️ **Важно**: Замените `your-app.vercel.app` на реальный домен вашего приложения!
+✅ **Автоматически**: `VERCEL_URL` устанавливается автоматически Vercel для всех деплоев (production, preview, branch)
+⚠️ **Важно**: `BETTER_AUTH_URL` теперь **опциональный** - будет автоматически определяться из `VERCEL_URL`
+📝 **Примечание**: `NEXT_PUBLIC_BETTER_AUTH_URL` НЕ устанавливаем - клиент использует `window.location.origin`
 
 #### 3. OAuth Providers:
 ```
