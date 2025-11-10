@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, CreditCard } from 'lucide-react';
 import { PaymentMethodSelector } from './payment-method-selector';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from '@/lib/i18n/use-translations';
 
 interface CheckoutButtonProps {
   plan: 'pro' | 'enterprise';
@@ -13,6 +14,7 @@ interface CheckoutButtonProps {
 }
 
 export function CheckoutButton({ plan, billingCycle = 'monthly', className }: CheckoutButtonProps) {
+  const { t } = useTranslations();
   const [selectedMethod, setSelectedMethod] = useState<'polar' | 'yookassa' | null>(null);
   const [isCreatingPayment, setIsCreatingPayment] = useState(false);
   const router = useRouter();
@@ -72,12 +74,12 @@ export function CheckoutButton({ plan, billingCycle = 'monthly', className }: Ch
             {isCreatingPayment ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Создание платежа...
+                {t('payments.creatingPayment')}
               </>
             ) : (
               <>
                 <CreditCard className="mr-2 h-4 w-4" />
-                Перейти к оплате
+                {t('payments.checkout')}
               </>
             )}
           </Button>
@@ -97,12 +99,12 @@ export function CheckoutButton({ plan, billingCycle = 'monthly', className }: Ch
             {isCreatingPayment ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Создание платежа...
+                {t('payments.creatingPayment')}
               </>
             ) : (
               <>
                 <CreditCard className="mr-2 h-4 w-4" />
-                {selectedMethod === 'yookassa' ? 'Оплатить через ЮKassa' : 'Оплатить через Polar'}
+                {selectedMethod === 'yookassa' ? t('payments.payWithYookassa') : t('payments.payWithPolar')}
               </>
             )}
           </Button>
@@ -112,7 +114,7 @@ export function CheckoutButton({ plan, billingCycle = 'monthly', className }: Ch
             className="w-full"
             disabled={isCreatingPayment}
           >
-            Выбрать другой способ
+{t('payments.chooseAnotherMethod')}
           </Button>
         </div>
       )}

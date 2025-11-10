@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useAuthStore } from "@/store/auth-store";
 import { useRouter } from "next/navigation";
 import { CheckoutButton } from "@/components/payments/checkout-button";
+import { useTranslations } from "@/lib/i18n/use-translations";
 
 const plans = [
   {
@@ -71,6 +72,7 @@ const plans = [
 ];
 
 export function Pricing() {
+  const { t } = useTranslations();
   const { isAuthenticated } = useAuthStore();
   const router = useRouter();
   const [isYearly, setIsYearly] = useState(false);
@@ -89,10 +91,10 @@ export function Pricing() {
     >
       <div className="max-w-7xl mx-auto w-full text-center mb-14">
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 tracking-tight">
-          Simple, Transparent Pricing
+          {t('pricing.title')}
         </h2>
         <p className="text-neutral-400 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto mb-6 leading-relaxed">
-          Choose the plan that works best for your job search.
+          {t('pricing.subtitle')}
         </p>
 
         {/* Billing Toggle */}
@@ -104,9 +106,9 @@ export function Pricing() {
                 ? "bg-white/10 text-white shadow"
                 : "text-neutral-400 hover:text-white"
             }`}
-          >
-            Monthly
-          </button>
+            >
+              {t('pricing.monthly')}
+            </button>
           <button
             onClick={() => setIsYearly(true)}
             className={`px-4 py-2 text-sm rounded-full transition ${
@@ -115,7 +117,7 @@ export function Pricing() {
                 : "text-neutral-400 hover:text-white"
             }`}
           >
-            Yearly
+              {t('pricing.yearly')}
             <span className="ml-2 text-green-400 text-xs">Save 20%</span>
           </button>
         </div>
