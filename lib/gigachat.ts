@@ -101,44 +101,70 @@ class GigaChatAPI {
     });
   }
 
-  private async getAccessToken(): Promise<string> {
+  private async getAccessToken(retries: number = 3): Promise<string> {
     // Check if token is valid and not expired
     if (this.token && Date.now() < this.token.expires_at) {
       return this.token.access_token;
     }
 
-    try {
-      // Используем axios с кастомным HTTPS agent для поддержки сертификатов Минцифры
-      const response = await this.axiosInstance.post(
-        this.oauthUrl,
-        'scope=GIGACHAT_API_PERS',
-        {
-          headers: {
-            'Authorization': `Basic ${this.authKey}`,
-            'RqUID': crypto.randomUUID(),
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json'
+    let lastError: any = null;
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        // Используем axios с кастомным HTTPS agent для поддержки сертификатов Минцифры
+        const response = await this.axiosInstance.post(
+          this.oauthUrl,
+          'scope=GIGACHAT_API_PERS',
+          {
+            headers: {
+              'Authorization': `Basic ${this.authKey}`,
+              'RqUID': crypto.randomUUID(),
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Accept': 'application/json'
+            }
           }
+        );
+
+        const data = response.data;
+        
+        this.token = {
+          access_token: data.access_token,
+          expires_in: data.expires_in,
+          expires_at: Date.now() + (data.expires_in * 1000) - 60000 // Refresh 1 minute early
+        };
+
+        return this.token.access_token;
+      } catch (error: any) {
+        lastError = error;
+        
+        // Handle 429 Too Many Requests with exponential backoff
+        if (error.response?.status === 429) {
+          if (attempt < retries) {
+            // Exponential backoff: 2s, 4s, 8s
+            const delay = Math.min(Math.pow(2, attempt + 1) * 1000, 10000);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+          throw new Error(`Rate limit exceeded. Please try again later.`);
         }
-      );
 
-      const data = response.data;
-      
-      this.token = {
-        access_token: data.access_token,
-        expires_in: data.expires_in,
-        expires_at: Date.now() + (data.expires_in * 1000) - 60000 // Refresh 1 minute early
-      };
+        // For other errors, throw immediately
+        if (error.response) {
+          throw new Error(`OAuth request failed: ${error.response.status} ${error.response.statusText || 'Unknown error'}`);
+        }
+        
+        // Network errors - retry with backoff
+        if (attempt < retries && (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.code === 'ENOTFOUND')) {
+          const delay = Math.min(Math.pow(2, attempt + 1) * 1000, 10000);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
 
-      return this.token.access_token;
-    } catch (error: any) {
-      console.error('Failed to obtain GigaChat access token:', error);
-      if (error.response) {
-        console.error('OAuth response:', error.response.data);
-        throw new Error(`OAuth request failed: ${error.response.status} ${error.response.statusText}`);
+        throw new Error('Authentication failed');
       }
-      throw new Error('Authentication failed');
     }
+
+    throw lastError || new Error('Authentication failed after retries');
   }
 
   async sendMessage(messages: GigaChatMessage[], model: string = process.env.GIGACHAT_MODEL || 'GigaChat', retries: number = 2): Promise<string> {
@@ -169,13 +195,7 @@ class GigaChatAPI {
           }
         }
 
-        // Логируем информацию о запросе (без полного контента для безопасности)
-        console.log(`📤 GigaChat API request (attempt ${attempt + 1}/${retries + 1}):`, {
-          model,
-          messagesCount: messages.length,
-          totalContentLength: messages.reduce((sum, msg) => sum + msg.content.length, 0),
-          endpoint: `${this.apiUrl}/chat/completions`
-        });
+        // Request is being sent (no logging to reduce noise)
 
         // Используем axios с кастомным HTTPS agent
         const response = await this.axiosInstance.post<GigaChatResponse>(
@@ -202,46 +222,20 @@ class GigaChatAPI {
           throw new Error('No response generated');
         }
 
-        console.log('✅ GigaChat API response received:', {
-          model: data.model,
-          finishReason: data.choices[0].finish_reason,
-          tokens: data.usage?.total_tokens || 'unknown'
-        });
+        // Response received successfully
 
         return data.choices[0].message.content;
       } catch (error: any) {
         lastError = error;
         
-        // Детальное логирование для диагностики
-        console.error(`❌ GigaChat API error (attempt ${attempt + 1}/${retries + 1}):`, {
-          message: error.message,
-          code: error.code,
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-        });
-
         if (error.response) {
           const errorData = error.response.data;
-          console.error('📋 Full error response data:', JSON.stringify(errorData, null, 2));
-          console.error('📋 Error response headers:', error.response.headers);
-
-          // Для 422 ошибки выводим дополнительную информацию
-          if (error.response.status === 422) {
-            console.error('⚠️  422 Unprocessable Entity - Request validation failed');
-            console.error('📋 Request payload preview:', {
-              model,
-              messagesCount: messages.length,
-              messageLengths: messages.map(m => ({ role: m.role, length: m.content.length })),
-              firstMessagePreview: messages[0]?.content?.substring(0, 200) + '...'
-            });
-          }
 
           // Retry только для временных ошибок (5xx) или rate limit (429)
           const isRetryable = error.response.status >= 500 || error.response.status === 429;
           
           if (isRetryable && attempt < retries) {
             const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
-            console.log(`⏳ Retrying in ${delay}ms...`);
             await new Promise(resolve => setTimeout(resolve, delay));
             continue;
           }
@@ -253,7 +247,6 @@ class GigaChatAPI {
         // Для сетевых ошибок делаем retry
         if (attempt < retries && (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.code === 'ENOTFOUND')) {
           const delay = Math.pow(2, attempt) * 1000;
-          console.log(`⏳ Network error, retrying in ${delay}ms...`);
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
@@ -287,22 +280,56 @@ class GigaChatAPI {
     
     try {
       let jsonString = response.trim();
+      
       // Try to extract JSON from markdown code blocks
       const codeBlockMatch = jsonString.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
       if (codeBlockMatch) {
         jsonString = codeBlockMatch[1];
       } else {
         // Try to find JSON object
-      const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        jsonString = jsonMatch[0];
-      }
+        const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          jsonString = jsonMatch[0];
+        }
       }
       
-      // Clean up common issues
-      jsonString = jsonString.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+      // Aggressive cleanup of common JSON issues
+      jsonString = jsonString
+        // Remove trailing commas
+        .replace(/,\s*}/g, '}')
+        .replace(/,\s*]/g, ']')
+        // Remove control characters
+        .replace(/[\x00-\x1F\x7F]/g, '')
+        // Fix unescaped quotes in strings (basic fix)
+        .replace(/([{,]\s*"[^"]*)"([^"]*"[^"]*":)/g, '$1\\"$2')
+        // Remove comments (if any)
+        .replace(/\/\/.*$/gm, '')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        // Fix single quotes to double quotes (basic)
+        .replace(/'/g, '"')
+        // Remove any text before first {
+        .replace(/^[^{]*/, '')
+        // Remove any text after last }
+        .replace(/[^}]*$/, '');
       
-      const grade = JSON.parse(jsonString);
+      // Try to parse, if fails try to fix more aggressively
+      let grade: any;
+      try {
+        grade = JSON.parse(jsonString);
+      } catch (parseError) {
+        // Last resort: try to extract just the values we need
+        const levelMatch = jsonString.match(/"level"\s*:\s*"([^"]+)"/);
+        const scoreMatch = jsonString.match(/"score"\s*:\s*(\d+)/);
+        const confidenceMatch = jsonString.match(/"confidence"\s*:\s*(\d+)/);
+        const reasoningMatch = jsonString.match(/"reasoning"\s*:\s*"([^"]+)"/);
+        
+        grade = {
+          level: levelMatch ? levelMatch[1] : 'Unknown',
+          score: scoreMatch ? parseInt(scoreMatch[1]) : 3,
+          confidence: confidenceMatch ? parseInt(confidenceMatch[1]) : 50,
+          reasoning: reasoningMatch ? reasoningMatch[1] : 'Оценка на основе анализа требований'
+        };
+      }
       
       // Валидация и нормализация данных
       const validLevels = ['Junior', 'Middle', 'Senior', 'Lead', 'Unknown'];
@@ -347,7 +374,7 @@ class GigaChatAPI {
         reasoning: reasoningValue
       };
     } catch (error) {
-      console.error('Failed to parse job grade JSON:', error);
+      // Silently return fallback values
       return {
         level: 'Unknown',
         score: 3,
@@ -435,8 +462,7 @@ class GigaChatAPI {
       
       return normalizedAnalysis;
     } catch (error) {
-      // If JSON parsing fails, try to return a structured response with fallback
-      console.error('Failed to parse job analysis JSON:', error);
+      // If JSON parsing fails, return fallback response
       return {
         redFlags: [],
         requirements: { realistic: [], unrealistic: [] },
@@ -593,9 +619,7 @@ ${processedResumeContent}
         }
         return JSON.parse(jsonString);
       } catch (error) {
-        // If JSON parsing fails, try to return a structured response with fallback
-        console.error('Failed to parse resume analysis JSON:', error);
-        console.error('Raw response:', response.substring(0, 500));
+        // If JSON parsing fails, return fallback response
         return {
           atsCompatibility: 'Не удалось оценить совместимость с ATS',
           strengths: [],
@@ -608,7 +632,6 @@ ${processedResumeContent}
         };
       }
     } catch (error: any) {
-      console.error('Resume analysis failed:', error);
       throw error;
     }
   }
