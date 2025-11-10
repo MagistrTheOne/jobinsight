@@ -230,29 +230,42 @@ class GigaChatAPI {
         
         if (error.response) {
           const errorData = error.response.data;
+          const status = error.response.status;
 
           // Retry только для временных ошибок (5xx) или rate limit (429)
-          const isRetryable = error.response.status >= 500 || error.response.status === 429;
+          const isRetryable = status >= 500 || status === 429;
           
           if (isRetryable && attempt < retries) {
-            const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+            // Для 429 используем более длинные задержки (rate limit требует больше времени)
+            const baseDelay = status === 429 ? 5000 : 1000; // 5s для 429, 1s для 5xx
+            const delay = Math.min(Math.pow(2, attempt) * baseDelay, status === 429 ? 30000 : 10000);
             await new Promise(resolve => setTimeout(resolve, delay));
             continue;
           }
 
+          // Если это была последняя попытка для 429, возвращаем понятное сообщение
+          if (status === 429 && attempt >= retries) {
+            throw new Error(`Rate limit exceeded. Please try again in a few moments.`);
+          }
+
           // Для 422 и других клиентских ошибок не делаем retry
-          throw new Error(`API request failed: ${error.response.status} ${error.response.statusText}. Details: ${JSON.stringify(errorData)}`);
+          throw new Error(`API request failed: ${status} ${error.response.statusText || 'Unknown error'}. Details: ${JSON.stringify(errorData)}`);
         }
 
         // Для сетевых ошибок делаем retry
         if (attempt < retries && (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.code === 'ENOTFOUND')) {
-          const delay = Math.pow(2, attempt) * 1000;
+          const delay = Math.min(Math.pow(2, attempt) * 1000, 10000);
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
 
         throw error;
       }
+    }
+
+    // Если дошли сюда, значит все попытки исчерпаны
+    if (lastError?.response?.status === 429) {
+      throw new Error(`Rate limit exceeded after ${retries + 1} attempts. Please try again later.`);
     }
 
     throw lastError || new Error('Failed after retries');
