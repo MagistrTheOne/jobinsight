@@ -285,7 +285,7 @@ export function AIChat() {
   return (
     <div className="flex h-full w-full max-w-full">
       {/* Grid Layout: Desktop - Sidebar | Main Content, Mobile - Main Content Only */}
-      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-0 h-full w-full max-w-full min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-0 h-full w-full max-w-full min-h-0">
         {/* Chat Sidebar - Hidden on mobile, visible on lg+ */}
         <div className="hidden lg:block border-r border-white/5 bg-black/80 backdrop-blur-xl">
           <ChatSidebar

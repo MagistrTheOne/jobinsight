@@ -440,23 +440,29 @@ export function DashboardSidebar() {
         </>
       )}
 
-      {/* Footer - Compact */}
-      <div className={cn(
-        "border-t border-white/5 space-y-2",
-        isCollapsed ? "p-2" : "p-2.5"
-      )}>
-        {/* Usage Limits - Compact Version */}
-        {!isCollapsed && (
+      {/* Footer - Hidden when collapsed */}
+      {!isCollapsed && (
+        <div className="border-t border-white/5 p-2.5 space-y-2">
+          {/* Usage Limits */}
           <div className="hidden sm:block">
             <UsageLimits />
           </div>
-        )}
-        
-        {/* User Button */}
-        <div className={cn("flex", isCollapsed ? "justify-center" : "justify-start")}>
-          <UserButton />
+
+          {/* User Button */}
+          <div className="flex justify-start">
+            <UserButton />
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Collapsed Footer - Just User Button */}
+      {isCollapsed && (
+        <div className="border-t border-white/5 p-2">
+          <div className="flex justify-center">
+            <UserButton />
+          </div>
+        </div>
+      )}
     </>
   );
 

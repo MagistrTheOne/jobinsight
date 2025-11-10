@@ -47,10 +47,10 @@ export function DashboardNavbar() {
     setMounted(true);
   }, []);
 
-  // --- CMD + K shortcut ---
+  // --- CMD + K / CMD + L shortcut ---
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      if ((e.metaKey || e.ctrlKey) && (e.key.toLowerCase() === "k" || e.key.toLowerCase() === "l")) {
         e.preventDefault();
         setOpen((prev) => !prev);
       }
@@ -124,14 +124,16 @@ export function DashboardNavbar() {
             <LandingToggle />
           </div>
 
-          {/* CMD+K Button */}
+          {/* CMD+K / CMD+L Button */}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setOpen(true)}
-            className="h-8 w-8 sm:h-9 sm:w-9 bg-white/5 border border-white/10 hover:bg-white/10 text-white"
+            className="h-8 w-8 sm:h-9 sm:w-9 bg-white/5 border border-white/10 hover:bg-white/10 text-white relative"
+            title="Командная палитра (Cmd+K / Cmd+L)"
           >
             <Command className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="absolute -top-1 -right-1 text-[8px] font-bold text-white bg-blue-600 rounded px-0.5">K</span>
           </Button>
 
           {/* Notifications */}
