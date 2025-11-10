@@ -126,7 +126,7 @@ export function Features() {
                 <p className="text-sm sm:text-base lg:text-lg text-neutral-400 max-w-2xl mx-auto">
                   {section.subtitle}
                 </p>
-                <div className="mt-4 sm:mt-6 w-16 sm:w-20 h-px bg-gradient-to-r from-transparent via-neutral-600 to-transparent mx-auto" />
+                <div className="mt-4 sm:mt-6 w-16 sm:w-20 h-px bg-linear-to-r from-transparent via-neutral-600 to-transparent mx-auto" />
               </div>
 
               {/* Features Grid */}

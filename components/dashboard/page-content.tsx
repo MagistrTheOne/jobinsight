@@ -257,7 +257,7 @@ export function DashboardPageContent() {
 
       {/* Main Content - AI Chat is default, other tabs for specific features */}
       {activeTab === 'chat' ? (
-        <div className="flex-1 w-full max-w-full animate-fade-in overflow-hidden p-responsive-sm md:p-responsive-md lg:p-responsive-lg">
+        <div className="flex-1 min-h-0 w-full max-w-full animate-fade-in overflow-hidden p-responsive-sm md:p-responsive-md lg:p-responsive-lg">
           <GlassCard className="h-full w-full bg-linear-to-br from-neutral-950/90 via-neutral-900/80 to-neutral-950/90 backdrop-blur-xl border border-neutral-700/50 rounded-xl shadow-2xl overflow-hidden">
           <AIChat />
           </GlassCard>

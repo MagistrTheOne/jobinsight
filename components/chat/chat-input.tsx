@@ -91,7 +91,14 @@ export function ChatInput({
     const el = textareaRef.current
     if (!el) return
     el.style.height = "auto"
-    el.style.height = `${Math.min(el.scrollHeight, 200)}px`
+    const maxHeight = 120 // Максимальная высота в пикселях
+    el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`
+    // Добавляем overflow-y-auto если превышен максимум
+    if (el.scrollHeight > maxHeight) {
+      el.style.overflowY = "auto"
+    } else {
+      el.style.overflowY = "hidden"
+    }
   }, [message])
 
   const handleSubmit = useCallback(
@@ -113,7 +120,10 @@ export function ChatInput({
       onSend(fullMessage, attachedFiles)
       setMessage("")
       setAttachedFiles([])
-      if (textareaRef.current) textareaRef.current.style.height = "auto"
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto"
+        textareaRef.current.style.overflowY = "hidden"
+      }
     },
     [message, attachedFiles, onSend, isLoading, disabled]
   )
@@ -263,10 +273,10 @@ export function ChatInput({
           disabled={isLoading || disabled}
           rows={1}
           className={cn(
-            "min-h-[44px] sm:min-h-[52px] max-h-[200px] resize-none rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 pr-11 sm:pr-14 shadow-sm flex-1",
+            "min-h-[44px] sm:min-h-[52px] max-h-[120px] resize-none rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 pr-11 sm:pr-14 shadow-sm flex-1",
             "bg-white/5 border-white/15 text-white placeholder:text-neutral-400 backdrop-blur-sm",
             "focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20",
-            "disabled:opacity-50 text-sm sm:text-base"
+            "disabled:opacity-50 text-sm sm:text-base overflow-y-auto"
           )}
         />
 

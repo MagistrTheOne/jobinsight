@@ -287,11 +287,11 @@ export function AIChat() {
           {upgradeRequired &&
             renderAlert("upgrade", "Достигнут лимит использования. Обновитесь до Pro для неограниченного доступа.")}
 
-          <div className="flex-1 overflow-hidden relative">
+          <div className="flex-1 min-h-0 overflow-hidden relative">
             <ChatMessages messages={messages} isLoading={loading} />
           </div>
 
-          <div className="border-t border-white/5 bg-black/85 backdrop-blur-lg">
+          <div className="shrink-0 border-t border-white/5 bg-black/85 backdrop-blur-lg">
             <div className="mx-auto w-full max-w-4xl px-4 py-3">
               <ChatInput onSend={handleSendMessage} isLoading={loading} disabled={upgradeRequired} />
             </div>

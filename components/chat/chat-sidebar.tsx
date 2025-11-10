@@ -7,6 +7,14 @@ import { GlassCard } from "@/components/ui/glass-card"
 import { Trash2, Plus, MessageSquare, Loader2, Edit3 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { chatStorage } from "@/lib/storage/chat-storage"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 interface Chat {
   id: string
@@ -29,6 +37,8 @@ export function ChatSidebar({
   const [chats, setChats] = useState<Chat[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [chatToDelete, setChatToDelete] = useState<string | null>(null)
 
   const fetchChats = useCallback(async () => {
     setLoading(true)
@@ -95,45 +105,54 @@ export function ChatSidebar({
             })
           }
         } catch (err) {
-          console.error("Failed to update chat title:", err)
+          // Silently handle error - user can retry
         }
       }
     },
     [chats]
   )
 
-  const handleDelete = useCallback(
-    async (chatId: string, e: React.MouseEvent) => {
+  const handleDeleteClick = useCallback(
+    (chatId: string, e: React.MouseEvent) => {
       e.stopPropagation()
-      if (!confirm("Удалить этот чат?")) return
-      try {
-        // Optimistic update: remove from UI and localStorage immediately
-        setChats((prev) => {
-          const filtered = prev.filter((c) => c.id !== chatId)
-          chatStorage.saveChats(filtered)
-          return filtered
-        })
-        chatStorage.deleteChat(chatId)
-        
-        if (onDeleteChat) onDeleteChat(chatId)
-        if (currentChatId === chatId) {
-          onSelectChat(null)
-          chatStorage.saveCurrentChatId(null)
-        }
-
-        // Then delete from API
-        const res = await fetch(`/api/chat/history/${chatId}`, {
-          method: "DELETE",
-        })
-        if (!res.ok) throw new Error("delete fail")
-      } catch (err) {
-        console.error(err)
-        // On error, reload chats to restore state
-        fetchChats()
-      }
+      setChatToDelete(chatId)
+      setDeleteDialogOpen(true)
     },
-    [currentChatId, onDeleteChat, onSelectChat, fetchChats],
+    []
   )
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!chatToDelete) return
+
+    const chatId = chatToDelete
+    setDeleteDialogOpen(false)
+    setChatToDelete(null)
+
+    try {
+      // Optimistic update: remove from UI and localStorage immediately
+      setChats((prev) => {
+        const filtered = prev.filter((c) => c.id !== chatId)
+        chatStorage.saveChats(filtered)
+        return filtered
+      })
+      chatStorage.deleteChat(chatId)
+      
+      if (onDeleteChat) onDeleteChat(chatId)
+      if (currentChatId === chatId) {
+        onSelectChat(null)
+        chatStorage.saveCurrentChatId(null)
+      }
+
+      // Then delete from API
+      const res = await fetch(`/api/chat/history/${chatId}`, {
+        method: "DELETE",
+      })
+      if (!res.ok) throw new Error("delete fail")
+    } catch (err) {
+      // On error, reload chats to restore state
+      fetchChats()
+    }
+  }, [chatToDelete, currentChatId, onDeleteChat, onSelectChat, fetchChats])
 
   const formatDate = useCallback((date: Date | string) => {
     const d = typeof date === "string" ? new Date(date) : date
@@ -222,7 +241,7 @@ export function ChatSidebar({
                       })
                     }
                   } catch (err) {
-                    console.error("Failed to update chat title:", err)
+                    // Silently handle error - user can retry
                   }
                 }
               }}
@@ -242,8 +261,9 @@ export function ChatSidebar({
               <Edit3 className="h-3 w-3" />
             </button>
             <button
-              onClick={(e) => handleDelete(chat.id, e)}
+              onClick={(e) => handleDeleteClick(chat.id, e)}
               className="flex h-6 w-6 items-center justify-center rounded text-neutral-500 opacity-0 transition-opacity hover:bg-white/10 hover:text-red-400 group-hover:opacity-100"
+              title="Удалить чат"
             >
               <Trash2 className="h-3 w-3" />
             </button>
@@ -251,7 +271,7 @@ export function ChatSidebar({
         ))}
       </div>
     )
-  }, [loading, error, chats, currentChatId, formatDate, handleDelete, handleRename, onSelectChat])
+  }, [loading, error, chats, currentChatId, formatDate, handleDeleteClick, handleRename, onSelectChat])
 
   return (
     <GlassCard className="flex h-full flex-col border border-white/5 bg-black/60 backdrop-blur-2xl">
@@ -269,6 +289,37 @@ export function ChatSidebar({
       <ScrollArea className="flex-1">
         <div className="p-2">{content}</div>
       </ScrollArea>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="bg-black/95 backdrop-blur-xl border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-white">Удалить чат?</DialogTitle>
+            <DialogDescription className="text-neutral-400">
+              Это действие нельзя отменить. Чат будет удален навсегда.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false)
+                setChatToDelete(null)
+              }}
+              className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+            >
+              Отмена
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              className="bg-red-600/20 border-red-500/30 text-red-400 hover:bg-red-600/30"
+            >
+              Удалить
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </GlassCard>
   )
 }

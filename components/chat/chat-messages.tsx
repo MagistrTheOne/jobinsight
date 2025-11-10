@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useRef, useState, memo } from "react"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { useEffect, useRef, useState, memo, useCallback } from "react"
+import { ScrollArea, ScrollAreaViewport, ScrollBar } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Copy, Check, Bot, Download, FileText, Mail, Briefcase, TrendingUp } from "lucide-react"
@@ -35,10 +35,51 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const { user } = useAuthStore()
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isUserAtBottom, setIsUserAtBottom] = useState(true)
+  const [prevMessagesLength, setPrevMessagesLength] = useState(0)
 
+  // Проверяем, находится ли пользователь внизу чата
+  const checkIfUserAtBottom = useCallback(() => {
+    if (!containerRef.current) return true
+
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current
+    const threshold = 100 // 100px от низа
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < threshold
+    setIsUserAtBottom(isAtBottom)
+    return isAtBottom
+  }, [])
+
+  // Обработчик скролла
+  const handleScroll = useCallback(() => {
+    checkIfUserAtBottom()
+  }, [checkIfUserAtBottom])
+
+  // Умная прокрутка - только когда пользователь внизу или отправляет новое сообщение
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages.length, isLoading])
+    const hasNewMessage = messages.length > prevMessagesLength
+    const isNewUserMessage = hasNewMessage && messages.length > 0 &&
+      messages[messages.length - 1]?.role === 'user'
+
+    // Прокручиваем вниз только если:
+    // 1. Новое сообщение от пользователя, или
+    // 2. Пользователь находится внизу чата
+    if (isNewUserMessage || isUserAtBottom) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+      }, 100) // Небольшая задержка для рендера
+    }
+
+    setPrevMessagesLength(messages.length)
+  }, [messages.length, isUserAtBottom, prevMessagesLength])
+
+  // Устанавливаем начальное положение внизу
+  useEffect(() => {
+    if (containerRef.current && messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "auto" })
+      setIsUserAtBottom(true)
+    }
+  }, []) // Только при монтировании
 
   const handleCopy = async (content: string, id: string) => {
     try {
@@ -73,22 +114,29 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
 
   return (
     <ScrollArea className="h-full w-full">
-      <div className="mx-auto max-w-4xl px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6">
-        <div className="space-y-3 sm:space-y-4 md:space-y-6">
-          {displayMessages.map((m) => (
-            <MessageBubble
-              key={m.id}
-              message={m}
-              userName={userName}
-              userImage={user?.image}
-              copiedId={copiedId}
-              onCopy={handleCopy}
-            />
-          ))}
-          {isLoading && <TypingIndicator />}
-          <div ref={messagesEndRef} />
+      <ScrollAreaViewport
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="h-full"
+      >
+        <div className="mx-auto max-w-4xl px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6">
+          <div className="space-y-3 sm:space-y-4 md:space-y-6">
+            {displayMessages.map((m) => (
+              <MessageBubble
+                key={m.id}
+                message={m}
+                userName={userName}
+                userImage={user?.image}
+                copiedId={copiedId}
+                onCopy={handleCopy}
+              />
+            ))}
+            {isLoading && <TypingIndicator />}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
-      </div>
+      </ScrollAreaViewport>
+      <ScrollBar />
     </ScrollArea>
   )
 }
