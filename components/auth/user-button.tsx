@@ -35,19 +35,33 @@ export function UserButton() {
   useEffect(() => {
     if (isAuthenticated && user) {
       Promise.all([
-        fetch('/api/usage/limits').then(res => res.json()),
-        fetch('/api/user/info').then(res => res.json())
+        fetch('/api/usage/limits').then(res => res.ok ? res.json() : { success: false, plan: 'free' }).catch(() => ({ success: false, plan: 'free' })),
+        fetch('/api/user/info').then(res => res.ok ? res.json() : { success: false, user: {} }).catch(() => ({ success: false, user: {} }))
       ])
         .then(([usageData, userData]) => {
           if (usageData.success && userData.success) {
             setSubscriptionInfo({
               plan: usageData.plan || 'free',
-              verified: userData.user.verified || false,
-              title: userData.user.title,
+              verified: userData.user?.verified || false,
+              title: userData.user?.title,
+            });
+          } else {
+            // Fallback to free plan if API fails
+            setSubscriptionInfo({
+              plan: 'free',
+              verified: false,
+              title: undefined,
             });
           }
         })
-        .catch(console.error);
+        .catch(() => {
+          // Silently handle error - use fallback values
+          setSubscriptionInfo({
+            plan: 'free',
+            verified: false,
+            title: undefined,
+          });
+        });
     }
   }, [isAuthenticated, user]);
 

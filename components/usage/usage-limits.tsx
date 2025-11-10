@@ -28,11 +28,26 @@ export function UsageLimits() {
         const data = await response.json();
         setUsage(data);
       } else {
-        setError('Failed to load usage data');
+        // Use fallback values for free plan on error
+        setUsage({
+          plan: 'free',
+          resume: { used: 0, limit: 5, remaining: 5 },
+          job: { used: 0, limit: 5, remaining: 5 },
+          coverLetter: { used: 0, limit: 3, remaining: 3 },
+          periodStart: new Date().toISOString(),
+        });
+        setError(null);
       }
     } catch (err) {
-      console.error('Failed to fetch usage:', err);
-      setError('Failed to load usage data');
+      // Silently handle error - use fallback values
+      setUsage({
+        plan: 'free',
+        resume: { used: 0, limit: 5, remaining: 5 },
+        job: { used: 0, limit: 5, remaining: 5 },
+        coverLetter: { used: 0, limit: 3, remaining: 3 },
+        periodStart: new Date().toISOString(),
+      });
+      setError(null);
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +76,7 @@ export function UsageLimits() {
     );
   }
 
-  if (error || !usage) {
+  if (!usage) {
     return null;
   }
 
