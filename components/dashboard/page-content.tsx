@@ -26,6 +26,8 @@ import { ApplicationTracker } from '@/components/applications/application-tracke
 import { HRAutopilot } from '@/components/automation/hr-autopilot';
 import { SalaryNegotiationAI } from '@/components/automation/salary-negotiation';
 import { PipelineAutomation } from '@/components/automation/pipeline-automation';
+import { ResumeBuilder } from '@/components/resume/resume-builder';
+import { UserProfileSettings } from '@/components/profile/user-profile-settings';
 
 export function DashboardPageContent() {
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
@@ -444,6 +446,16 @@ export function DashboardPageContent() {
           {/* Pipeline Automation */}
           <TabsContent value="pipeline" className="space-y-4 mt-0">
             <PipelineAutomation />
+          </TabsContent>
+
+          {/* Resume Builder */}
+          <TabsContent value="resume-builder" className="space-y-4 mt-0">
+            <ResumeBuilder />
+          </TabsContent>
+
+          {/* Profile Settings */}
+          <TabsContent value="profile" className="space-y-4 mt-0">
+            <UserProfileSettings />
           </TabsContent>
         </Tabs>
         </div>

@@ -6,19 +6,30 @@ import { ChatMessages } from "./chat-messages"
 import { ChatInput } from "./chat-input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
+import { chatStorage } from "@/lib/storage/chat-storage"
 
 interface Message {
   id: string
   role: "user" | "assistant" | "system"
   content: string
   createdAt?: Date | string
+  actionMetadata?: {
+    actionType: string
+    metadata?: {
+      title?: string
+      downloadUrl?: string
+      [key: string]: any
+    }
+  }
 }
 
 export function AIChat() {
   const [currentChatId, setCurrentChatId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      return params.get('chatId');
+      const urlChatId = params.get('chatId');
+      const storedChatId = chatStorage.getCurrentChatId();
+      return urlChatId || storedChatId;
     }
     return null;
   })
@@ -31,22 +42,41 @@ export function AIChat() {
     if (!chatId) {
       setMessages([])
       setCurrentChatId(null)
+      chatStorage.saveCurrentChatId(null)
       return
     }
 
     setLoading(true)
     setError(null)
+    
+    // Load from localStorage first for instant display
+    const cachedChat = chatStorage.getChat(chatId)
+    if (cachedChat?.messages) {
+      setMessages(cachedChat.messages)
+      setCurrentChatId(chatId)
+      chatStorage.saveCurrentChatId(chatId)
+    }
+
     try {
+      // Then fetch from API and sync
       const res = await fetch(`/api/chat/history?chatId=${chatId}`)
       if (!res.ok) throw new Error("Не удалось загрузить чат")
       const data = await res.json()
       if (data.chat) {
         setMessages(data.chat.messages || [])
         setCurrentChatId(chatId)
+        chatStorage.saveCurrentChatId(chatId)
+        // Save to localStorage
+        chatStorage.saveChat(data.chat)
       }
     } catch (e: any) {
       console.error(e)
-      setError(e.message || "Ошибка загрузки чата")
+      // On error, use cached data if available
+      if (cachedChat?.messages) {
+        setError("Используются сохраненные сообщения (офлайн)")
+      } else {
+        setError(e.message || "Ошибка загрузки чата")
+      }
     } finally {
       setLoading(false)
     }
@@ -92,21 +122,56 @@ export function AIChat() {
         }
 
         // Заменяем optimistic сообщение на реальные данные из API
-        setMessages(data.messages || [])
+        // Добавляем actionMetadata к последнему сообщению ассистента, если есть
+        const updatedMessages = data.messages || []
+        if (data.actionMetadata && updatedMessages.length > 0) {
+          const lastMessage = updatedMessages[updatedMessages.length - 1]
+          if (lastMessage.role === 'assistant') {
+            lastMessage.actionMetadata = data.actionMetadata
+          }
+        }
+        setMessages(updatedMessages)
         
         if (data.newChat && data.chatId) {
           setCurrentChatId(data.chatId)
+          chatStorage.saveCurrentChatId(data.chatId)
           // Update URL
           const newUrl = new URL(window.location.href);
           newUrl.searchParams.set('chatId', data.chatId);
           window.history.pushState({}, '', newUrl.toString());
+          
+          // Save new chat to localStorage
+          if (data.chatTitle) {
+            chatStorage.saveChat({
+              id: data.chatId,
+              title: data.chatTitle,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              messages: data.messages || [],
+            })
+          }
+          
           window.dispatchEvent(new Event("chat-created"))
-        } else if (data.chatId && data.chatId !== currentChatId) {
+        } else if (data.chatId) {
+          setCurrentChatId(data.chatId)
+          chatStorage.saveCurrentChatId(data.chatId)
           // Update URL if chat changed
-          const newUrl = new URL(window.location.href);
-          newUrl.searchParams.set('chatId', data.chatId);
-          window.history.pushState({}, '', newUrl.toString());
-          window.dispatchEvent(new CustomEvent("chat-updated", { detail: { chatId: data.chatId } }));
+          if (data.chatId !== currentChatId) {
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.set('chatId', data.chatId);
+            window.history.pushState({}, '', newUrl.toString());
+            window.dispatchEvent(new CustomEvent("chat-updated", { detail: { chatId: data.chatId } }));
+          }
+          
+          // Update chat in localStorage
+          const existingChat = chatStorage.getChat(data.chatId)
+          if (existingChat) {
+            chatStorage.saveChat({
+              ...existingChat,
+              messages: data.messages || [],
+              updatedAt: new Date().toISOString(),
+            })
+          }
         }
         window.dispatchEvent(new Event("usage-refresh"))
       } catch (e: any) {
@@ -218,30 +283,44 @@ export function AIChat() {
   }, []);
 
   return (
-    <div className="flex h-full w-full max-w-full flex-col">
-      {/* Chat Area - Full width, responsive */}
-      <main className="relative flex h-full min-h-0 flex-1 flex-col bg-black w-full">
-        {error && renderAlert("error", error)}
-        {upgradeRequired &&
-          renderAlert(
-            "upgrade",
-            "Достигнут лимит использования. Обновитесь до Pro для неограниченного доступа.",
-          )}
-
-        <div className="relative flex-1 overflow-hidden w-full">
-          <ChatMessages messages={messages} isLoading={loading} />
+    <div className="flex h-full w-full max-w-full">
+      {/* Grid Layout: Desktop - Sidebar | Main Content, Mobile - Main Content Only */}
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-0 h-full w-full max-w-full min-h-0">
+        {/* Chat Sidebar - Hidden on mobile, visible on lg+ */}
+        <div className="hidden lg:block border-r border-white/5 bg-black/80 backdrop-blur-xl">
+          <ChatSidebar
+            currentChatId={currentChatId || undefined}
+            onSelectChat={handleSelectChat}
+            onDeleteChat={handleDeleteChat}
+          />
         </div>
 
-        <footer className="w-full border-t border-white/5 bg-black/90 backdrop-blur-2xl">
-          <div className="mx-auto w-full max-w-4xl px-4 py-3">
-            <ChatInput
-              onSend={handleSendMessage}
-              isLoading={loading}
-              disabled={upgradeRequired}
-            />
+        {/* Main Chat Area */}
+        <div className="flex flex-col h-full min-h-0 bg-black">
+          {error && renderAlert("error", error)}
+          {upgradeRequired &&
+            renderAlert(
+              "upgrade",
+              "Достигнут лимит использования. Обновитесь до Pro для неограниченного доступа.",
+            )}
+
+          {/* Messages Area */}
+          <div className="flex-1 overflow-hidden relative">
+            <ChatMessages messages={messages} isLoading={loading} />
           </div>
-        </footer>
-      </main>
+
+          {/* Input Area */}
+          <div className="border-t border-white/5 bg-black/90 backdrop-blur-2xl">
+            <div className="mx-auto w-full max-w-4xl px-4 py-3">
+              <ChatInput
+                onSend={handleSendMessage}
+                isLoading={loading}
+                disabled={upgradeRequired}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

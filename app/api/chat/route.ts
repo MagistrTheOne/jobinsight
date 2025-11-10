@@ -12,6 +12,8 @@ import { incrementUsageLimit } from '@/lib/db/queries';
 import { detectTool } from '@/lib/ai-tools/tool-detector';
 import { executeTool } from '@/lib/ai-tools/tool-executor';
 import { formatSearchResults } from '@/lib/ai-tools/web-search';
+import { detectIntent } from '@/lib/ai-assistant/intent-detector';
+import { executeAction } from '@/lib/ai-assistant/action-handlers';
 
 // Export runtime config for Next.js
 export const runtime = 'nodejs';
@@ -87,38 +89,72 @@ export async function POST(request: NextRequest) {
     // Prepare messages for GigaChat (include existing conversation)
     const messagesForAI = [...existingMessages, { role: 'user' as const, content: message }];
 
-    // Check if user message needs tools
-    const toolDetection = await detectTool(message, existingMessages);
+    // Check for action intent first (cover letter, resume, etc.)
+    const intentDetection = await detectIntent(message, existingMessages);
     
-    let toolResult = null;
-    let finalUserMessage = message;
+    let assistantResponse = '';
+    let actionResult = null;
+    let actionMetadata: any = null;
 
-    // If tool is needed, execute it and include results in message
-    if (toolDetection.needsTool && toolDetection.tool) {
-      toolResult = await executeTool(toolDetection.tool, userId);
-      
-      if (toolResult.success) {
-        // Format tool results for AI
-        let toolResultsText = '';
+    // If action intent detected and confidence is high enough
+    if (intentDetection.intent !== 'chat' && intentDetection.confidence > 0.6) {
+      try {
+        actionResult = await executeAction(intentDetection, userId, existingMessages);
         
-        if (toolDetection.tool.tool === 'web_search' && toolResult.data?.results) {
-          toolResultsText = `\n\n=== Результаты поиска в интернете ===\n${formatSearchResults(toolResult.data.results)}\n\nТеперь ответь на вопрос пользователя, используя эту информацию:`;
+        if (actionResult.success) {
+          // Format action result as assistant message
+          assistantResponse = `# ${actionResult.metadata?.title || 'Результат'}\n\n${actionResult.content}`;
+          actionMetadata = {
+            actionType: actionResult.actionType,
+            metadata: actionResult.metadata,
+          };
         } else {
-          toolResultsText = `\n\n=== Результат выполнения инструмента "${toolDetection.tool.tool}" ===\n${JSON.stringify(toolResult.data, null, 2)}\n\nИспользуй эту информацию для ответа:`;
+          // Action failed, fall through to normal chat
+          assistantResponse = `Не удалось выполнить действие: ${actionResult.error}. Попробую ответить как обычно.`;
         }
-        
-        finalUserMessage = `${message}\n\n${toolResultsText}`;
-      } else {
-        // Tool execution failed, inform user
-        finalUserMessage = `${message}\n\n[Примечание: Не удалось выполнить инструмент "${toolDetection.tool.tool}": ${toolResult.error}]`;
+      } catch (error: any) {
+        console.error('Action execution error:', error);
+        // Fall through to normal chat
       }
-      
-      // Update messages with tool-enhanced message
-      messagesForAI[messagesForAI.length - 1] = { role: 'user' as const, content: finalUserMessage };
     }
 
-    // Send to GigaChat API
-    const assistantResponse = await sendChatMessage(messagesForAI, systemPrompt);
+    // If no action or action failed, check for tools or normal chat
+    if (!actionResult || !actionResult.success) {
+      // Check if user message needs tools
+      const toolDetection = await detectTool(message, existingMessages);
+      
+      let toolResult = null;
+      let finalUserMessage = message;
+
+      // If tool is needed, execute it and include results in message
+      if (toolDetection.needsTool && toolDetection.tool) {
+        toolResult = await executeTool(toolDetection.tool, userId);
+        
+        if (toolResult.success) {
+          // Format tool results for AI
+          let toolResultsText = '';
+          
+          if (toolDetection.tool.tool === 'web_search' && toolResult.data?.results) {
+            toolResultsText = `\n\n=== Результаты поиска в интернете ===\n${formatSearchResults(toolResult.data.results)}\n\nТеперь ответь на вопрос пользователя, используя эту информацию:`;
+          } else {
+            toolResultsText = `\n\n=== Результат выполнения инструмента "${toolDetection.tool.tool}" ===\n${JSON.stringify(toolResult.data, null, 2)}\n\nИспользуй эту информацию для ответа:`;
+          }
+          
+          finalUserMessage = `${message}\n\n${toolResultsText}`;
+        } else {
+          // Tool execution failed, inform user
+          finalUserMessage = `${message}\n\n[Примечание: Не удалось выполнить инструмент "${toolDetection.tool.tool}": ${toolResult.error}]`;
+        }
+        
+        // Update messages with tool-enhanced message
+        messagesForAI[messagesForAI.length - 1] = { role: 'user' as const, content: finalUserMessage };
+      }
+
+      // Send to GigaChat API for normal chat response
+      if (!assistantResponse) {
+        assistantResponse = await sendChatMessage(messagesForAI, systemPrompt);
+      }
+    }
 
     // Save assistant response
     await addChatMessage(currentChatId, 'assistant', assistantResponse);
@@ -139,6 +175,7 @@ export async function POST(request: NextRequest) {
       messages: updatedChat?.messages || [],
       newChat: isNewChat,
       chatTitle: updatedChat?.title,
+      actionMetadata: actionMetadata || null, // Метаданные действия для отображения в UI
     });
 
   } catch (error: any) {

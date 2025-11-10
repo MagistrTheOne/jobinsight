@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Trash2, Plus, MessageSquare, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { chatStorage } from "@/lib/storage/chat-storage"
 
 interface Chat {
   id: string
   title: string
-  createdAt: Date | string
-  updatedAt: Date | string
+  createdAt: string
+  updatedAt: string
 }
 
 interface ChatSidebarProps {
@@ -33,12 +34,30 @@ export function ChatSidebar({
     setLoading(true)
     setError(null)
     try {
+      // Load from localStorage first for instant display
+      const cachedChats = chatStorage.getChats()
+      if (cachedChats.length > 0) {
+        setChats(cachedChats)
+      }
+
+      // Then fetch from API and sync
       const res = await fetch("/api/chat/history")
       if (!res.ok) throw new Error("failed")
       const data = await res.json()
-      setChats(data.chats || [])
+      const apiChats = data.chats || []
+      setChats(apiChats)
+      
+      // Save to localStorage
+      chatStorage.saveChats(apiChats)
     } catch {
-      setError("Не удалось загрузить чаты")
+      // On error, use cached data if available
+      const cachedChats = chatStorage.getChats()
+      if (cachedChats.length > 0) {
+        setChats(cachedChats)
+        setError("Используются сохраненные чаты (офлайн)")
+      } else {
+        setError("Не удалось загрузить чаты")
+      }
     } finally {
       setLoading(false)
     }
@@ -56,18 +75,32 @@ export function ChatSidebar({
       e.stopPropagation()
       if (!confirm("Удалить этот чат?")) return
       try {
+        // Optimistic update: remove from UI and localStorage immediately
+        setChats((prev) => {
+          const filtered = prev.filter((c) => c.id !== chatId)
+          chatStorage.saveChats(filtered)
+          return filtered
+        })
+        chatStorage.deleteChat(chatId)
+        
+        if (onDeleteChat) onDeleteChat(chatId)
+        if (currentChatId === chatId) {
+          onSelectChat(null)
+          chatStorage.saveCurrentChatId(null)
+        }
+
+        // Then delete from API
         const res = await fetch(`/api/chat/history/${chatId}`, {
           method: "DELETE",
         })
         if (!res.ok) throw new Error("delete fail")
-        setChats((prev) => prev.filter((c) => c.id !== chatId))
-        if (onDeleteChat) onDeleteChat(chatId)
-        if (currentChatId === chatId) onSelectChat(null)
       } catch (err) {
         console.error(err)
+        // On error, reload chats to restore state
+        fetchChats()
       }
     },
-    [currentChatId, onDeleteChat, onSelectChat],
+    [currentChatId, onDeleteChat, onSelectChat, fetchChats],
   )
 
   const formatDate = useCallback((date: Date | string) => {
@@ -120,6 +153,31 @@ export function ChatSidebar({
             <button
               onClick={() => onSelectChat(chat.id)}
               className="min-w-0 flex-1 pr-2 text-left"
+              onDoubleClick={async (e) => {
+                e.stopPropagation()
+                const newTitle = prompt("Новое название чата:", chat.title)
+                if (newTitle && newTitle.trim() && newTitle !== chat.title) {
+                  try {
+                    const res = await fetch(`/api/chat/history/${chat.id}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ title: newTitle.trim() }),
+                    })
+                    if (res.ok) {
+                      // Update in state and localStorage
+                      setChats((prev) => {
+                        const updated = prev.map(c => 
+                          c.id === chat.id ? { ...c, title: newTitle.trim(), updatedAt: new Date().toISOString() } : c
+                        )
+                        chatStorage.saveChats(updated)
+                        return updated
+                      })
+                    }
+                  } catch (err) {
+                    console.error("Failed to update chat title:", err)
+                  }
+                }
+              }}
             >
               <div className="truncate text-xs font-medium text-white">
                 {chat.title}

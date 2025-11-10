@@ -20,9 +20,28 @@ export const auth = betterAuth({
       create: {
         before: async (user, ctx) => {
           // Exclude createdAt and updatedAt - let DB handle with defaultNow()
-          const { createdAt, updatedAt, ...userData } = user as any;
+          const { createdAt, updatedAt, emailVerified, ...userData } = user as any;
+          
+          // Handle emailVerified: convert to Date if string, set to null if undefined
+          const processedData: any = { ...userData };
+          if (emailVerified !== undefined && emailVerified !== null) {
+            try {
+              processedData.emailVerified = emailVerified instanceof Date 
+                ? emailVerified 
+                : new Date(emailVerified);
+              // Validate date
+              if (isNaN(processedData.emailVerified.getTime())) {
+                processedData.emailVerified = null;
+              }
+            } catch {
+              processedData.emailVerified = null;
+            }
+          } else {
+            processedData.emailVerified = null;
+          }
+          
           return {
-            data: userData,
+            data: processedData,
           };
         },
       },
@@ -31,9 +50,28 @@ export const auth = betterAuth({
       create: {
         before: async (account, ctx) => {
           // Exclude createdAt and updatedAt - let DB handle with defaultNow()
-          const { createdAt, updatedAt, ...accountData } = account as any;
+          const { createdAt, updatedAt, expiresAt, ...accountData } = account as any;
+          
+          // Handle expiresAt: convert to Date if string, set to null if undefined
+          const processedData: any = { ...accountData };
+          if (expiresAt !== undefined && expiresAt !== null) {
+            try {
+              processedData.expiresAt = expiresAt instanceof Date 
+                ? expiresAt 
+                : new Date(expiresAt);
+              // Validate date
+              if (isNaN(processedData.expiresAt.getTime())) {
+                processedData.expiresAt = null;
+              }
+            } catch {
+              processedData.expiresAt = null;
+            }
+          } else {
+            processedData.expiresAt = null;
+          }
+          
           return {
-            data: accountData,
+            data: processedData,
           };
         },
       },
@@ -42,9 +80,27 @@ export const auth = betterAuth({
       create: {
         before: async (session, ctx) => {
           // Exclude createdAt and updatedAt - let DB handle with defaultNow()
-          const { createdAt, updatedAt, ...sessionData } = session as any;
+          const { createdAt, updatedAt, expiresAt, ...sessionData } = session as any;
+          
+          // Handle expiresAt: must be Date object
+          const processedData: any = { ...sessionData };
+          if (expiresAt !== undefined && expiresAt !== null) {
+            try {
+              processedData.expiresAt = expiresAt instanceof Date 
+                ? expiresAt 
+                : new Date(expiresAt);
+              // Validate date
+              if (isNaN(processedData.expiresAt.getTime())) {
+                throw new Error('Invalid expiresAt date');
+              }
+            } catch (error) {
+              console.error('Error processing session expiresAt:', error);
+              throw error; // Session must have valid expiresAt
+            }
+          }
+          
           return {
-            data: sessionData,
+            data: processedData,
           };
         },
       },
@@ -53,9 +109,27 @@ export const auth = betterAuth({
       create: {
         before: async (verification, ctx) => {
           // Exclude createdAt and updatedAt - let DB handle with defaultNow()
-          const { createdAt, updatedAt, ...verificationData } = verification as any;
+          const { createdAt, updatedAt, expiresAt, ...verificationData } = verification as any;
+          
+          // Handle expiresAt: must be Date object
+          const processedData: any = { ...verificationData };
+          if (expiresAt !== undefined && expiresAt !== null) {
+            try {
+              processedData.expiresAt = expiresAt instanceof Date 
+                ? expiresAt 
+                : new Date(expiresAt);
+              // Validate date
+              if (isNaN(processedData.expiresAt.getTime())) {
+                throw new Error('Invalid expiresAt date');
+              }
+            } catch (error) {
+              console.error('Error processing verification expiresAt:', error);
+              throw error; // Verification must have valid expiresAt
+            }
+          }
+          
           return {
-            data: verificationData,
+            data: processedData,
           };
         },
       },

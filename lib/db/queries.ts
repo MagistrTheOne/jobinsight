@@ -15,6 +15,7 @@ import {
   automationRules,
   salaryNegotiations,
   integrations,
+  hrProfiles,
   type NewUser, 
   type NewAnalysisHistory,
   type NewSubscription,
@@ -30,6 +31,7 @@ import {
   type NewAutomationRule,
   type NewSalaryNegotiation,
   type NewIntegration,
+  type NewHRProfile,
 } from './schema';
 import { eq, desc, and, or, gte, lte, sql, ilike } from 'drizzle-orm';
 
@@ -801,5 +803,39 @@ export async function getUserIntegrationByType(
     .where(and(eq(integrations.userId, userId), eq(integrations.type, type), eq(integrations.isActive, 1)))
     .limit(1);
   return integration;
+}
+
+// HR Profile queries
+export async function getHRProfile(userId: string) {
+  const [profile] = await db
+    .select()
+    .from(hrProfiles)
+    .where(eq(hrProfiles.userId, userId))
+    .limit(1);
+  return profile || null;
+}
+
+export async function createOrUpdateHRProfile(userId: string, profileData: Partial<NewHRProfile>) {
+  const existing = await getHRProfile(userId);
+  
+  if (existing) {
+    const [updated] = await db
+      .update(hrProfiles)
+      .set({ ...profileData, updatedAt: new Date() })
+      .where(eq(hrProfiles.userId, userId))
+      .returning();
+    return updated;
+  } else {
+    const [created] = await db
+      .insert(hrProfiles)
+      .values({
+        id: crypto.randomUUID(),
+        userId,
+        company: profileData.company || '',
+        ...profileData,
+      } as NewHRProfile)
+      .returning();
+    return created;
+  }
 }
 

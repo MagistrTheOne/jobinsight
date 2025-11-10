@@ -287,10 +287,21 @@ class GigaChatAPI {
     
     try {
       let jsonString = response.trim();
-      const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        jsonString = jsonMatch[0];
+      // Try to extract JSON from markdown code blocks
+      const codeBlockMatch = jsonString.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+      if (codeBlockMatch) {
+        jsonString = codeBlockMatch[1];
+      } else {
+        // Try to find JSON object
+        const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          jsonString = jsonMatch[0];
+        }
       }
+      
+      // Clean up common issues
+      jsonString = jsonString.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+      
       const grade = JSON.parse(jsonString);
       
       // Валидация и нормализация данных

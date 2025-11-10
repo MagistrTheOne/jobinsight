@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, memo } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Copy, Check, Bot } from "lucide-react"
+import { Copy, Check, Bot, Download, FileText, Mail, Briefcase, TrendingUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
@@ -16,6 +16,14 @@ interface Message {
   role: "user" | "assistant" | "system"
   content: string
   createdAt?: Date | string
+  actionMetadata?: {
+    actionType: string
+    metadata?: {
+      title?: string
+      downloadUrl?: string
+      [key: string]: any
+    }
+  }
 }
 
 interface ChatMessagesProps {
@@ -143,6 +151,41 @@ const MessageBubble = memo(
           ) : (
             <div className="relative rounded-lg border border-white/10 bg-white/5 px-2.5 sm:px-3.5 py-2 sm:py-2.5 shadow-sm backdrop-blur-sm">
               <MarkdownContent>{message.content}</MarkdownContent>
+              
+              {/* Action buttons for structured results */}
+              {message.actionMetadata && (
+                <div className="mt-3 pt-3 border-t border-white/10 flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs bg-white/5 border-white/10 text-white hover:bg-white/10"
+                    onClick={() => onCopy(message.content, message.id)}
+                  >
+                    <Copy className="h-3 w-3 mr-1.5" />
+                    Копировать
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs bg-white/5 border-white/10 text-white hover:bg-white/10"
+                    onClick={() => {
+                      const blob = new Blob([message.content], { type: 'text/markdown' })
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `${message.actionMetadata?.metadata?.title || 'result'}.md`
+                      document.body.appendChild(a)
+                      a.click()
+                      document.body.removeChild(a)
+                      URL.revokeObjectURL(url)
+                    }}
+                  >
+                    <Download className="h-3 w-3 mr-1.5" />
+                    Скачать
+                  </Button>
+                </div>
+              )}
+              
               <Button
                 variant="ghost"
                 size="icon"

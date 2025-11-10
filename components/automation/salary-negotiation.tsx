@@ -217,10 +217,10 @@ export function SalaryNegotiationAI() {
           <div>
             <h2 className="text-2xl font-bold text-white flex items-center">
               <DollarSign className="mr-3 h-6 w-6 text-green-500" />
-              Salary Negotiation AI
+              Переговоры по зарплате
             </h2>
             <p className="text-neutral-400 mt-1">
-              AI-powered salary negotiation assistant with market analysis and counter-offer generation
+              AI-помощник для переговоров по зарплате с анализом рынка и генерацией counter-offer
             </p>
           </div>
           <Badge className="bg-linear-to-r from-green-600 to-emerald-600 border-0">
@@ -240,14 +240,14 @@ export function SalaryNegotiationAI() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Input Section */}
         <GlassCard>
-          <h3 className="text-lg font-semibold text-white mb-4">Negotiation Setup</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">Настройка переговоров</h3>
           
           <div className="space-y-4">
             <div>
-              <Label className="text-white mb-2 block">Select Application</Label>
-              <Select value={selectedApplication} onValueChange={setSelectedApplication}>
-                <SelectTrigger className="bg-white/10 border-white/20 text-white hover:bg-white/15 backdrop-blur-sm">
-                  <SelectValue placeholder="Choose an application with offer" />
+                  <Label className="text-white mb-2 block">Выберите заявку</Label>
+                  <Select value={selectedApplication} onValueChange={setSelectedApplication}>
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white hover:bg-white/15 backdrop-blur-sm">
+                      <SelectValue placeholder="Выберите заявку с предложением" />
                 </SelectTrigger>
                 <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
                   {applications.map((app) => (
@@ -268,13 +268,13 @@ export function SalaryNegotiationAI() {
 
                 <div>
                   <Label htmlFor="initialOffer" className="text-white mb-2 block">
-                    Initial Offer (from HR)
+                    Предложенная зарплата (от HR)
                   </Label>
                   <Input
                     id="initialOffer"
                     value={formData.initialOffer}
                     onChange={(e) => setFormData({ ...formData, initialOffer: e.target.value })}
-                    placeholder="$100,000"
+                    placeholder="200 000 руб."
                     className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
                   />
                 </div>
@@ -282,26 +282,26 @@ export function SalaryNegotiationAI() {
                 <div>
                   <Label htmlFor="targetSalary" className="text-white mb-2 flex items-center">
                     <Target className="h-4 w-4 mr-1" />
-                    Your Target Salary
+                    Желаемая зарплата
                   </Label>
                   <Input
                     id="targetSalary"
                     value={formData.targetSalary}
                     onChange={(e) => setFormData({ ...formData, targetSalary: e.target.value })}
-                    placeholder="$120,000"
+                    placeholder="250 000 руб."
                     className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
                   />
                 </div>
 
                 <div>
                   <Label htmlFor="currentOffer" className="text-white mb-2 block">
-                    Current Offer (if negotiating)
+                    Текущее предложение (если в процессе переговоров)
                   </Label>
                   <Input
                     id="currentOffer"
                     value={formData.currentOffer}
                     onChange={(e) => setFormData({ ...formData, currentOffer: e.target.value })}
-                    placeholder="$110,000"
+                    placeholder="220 000 руб."
                     className="bg-white/10 border-white/20 text-white placeholder:text-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/10 backdrop-blur-sm"
                   />
                 </div>
@@ -315,12 +315,12 @@ export function SalaryNegotiationAI() {
                     {isGenerating ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Analyzing...
+                        Анализ...
                       </>
                     ) : (
                       <>
                         <TrendingUp className="mr-2 h-4 w-4" />
-                        Analyze Market
+                        Анализ рынка
                       </>
                     )}
                   </Button>
@@ -333,12 +333,12 @@ export function SalaryNegotiationAI() {
                     {isGenerating ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating...
+                        Генерация...
                       </>
                     ) : (
                       <>
                         <Sparkles className="mr-2 h-4 w-4" />
-                        Generate Counter
+                        Создать counter-offer
                       </>
                     )}
                   </Button>
@@ -352,10 +352,10 @@ export function SalaryNegotiationAI() {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
+                      Сохранение...
                     </>
                   ) : (
-                    'Save Negotiation'
+                    'Сохранить переговоры'
                   )}
                 </Button>
               </>
@@ -367,16 +367,21 @@ export function SalaryNegotiationAI() {
         <GlassCard>
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
             <Brain className="mr-2 h-5 w-5 text-purple-500" />
-            AI Recommendations
+            Рекомендации AI
           </h3>
 
           {negotiation && (
             <div className="space-y-4">
               {negotiation.negotiationStage && (
                 <div className="flex items-center justify-between p-3 bg-black/40 border border-white/5 rounded-lg backdrop-blur-sm">
-                  <span className="text-sm text-neutral-400">Negotiation Stage:</span>
+                  <span className="text-sm text-neutral-400">Стадия переговоров:</span>
                   <Badge className={getStageColor(negotiation.negotiationStage)}>
-                    {negotiation.negotiationStage.replace('_', ' ').toUpperCase()}
+                    {negotiation.negotiationStage === 'initial' ? 'Начало' :
+                     negotiation.negotiationStage === 'counter_offered' ? 'Counter-offer отправлен' :
+                     negotiation.negotiationStage === 'negotiating' ? 'В процессе' :
+                     negotiation.negotiationStage === 'accepted' ? 'Принято' :
+                     negotiation.negotiationStage === 'declined' ? 'Отклонено' :
+                     String(negotiation.negotiationStage).replace('_', ' ').toUpperCase()}
                   </Badge>
                 </div>
               )}
@@ -386,12 +391,12 @@ export function SalaryNegotiationAI() {
                   <div className="flex items-center justify-between mb-2">
                     <Label className="text-blue-300 font-semibold flex items-center">
                       <TrendingUp className="h-4 w-4 mr-1" />
-                      Market Average
+                      Среднерыночная зарплата
                     </Label>
                   </div>
                   <p className="text-2xl font-bold text-white">{negotiation.marketAverage}</p>
                   <p className="text-xs text-neutral-400 mt-1">
-                    Based on job title, location, and experience level
+                    На основе должности, локации и уровня опыта
                   </p>
                 </div>
               )}
@@ -400,7 +405,7 @@ export function SalaryNegotiationAI() {
                 <div className="p-4 bg-purple-900/20 border border-purple-700/30 rounded-lg">
                   <Label className="text-purple-300 font-semibold mb-2 flex items-center">
                     <Sparkles className="h-4 w-4 mr-1" />
-                    AI Strategy Recommendation
+                    Рекомендация по стратегии
                   </Label>
                   <p className="text-sm text-neutral-300 whitespace-pre-wrap">
                     {negotiation.aiRecommendation}
@@ -413,7 +418,7 @@ export function SalaryNegotiationAI() {
                   <div className="flex items-center justify-between mb-2">
                     <Label className="text-green-300 font-semibold flex items-center">
                       <Send className="h-4 w-4 mr-1" />
-                      Counter-Offer Draft
+                      Черновик counter-offer
                     </Label>
                     <Button
                       size="sm"
@@ -421,7 +426,7 @@ export function SalaryNegotiationAI() {
                       className="border-green-700 text-green-300 hover:bg-green-900/30"
                       onClick={() => navigator.clipboard.writeText(negotiation.counterOfferDraft!)}
                     >
-                      Copy
+                      Копировать
                     </Button>
                   </div>
                   <Textarea
@@ -436,7 +441,7 @@ export function SalaryNegotiationAI() {
               {!negotiation.marketAverage && !negotiation.aiRecommendation && !negotiation.counterOfferDraft && (
                 <div className="text-center py-12 text-neutral-400">
                   <Brain className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p>Analyze market or generate counter-offer to see AI recommendations</p>
+                  <p>Проведите анализ рынка или создайте counter-offer, чтобы увидеть рекомендации AI</p>
                 </div>
               )}
             </div>
@@ -445,14 +450,14 @@ export function SalaryNegotiationAI() {
           {!negotiation && selectedApplication && (
             <div className="text-center py-12 text-gray-400">
               <CheckCircle2 className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <p>Fill in the form and click "Analyze Market" or "Generate Counter"</p>
+              <p>Заполните форму и нажмите "Анализ рынка" или "Создать counter-offer"</p>
             </div>
           )}
 
           {!selectedApplication && (
             <div className="text-center py-12 text-gray-400">
               <Target className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <p>Select an application with an offer to start negotiation</p>
+              <p>Выберите заявку с предложением для начала переговоров</p>
             </div>
           )}
         </GlassCard>

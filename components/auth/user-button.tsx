@@ -21,11 +21,16 @@ import { useAnalysisStore } from "@/store/analysis-store";
 export function UserButton() {
   const { user, isAuthenticated, isLoading, clearAuth } = useAuthStore();
   const { clearCurrent } = useAnalysisStore();
+  const [mounted, setMounted] = useState(false);
   const [subscriptionInfo, setSubscriptionInfo] = useState<{
     plan: 'free' | 'pro' | 'enterprise';
     verified: boolean;
     title?: string;
   } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -73,6 +78,21 @@ export function UserButton() {
     .slice(0, 2) || "U";
 
   const userName = user.name || user.email?.split('@')[0] || 'User';
+
+  if (!mounted) {
+    return (
+      <button className="relative w-full flex items-center gap-3 p-2 rounded-lg bg-linear-to-br from-blue-600/20 to-purple-600/20 backdrop-blur-sm border border-blue-500/30 hover:border-blue-500/50 transition-all group">
+        <Avatar className="h-8 w-8 shrink-0">
+          {user.image ? (
+            <AvatarImage src={user.image} alt={userName} />
+          ) : null}
+          <AvatarFallback className="bg-linear-to-br from-blue-600 to-purple-600 text-white text-xs">
+            {userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) || "U"}
+          </AvatarFallback>
+        </Avatar>
+      </button>
+    );
+  }
 
   return (
     <DropdownMenu>

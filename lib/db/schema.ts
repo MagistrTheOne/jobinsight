@@ -8,9 +8,11 @@ export const users = pgTable("users", {
   emailVerified: timestamp("email_verified"),
   name: text("name"),
   image: text("image"),
-  role: text("role").$type<"admin" | "user">().default("user"),
+  role: text("role").$type<"admin" | "user" | "hr">().default("user"),
   verified: integer("verified").default(0), // 1 = verified (синяя галка)
   title: text("title"), // Должность (CEO, etc.)
+  bio: text("bio"), // О себе (для соискателя)
+  salaryExpectation: text("salary_expectation"), // Желаемая зарплата (для соискателя)
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
 }, (table) => ({
@@ -369,5 +371,30 @@ export const integrations = pgTable("integrations", {
 }));
 
 export type Integration = typeof integrations.$inferSelect;
+
+// HR Profile - профиль HR специалиста
+export const hrProfiles = pgTable("hr_profiles", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
+  company: text("company").notNull(), // Название компании
+  department: text("department"), // Отдел/департамент
+  position: text("position"), // Должность (HR Manager, Recruiter, etc.)
+  phone: text("phone"), // Телефон
+  linkedin: text("linkedin"), // LinkedIn профиль
+  bio: text("bio"), // О себе
+  specialties: jsonb("specialties"), // Специализации (массив строк)
+  industries: jsonb("industries"), // Отрасли (массив строк)
+  experience: integer("experience"), // Опыт работы (лет)
+  location: text("location"), // Локация
+  website: text("website"), // Сайт компании
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
+}, (table) => ({
+  userIdIdx: index("hr_profiles_user_id_idx").on(table.userId),
+  companyIdx: index("hr_profiles_company_idx").on(table.company),
+}));
+
+export type HRProfile = typeof hrProfiles.$inferSelect;
+export type NewHRProfile = typeof hrProfiles.$inferInsert;
 export type NewIntegration = typeof integrations.$inferInsert;
 

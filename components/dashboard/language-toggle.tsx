@@ -13,6 +13,7 @@ import {
 type Language = 'ru' | 'en';
 
 export function LanguageToggle() {
+  const [mounted, setMounted] = React.useState(false);
   const [language, setLanguage] = React.useState<Language>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('language') as Language) || 'ru';
@@ -21,12 +22,28 @@ export function LanguageToggle() {
   });
 
   React.useEffect(() => {
-    if (typeof window !== 'undefined') {
+    setMounted(true);
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && mounted) {
       localStorage.setItem('language', language);
       document.documentElement.lang = language;
       window.dispatchEvent(new CustomEvent('language-change', { detail: { language } }));
     }
-  }, [language]);
+  }, [language, mounted]);
+
+  if (!mounted) {
+    return (
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        className="h-9 w-9 bg-white/5 border border-white/10 hover:bg-white/10 text-white"
+      >
+        <span className="sr-only">Toggle language</span>
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>

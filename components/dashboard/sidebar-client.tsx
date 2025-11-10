@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Briefcase, FileText, Mail, BarChart3, Bot, Sparkles, TrendingUp, Workflow, DollarSign, Home, History, Menu, X, ChevronLeft, ChevronRight, Clock, Plus } from "lucide-react";
+import { Briefcase, FileText, Mail, BarChart3, Bot, Sparkles, TrendingUp, Workflow, DollarSign, Home, History, Menu, X, ChevronLeft, ChevronRight, Clock, Plus, User, FileCheck } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -33,12 +33,17 @@ export function DashboardSidebar() {
   const { user } = useAuthStore();
   const activeTab = searchParams.get('tab') || 'chat';
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
   const [isCollapsed, setIsCollapsed] = React.useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('sidebar-collapsed') === 'true';
     }
     return false;
   });
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
   const [recentActivity, setRecentActivity] = useState<Array<{
     id: string;
     type: 'application' | 'analysis' | 'chat';
@@ -147,6 +152,17 @@ export function DashboardSidebar() {
       title: "Зарплата AI",
       href: "/dashboard?tab=salary-ai",
       icon: <DollarSign className="h-4 w-4" />,
+    },
+    {
+      title: "Резюме Builder",
+      href: "/dashboard?tab=resume-builder",
+      icon: <FileCheck className="h-4 w-4" />,
+      badge: "NEW",
+    },
+    {
+      title: "Профиль",
+      href: "/dashboard?tab=profile",
+      icon: <User className="h-4 w-4" />,
     },
     {
       title: "Пайплайн",
@@ -447,33 +463,46 @@ export function DashboardSidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside 
-        className={cn(
-          "hidden lg:flex h-screen flex-col bg-black/60 backdrop-blur-2xl border-r border-white/5 fixed left-0 top-0 z-40 transition-all duration-300",
-          isCollapsed ? "w-16" : "w-64"
-        )}
-      >
-        <SidebarContent />
-      </aside>
+      {mounted && (
+        <aside
+          className={cn(
+            "hidden lg:flex h-screen flex-col bg-black/60 backdrop-blur-2xl border-r border-white/5 fixed left-0 top-0 z-40 transition-all duration-300",
+            isCollapsed ? "w-16" : "w-64"
+          )}
+        >
+          <SidebarContent />
+        </aside>
+      )}
 
       {/* Mobile Sidebar - Sheet */}
       <div className="lg:hidden">
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="fixed top-4 left-4 z-50 lg:hidden bg-black/60 backdrop-blur-sm border border-neutral-800/50 hover:bg-neutral-800/50"
-            >
-              <Menu className="h-5 w-5 text-white" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[280px] sm:w-64 p-0 bg-black/95 backdrop-blur-xl border-neutral-800/50">
-            <div className="flex flex-col h-full">
-              <SidebarContent />
-            </div>
-          </SheetContent>
-        </Sheet>
+        {mounted ? (
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="fixed top-4 left-4 z-50 lg:hidden bg-black/60 backdrop-blur-sm border border-neutral-800/50 hover:bg-neutral-800/50"
+              >
+                <Menu className="h-5 w-5 text-white" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[280px] sm:w-64 p-0 bg-black/95 backdrop-blur-xl border-neutral-800/50">
+              <div className="flex flex-col h-full">
+                <SidebarContent />
+              </div>
+            </SheetContent>
+          </Sheet>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="fixed top-4 left-4 z-50 lg:hidden bg-black/60 backdrop-blur-sm border border-neutral-800/50 hover:bg-neutral-800/50"
+            onClick={() => setMobileOpen(true)}
+          >
+            <Menu className="h-5 w-5 text-white" />
+          </Button>
+        )}
       </div>
     </>
   );

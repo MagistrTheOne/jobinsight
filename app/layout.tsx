@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { SessionProvider } from '@/components/providers/session-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
+import { CommandProvider } from '@/components/command-provider';
 
 const inter = Inter({ 
   subsets: ['latin', 'cyrillic'],
@@ -38,7 +39,11 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${inter.className} font-sans bg-black text-white`}>
         <ThemeProvider>
-          <SessionProvider>{children}</SessionProvider>
+          <SessionProvider>
+            <CommandProvider>
+              {children}
+            </CommandProvider>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>
