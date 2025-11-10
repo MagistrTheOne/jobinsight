@@ -10,14 +10,19 @@ interface DashboardLayoutClientProps {
 }
 
 export default function DashboardLayoutClient({ children }: DashboardLayoutClientProps) {
-  const [isCollapsed, setIsCollapsed] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('sidebar-collapsed') === 'true';
-    }
-    return false;
-  });
+  const [mounted, setMounted] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    // Initialize collapsed state from localStorage after mount
+    const collapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+    setIsCollapsed(collapsed);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     const handleSidebarToggle = () => {
       if (typeof window !== 'undefined') {
         setIsCollapsed(localStorage.getItem('sidebar-collapsed') === 'true');
@@ -26,21 +31,21 @@ export default function DashboardLayoutClient({ children }: DashboardLayoutClien
 
     window.addEventListener('sidebar-toggle', handleSidebarToggle);
     return () => window.removeEventListener('sidebar-toggle', handleSidebarToggle);
-  }, []);
+  }, [mounted]);
 
   return (
-    <div className="flex min-h-dvh w-full bg-black">
+    <div className="flex min-h-dvh w-full bg-black overflow-safe">
       <DashboardSidebar />
-      <div 
+      <div
         className={cn(
           "flex flex-1 flex-col overflow-hidden transition-all duration-300 w-full",
           // Mobile: sidebar скрыт, контент на всю ширину
           // Desktop: контент смещается в зависимости от состояния sidebar
-          isCollapsed ? "lg:ml-16" : "lg:ml-64"
+          mounted && (isCollapsed ? "lg:ml-16 xl:ml-20 2xl:ml-24" : "lg:ml-64 xl:ml-72 2xl:ml-80")
         )}
       >
         <DashboardNavbar />
-        <main className="flex-1 overflow-hidden bg-black w-full">
+        <main className="flex-1 overflow-hidden bg-black w-full container-global">
           {children}
         </main>
       </div>

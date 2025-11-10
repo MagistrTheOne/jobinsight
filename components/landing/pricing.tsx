@@ -123,7 +123,7 @@ export function Pricing() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8 max-w-7xl mx-auto px-2 sm:px-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8 2xl:gap-10 max-w-responsive-7xl mx-auto px-2 sm:px-0">
           {plans.map((plan, index) => (
             <GlassCard
               key={index}

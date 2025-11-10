@@ -128,12 +128,33 @@ ${prompt1}`;
         }
       }
 
-      // Clean up the JSON string
+      // Clean up the JSON string - comprehensive cleaning
       jsonString = jsonString
+        // Remove control characters and invisible chars
+        .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
+        // Replace smart quotes and wrong quotes with proper double quotes
+        .replace(/[""]/g, '"')
+        .replace(/[""]/g, '"')
+        .replace(/['']/, "'")
+        .replace(/['']/, "'")
+        // Fix common typos in quotes
+        .replace(/«/g, '"')
+        .replace(/»/g, '"')
+        .replace(/"/g, '"')
+        .replace(/"/g, '"')
+        // Remove extra whitespace and normalize
+        .replace(/\r?\n/g, ' ')
+        .replace(/\t/g, ' ')
+        .replace(/\s+/g, ' ')
+        // Fix trailing commas
         .replace(/,\s*}/g, '}')
         .replace(/,\s*]/g, ']')
-        .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":') // Quote unquoted keys
-        .replace(/:\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*([,}\]])/g, ':"$1"$2'); // Quote unquoted string values
+        // Quote unquoted keys (more comprehensive)
+        .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
+        // Quote unquoted string values that look like identifiers
+        .replace(/:\s*([a-zA-Z_][a-zA-Z0-9_]*(?:\s+[a-zA-Z_][a-zA-Z0-9_]*)*)\s*([,}\]])/g, ':"$1"$2')
+        // Fix any remaining unquoted strings that should be quoted
+        .replace(/:\s*([^",\{\[\s][^,}\]]*[^",\}\]\s])\s*([,}\]])/g, ':"$1"$2');
 
       console.log('🔧 Cleaned JSON string length:', jsonString.length);
       console.log('🔧 JSON preview:', jsonString.substring(0, 200) + '...');

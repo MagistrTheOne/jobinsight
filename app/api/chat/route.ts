@@ -30,14 +30,50 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
-    const body = await request.json();
-    const { chatId, message, systemPrompt } = body;
 
-    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+    // Handle both JSON and FormData
+    let chatId: string | null = null;
+    let message: string = '';
+    let systemPrompt: string | undefined;
+    let attachedFiles: { file: File; type: string }[] = [];
+
+    const contentType = request.headers.get('content-type') || '';
+
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      chatId = formData.get('chatId') as string || null;
+      message = formData.get('message') as string || '';
+
+      // Extract files
+      const fileKeys = Array.from(formData.keys()).filter(key => key.startsWith('file_') && !key.includes('_type'));
+      for (const fileKey of fileKeys) {
+        const file = formData.get(fileKey) as File;
+        const typeKey = `${fileKey}_type`;
+        const type = formData.get(typeKey) as string;
+
+        if (file) {
+          attachedFiles.push({ file, type });
+        }
+      }
+    } else {
+      const body = await request.json();
+      chatId = body.chatId;
+      message = body.message;
+      systemPrompt = body.systemPrompt;
+    }
+
+    // If no message but files are attached, create a default message
+    if ((!message || typeof message !== 'string' || message.trim().length === 0) && attachedFiles.length === 0) {
       return NextResponse.json(
         { error: 'Message is required' },
         { status: 400 }
       );
+    }
+
+    // If only files are attached without text, create a descriptive message
+    if ((!message || message.trim().length === 0) && attachedFiles.length > 0) {
+      const fileDescriptions = attachedFiles.map(f => `${f.type === 'image' ? 'изображение' : 'документ'} "${f.file.name}"`).join(', ');
+      message = `Пользователь прикрепил файлы: ${fileDescriptions}`;
     }
 
     // Check usage limits (using resume limit for now, can be changed to separate chat limit)
@@ -83,8 +119,15 @@ export async function POST(request: NextRequest) {
       isNewChat = true;
     }
 
+    // Add file information to message if files are attached
+    let messageWithFiles = message;
+    if (attachedFiles.length > 0) {
+      const fileInfo = attachedFiles.map(f => `\n📎 [${f.type.toUpperCase()}] ${f.file.name} (${(f.file.size / 1024).toFixed(1)} KB)`).join('');
+      messageWithFiles = message + fileInfo;
+    }
+
     // Add user message to chat
-    await addChatMessage(currentChatId, 'user', message);
+    await addChatMessage(currentChatId, 'user', messageWithFiles);
 
     // Prepare messages for GigaChat (include existing conversation)
     const messagesForAI = [...existingMessages, { role: 'user' as const, content: message }];

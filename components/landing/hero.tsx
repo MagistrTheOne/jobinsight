@@ -113,9 +113,9 @@ export function Hero() {
   };
 
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center bg-[#0b0b0b] text-white pt-14 sm:pt-16 md:pt-20 lg:pt-24 pb-12 sm:pb-16 md:pb-20 lg:pb-24">
-      <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 w-full">
-        <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8 md:space-y-10 lg:space-y-12">
+    <section id="hero" className="relative min-h-screen flex items-center justify-center bg-[#0b0b0b] text-white pt-14 sm:pt-16 md:pt-20 lg:pt-24 pb-12 sm:pb-16 md:pb-20 lg:pb-24 overflow-safe">
+      <div className="container-global w-full">
+        <div className="max-w-responsive-4xl mx-auto text-center space-responsive-lg">
           {/* Header */}
           <div className="space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6">
             <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-full bg-neutral-900/80 backdrop-blur-sm border border-neutral-700/50">

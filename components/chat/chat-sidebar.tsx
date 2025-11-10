@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { GlassCard } from "@/components/ui/glass-card"
-import { Trash2, Plus, MessageSquare, Loader2 } from "lucide-react"
+import { Trash2, Plus, MessageSquare, Loader2, Edit3 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { chatStorage } from "@/lib/storage/chat-storage"
 
@@ -70,6 +70,38 @@ export function ChatSidebar({
     return () => window.removeEventListener("chat-created", refresh)
   }, [fetchChats])
 
+  const handleRename = useCallback(
+    async (chatId: string, e: React.MouseEvent) => {
+      e.stopPropagation()
+      const chat = chats.find(c => c.id === chatId)
+      if (!chat) return
+
+      const newTitle = prompt("Новое название чата:", chat.title)
+      if (newTitle && newTitle.trim() && newTitle !== chat.title) {
+        try {
+          const res = await fetch(`/api/chat/history/${chatId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: newTitle.trim() }),
+          })
+          if (res.ok) {
+            // Update in state and localStorage
+            setChats((prev) => {
+              const updated = prev.map(c =>
+                c.id === chatId ? { ...c, title: newTitle.trim(), updatedAt: new Date().toISOString() } : c
+              )
+              chatStorage.saveChats(updated)
+              return updated
+            })
+          }
+        } catch (err) {
+          console.error("Failed to update chat title:", err)
+        }
+      }
+    },
+    [chats]
+  )
+
   const handleDelete = useCallback(
     async (chatId: string, e: React.MouseEvent) => {
       e.stopPropagation()
@@ -115,6 +147,22 @@ export function ChatSidebar({
     if (days < 7) return `${days} дн назад`
     return d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" })
   }, [])
+
+  // F2 key handler for renaming current chat
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F2' && currentChatId) {
+        e.preventDefault()
+        const chat = chats.find(c => c.id === currentChatId)
+        if (chat) {
+          handleRename(chat.id, e as any)
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [currentChatId, chats, handleRename])
 
   const content = useMemo(() => {
     if (loading)
@@ -187,6 +235,13 @@ export function ChatSidebar({
               </div>
             </button>
             <button
+              onClick={(e) => handleRename(chat.id, e)}
+              className="flex h-6 w-6 items-center justify-center rounded text-neutral-500 opacity-0 transition-opacity hover:bg-white/10 hover:text-blue-400 group-hover:opacity-100"
+              title="Переименовать (F2)"
+            >
+              <Edit3 className="h-3 w-3" />
+            </button>
+            <button
               onClick={(e) => handleDelete(chat.id, e)}
               className="flex h-6 w-6 items-center justify-center rounded text-neutral-500 opacity-0 transition-opacity hover:bg-white/10 hover:text-red-400 group-hover:opacity-100"
             >
@@ -196,7 +251,7 @@ export function ChatSidebar({
         ))}
       </div>
     )
-  }, [loading, error, chats, currentChatId, formatDate, handleDelete, onSelectChat])
+  }, [loading, error, chats, currentChatId, formatDate, handleDelete, handleRename, onSelectChat])
 
   return (
     <GlassCard className="flex h-full flex-col border border-white/5 bg-black/60 backdrop-blur-2xl">

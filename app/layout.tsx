@@ -37,7 +37,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} ${inter.className} font-sans bg-black text-white`}>
+      <body className={`${inter.variable} ${inter.className} font-sans bg-background text-foreground`}>
         <ThemeProvider>
           <SessionProvider>
             <CommandProvider>

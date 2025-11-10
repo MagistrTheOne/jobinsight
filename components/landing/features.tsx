@@ -82,27 +82,31 @@ const features = [
 
 export function Features() {
   return (
-    <section id="features" className="py-12 sm:py-16 md:py-20 lg:py-24 px-3 sm:px-4 md:px-6 lg:px-8 bg-[#0b0b0b] text-white min-h-[500px] sm:min-h-[600px] md:min-h-[700px] flex items-center">
-      <div className="container mx-auto max-w-7xl w-full">
-        <div className="text-center mb-8 sm:mb-12 md:mb-16 lg:mb-20 px-2 sm:px-4">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3 md:mb-4 tracking-tight px-2">
+    <section
+      id="features"
+      aria-label="Job seeker AI features"
+      className="w-full py-responsive-lg bg-[#0b0b0b] text-white overflow-safe"
+    >
+      <div className="container-global w-full max-w-responsive-7xl mx-auto">
+        <div className="text-center mb-14 sm:mb-20">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
             Powerful Features for Your Job Search
           </h2>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-neutral-400 max-w-2xl mx-auto leading-relaxed px-3">
+          <p className="mt-4 text-sm sm:text-base md:text-lg text-neutral-400 max-w-2xl mx-auto leading-relaxed">
             Everything you need to optimize your job applications and land your dream position.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+        <div className="grid gap-responsive-md grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {features.map((feature, index) => (
             <GlassCard
               key={index}
-              className="p-4 sm:p-5 md:p-6 lg:p-7 bg-neutral-950/60 backdrop-blur-sm border border-neutral-800/50 rounded-lg hover:border-neutral-700/50 transition-all duration-300 h-full flex flex-col"
+              className="w-full p-5 md:p-6 flex flex-col justify-between border border-white/10 bg-white/5 backdrop-blur-md rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.04)] hover:shadow-[0_0_12px_rgba(255,255,255,0.05)] hover:border-white/20 transition-all duration-300 hover:scale-[1.015]"
             >
-              <h3 className="text-sm sm:text-base md:text-lg font-semibold mb-1.5 sm:mb-2 md:mb-3 text-white leading-snug">
+              <h3 className="text-base md:text-lg font-semibold text-white mb-2">
                 {feature.title}
               </h3>
-              <p className="text-[11px] sm:text-xs md:text-sm text-neutral-400 leading-relaxed flex-grow">
+              <p className="text-sm text-neutral-400 leading-relaxed">
                 {feature.description}
               </p>
             </GlassCard>

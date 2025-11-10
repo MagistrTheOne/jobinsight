@@ -15,17 +15,37 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = session.user.id;
-    
-    // Get user subscription
-    const subscription = await getUserSubscription(userId);
-    const plan = subscription?.plan || 'free';
-    
-    // Get usage for all types
-    const [resumeUsage, jobUsage, coverLetterUsage] = await Promise.all([
-      checkUsageLimit(userId, 'resume'),
-      checkUsageLimit(userId, 'job'),
-      checkUsageLimit(userId, 'coverLetter'),
-    ]);
+
+    // Get user subscription with fallback
+    let subscription;
+    let plan = 'free';
+    try {
+      subscription = await getUserSubscription(userId);
+      plan = subscription?.plan || 'free';
+    } catch (error) {
+      console.warn('Failed to get subscription, using free plan fallback:', error);
+      // Continue with free plan
+    }
+
+    // Get usage for all types with fallback
+    let resumeUsage, jobUsage, coverLetterUsage;
+    try {
+      [resumeUsage, jobUsage, coverLetterUsage] = await Promise.all([
+        checkUsageLimit(userId, 'resume'),
+        checkUsageLimit(userId, 'job'),
+        checkUsageLimit(userId, 'coverLetter'),
+      ]);
+    } catch (error) {
+      console.warn('Failed to get usage limits, using fallback values:', error);
+      // Fallback values for free plan
+      const fallbackUsage = {
+        allowed: true,
+        remaining: 10,
+        limit: 10,
+        used: 0,
+      };
+      resumeUsage = jobUsage = coverLetterUsage = fallbackUsage;
+    }
 
     return NextResponse.json({
       success: true,

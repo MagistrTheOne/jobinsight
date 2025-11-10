@@ -29,6 +29,18 @@ export function UserProfileSettings() {
     loadUserInfo();
   }, []);
 
+  // горячая клавиша Ctrl+S для быстрого сохранения
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [name, title, role, avatarFile]);
+
   const loadUserInfo = async () => {
     setLoading(true);
     try {
@@ -38,9 +50,7 @@ export function UserProfileSettings() {
         setRole((data.user.role === "hr" ? "hr" : "user") as "user" | "hr");
         setName(data.user.name || "");
         setTitle(data.user.title || "");
-        if (data.user.image) {
-          setAvatarPreview(data.user.image);
-        }
+        if (data.user.image) setAvatarPreview(data.user.image);
       }
     } catch (error) {
       console.error("Failed to load user info:", error);
@@ -52,95 +62,59 @@ export function UserProfileSettings() {
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Проверка типа файла
-    if (!file.type.startsWith('image/')) {
-      toast.error("Выберите изображение");
-      return;
-    }
-
-    // Проверка размера (макс 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Размер файла не должен превышать 5MB");
-      return;
-    }
+    if (!file.type.startsWith("image/")) return toast.error("Выберите изображение");
+    if (file.size > 5 * 1024 * 1024) return toast.error("Размер файла не должен превышать 5MB");
 
     setAvatarFile(file);
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setAvatarPreview(reader.result as string);
-    };
+    reader.onloadend = () => setAvatarPreview(reader.result as string);
     reader.readAsDataURL(file);
   };
 
   const handleRemoveAvatar = () => {
     setAvatarFile(null);
     setAvatarPreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Сначала загружаем аватар, если есть
       let avatarUrl = user?.image || null;
       if (avatarFile) {
         const formData = new FormData();
-        formData.append('avatar', avatarFile);
-        
+        formData.append("avatar", avatarFile);
         const avatarRes = await fetch("/api/user/avatar", {
           method: "POST",
           body: formData,
         });
-        
-        if (avatarRes.ok) {
-          const avatarData = await avatarRes.json();
-          if (avatarData.success && avatarData.url) {
-            avatarUrl = avatarData.url;
-          }
-        } else {
-          toast.error("Ошибка загрузки аватара");
-        }
+        const avatarData = await avatarRes.json();
+        if (avatarData.success && avatarData.url) avatarUrl = avatarData.url;
+        else toast.error("Ошибка загрузки аватара");
       }
 
-      // Обновляем профиль
       const res = await fetch("/api/user/info", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          role,
-          name,
-          title,
-          image: avatarUrl,
-        }),
+        body: JSON.stringify({ role, name, title, image: avatarUrl }),
       });
       const data = await res.json();
       if (data.success) {
         toast.success("Профиль успешно обновлен");
-        // Обновляем данные пользователя в store
-        if (data.user) {
-          setUser(data.user);
-        }
-        // Очищаем файл после успешной загрузки
+        if (data.user) setUser(data.user);
         setAvatarFile(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      } else {
-        throw new Error(data.error || "Failed to save");
-      }
-    } catch (error: any) {
-      toast.error("Ошибка сохранения: " + error.message);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      } else throw new Error(data.error || "Ошибка сохранения");
+    } catch (e: any) {
+      toast.error("Ошибка сохранения: " + e.message);
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
+  if (loading)
     return (
-      <Card className="bg-black/60 border-white/10">
+      <Card className="bg-linear-to-b from-black/70 via-black/60 to-black/70 backdrop-blur-xl border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.6)]">
         <CardContent className="p-6">
           <div className="flex items-center justify-center py-8">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white/60" />
@@ -148,29 +122,29 @@ export function UserProfileSettings() {
         </CardContent>
       </Card>
     );
-  }
 
   return (
-    <div className="space-y-6">
-      <Card className="bg-black/60 border-white/10">
+    <div className="space-y-6 animate-[fadeIn_0.3s_ease]">
+      <Card className="bg-linear-to-b from-black/70 via-black/60 to-black/70 backdrop-blur-xl border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.6)] transition-all">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
-            <User className="h-5 w-5" />
+            <User className="h-5 w-5 text-blue-400" />
             Настройки профиля
           </CardTitle>
           <CardDescription className="text-neutral-400">
             Выберите роль и заполните основную информацию
           </CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-6">
           {/* Avatar Upload */}
           <div className="space-y-3">
             <Label className="text-white text-base font-semibold">Аватар</Label>
             <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20 border-2 border-white/20">
+              <Avatar className="h-20 w-20 border-2 border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.2)] hover:scale-105 transition-transform">
                 <AvatarImage src={avatarPreview || user?.image || undefined} />
                 <AvatarFallback className="bg-white/10 text-white text-lg">
-                  {name ? name.charAt(0).toUpperCase() : user?.name?.charAt(0).toUpperCase() || 'U'}
+                  {name ? name.charAt(0).toUpperCase() : user?.name?.charAt(0).toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col gap-2">
@@ -187,7 +161,11 @@ export function UserProfileSettings() {
                   variant="outline"
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
-                  className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+                  className={`border-white/10 text-white transition-all ${
+                    avatarPreview
+                      ? "bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500"
+                      : "bg-white/5 hover:bg-white/10"
+                  }`}
                 >
                   <Upload className="h-4 w-4 mr-2" />
                   {avatarPreview ? "Изменить" : "Загрузить"}
@@ -198,7 +176,7 @@ export function UserProfileSettings() {
                     variant="outline"
                     size="sm"
                     onClick={handleRemoveAvatar}
-                    className="bg-red-600/20 border-red-500/30 text-red-300 hover:bg-red-600/30"
+                    className="bg-red-600/20 border-red-500/30 text-red-300 hover:bg-red-600/30 transition-all"
                   >
                     <X className="h-4 w-4 mr-2" />
                     Удалить
@@ -211,38 +189,66 @@ export function UserProfileSettings() {
             </p>
           </div>
 
+          {/* Role selector */}
           <div className="space-y-4">
             <Label className="text-white text-base font-semibold">Роль</Label>
-            <RadioGroup value={role} onValueChange={(value) => setRole(value as "user" | "hr")}>
-              <div className="flex items-center space-x-2 p-4 rounded-lg border border-white/10 hover:bg-white/5 cursor-pointer">
+            <RadioGroup
+              value={role}
+              onValueChange={(v) => setRole(v as "user" | "hr")}
+              className="space-y-3"
+            >
+              <div
+                className={`flex items-center space-x-2 p-4 rounded-lg border transition-all duration-200 cursor-pointer ${
+                  role === "user"
+                    ? "border-blue-500/40 bg-blue-500/10"
+                    : "border-white/10 hover:bg-white/5"
+                }`}
+              >
                 <RadioGroupItem value="user" id="user" />
                 <Label htmlFor="user" className="cursor-pointer flex-1">
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-medium text-white">Соискатель</div>
-                      <div className="text-sm text-neutral-400">Ищу работу, нужна помощь с резюме и откликами</div>
+                      <div className="text-sm text-neutral-400">
+                        Ищу работу, нужна помощь с резюме и откликами
+                      </div>
                     </div>
                     {role === "user" && (
-                      <Badge variant="outline" className="bg-blue-600/20 border-blue-500/30 text-blue-300">
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-600/20 border-blue-500/30 text-blue-300"
+                      >
                         Активна
                       </Badge>
                     )}
                   </div>
                 </Label>
               </div>
-              <div className="flex items-center space-x-2 p-4 rounded-lg border border-white/10 hover:bg-white/5 cursor-pointer">
+
+              <div
+                className={`flex items-center space-x-2 p-4 rounded-lg border transition-all duration-200 cursor-pointer ${
+                  role === "hr"
+                    ? "border-purple-500/40 bg-purple-500/10"
+                    : "border-white/10 hover:bg-white/5"
+                }`}
+              >
                 <RadioGroupItem value="hr" id="hr" />
                 <Label htmlFor="hr" className="cursor-pointer flex-1">
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-medium text-white flex items-center gap-2">
                         HR специалист
-                        <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                        <CheckCircle2 className="h-4 w-4 text-purple-400" />
                       </div>
-                      <div className="text-sm text-neutral-400">Ищу кандидатов, автоматизация рекрутинга</div>
+                      <div className="text-sm text-neutral-400">
+                        Ищу кандидатов, автоматизация рекрутинга
+                      </div>
                     </div>
                     {role === "hr" && (
-                      <Badge variant="outline" className="bg-purple-600/20 border-purple-500/30 text-purple-300">
+                      <Badge
+                        variant="outline"
+                        className="bg-purple-600/20 border-purple-500/30 text-purple-300"
+                      >
                         Активна
                       </Badge>
                     )}
@@ -252,6 +258,7 @@ export function UserProfileSettings() {
             </RadioGroup>
           </div>
 
+          {/* Info fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-white">
@@ -262,10 +269,9 @@ export function UserProfileSettings() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ваше имя"
-                className="bg-white/5 border-white/10 text-white"
+                className="bg-white/5 border-white/10 text-white focus:ring-1 focus:ring-blue-500/40 hover:bg-white/10 transition-all"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="title" className="text-white flex items-center gap-2">
                 <Briefcase className="h-4 w-4" />
@@ -276,7 +282,7 @@ export function UserProfileSettings() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="CEO, Developer, HR Manager, etc."
-                className="bg-white/5 border-white/10 text-white"
+                className="bg-white/5 border-white/10 text-white focus:ring-1 focus:ring-blue-500/40 hover:bg-white/10 transition-all"
               />
             </div>
           </div>
@@ -284,7 +290,7 @@ export function UserProfileSettings() {
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            className="w-full bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white transition-all"
           >
             <Save className="mr-2 h-4 w-4" />
             {saving ? "Сохранение..." : "Сохранить настройки"}
@@ -292,14 +298,8 @@ export function UserProfileSettings() {
         </CardContent>
       </Card>
 
-      {role === "hr" && (
-        <HRProfileForm />
-      )}
-
-      {role === "user" && (
-        <JobSeekerProfile />
-      )}
+      {role === "hr" && <HRProfileForm />}
+      {role === "user" && <JobSeekerProfile />}
     </div>
   );
 }
-

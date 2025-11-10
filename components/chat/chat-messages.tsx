@@ -135,7 +135,7 @@ const MessageBubble = memo(
         >
           <div
             className={cn(
-              "mb-1 px-2 text-[10px] font-medium",
+              "mb-1 px-2 text-[11px] sm:text-xs font-medium",
               isUser ? "text-neutral-500" : "text-neutral-500",
             )}
           >
@@ -234,7 +234,7 @@ const TypingIndicator = () => (
       </AvatarFallback>
     </Avatar>
     <div className="flex flex-col items-start">
-      <div className="mb-1 px-2 text-[10px] font-medium text-neutral-500">
+      <div className="mb-1 px-2 text-[11px] sm:text-xs font-medium text-neutral-500">
         AI Hunter
       </div>
       <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm shadow-sm">

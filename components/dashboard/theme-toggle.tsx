@@ -5,7 +5,7 @@ import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 
 export function ThemeToggle() {
-  const { setTheme, resolvedTheme } = useTheme()
+  const { setTheme, theme, resolvedTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
@@ -14,34 +14,48 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="theme-toggle">
-        <button className="theme-toggle-button">
-          <Sun />
+      <div className="flex items-center gap-1">
+        <button className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors">
+          <Sun className="h-4 w-4" />
         </button>
-        <button className="theme-toggle-button">
-          <Moon />
+        <button className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors">
+          <Moon className="h-4 w-4" />
         </button>
       </div>
     )
   }
 
-  const isDark = resolvedTheme === 'dark';
+  const currentTheme = resolvedTheme || theme || 'light'
+  const isDark = currentTheme === 'dark'
+
+  const handleThemeChange = (newTheme: string) => {
+    console.log('Switching theme from', currentTheme, 'to', newTheme)
+    setTheme(newTheme)
+  }
 
   return (
-    <div className="theme-toggle">
+    <div className="flex items-center gap-1">
       <button
-        onClick={() => setTheme("light")}
-        className={`theme-toggle-button ${!isDark ? 'active' : ''}`}
+        onClick={() => handleThemeChange("light")}
+        className={`h-8 w-8 flex items-center justify-center rounded-md transition-colors ${
+          !isDark
+            ? 'bg-white/20 text-yellow-400'
+            : 'hover:bg-white/10 text-neutral-400'
+        }`}
         title="Светлая тема"
       >
-        <Sun />
+        <Sun className="h-4 w-4" />
       </button>
       <button
-        onClick={() => setTheme("dark")}
-        className={`theme-toggle-button ${isDark ? 'active' : ''}`}
+        onClick={() => handleThemeChange("dark")}
+        className={`h-8 w-8 flex items-center justify-center rounded-md transition-colors ${
+          isDark
+            ? 'bg-white/20 text-blue-400'
+            : 'hover:bg-white/10 text-neutral-400'
+        }`}
         title="Темная тема"
       >
-        <Moon />
+        <Moon className="h-4 w-4" />
       </button>
     </div>
   )

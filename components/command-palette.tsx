@@ -176,7 +176,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 <CommandItem
                   key={item.label}
                   onSelect={() => runCommand(item.command)}
-                  className="cursor-pointer"
+                  className={`cursor-pointer ${item.label === 'AI Чат' ? 'bg-linear-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 hover:border-blue-400/50 shadow-lg shadow-blue-500/10' : ''}`}
                 >
                   <item.icon className="mr-2 h-4 w-4" />
                   <span>{item.label}</span>

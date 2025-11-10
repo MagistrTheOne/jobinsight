@@ -102,12 +102,34 @@ export async function getAnalysisById(id: string, userId: string) {
 
 // Subscription queries
 export async function getUserSubscription(userId: string) {
-  const [subscription] = await db
-    .select()
-    .from(subscriptions)
-    .where(eq(subscriptions.userId, userId))
-    .limit(1);
-  return subscription;
+  const maxRetries = 3;
+  let lastError: any;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const [subscription] = await db
+        .select()
+        .from(subscriptions)
+        .where(eq(subscriptions.userId, userId))
+        .limit(1);
+      return subscription;
+    } catch (error: any) {
+      lastError = error;
+      console.warn(`Database query attempt ${attempt}/${maxRetries} failed:`, error.message);
+
+      // If it's the last attempt, throw the error
+      if (attempt === maxRetries) {
+        break;
+      }
+
+      // Wait before retrying (exponential backoff)
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+
+  console.error('All database query attempts failed:', lastError);
+  throw lastError;
 }
 
 export async function getSubscriptionByPolarCustomerId(polarCustomerId: string) {
@@ -154,58 +176,98 @@ export async function getUsageLimits(userId: string, periodStart: Date) {
 }
 
 export async function createOrGetUsageLimits(userId: string, periodStart: Date) {
-  let limits = await getUsageLimits(userId, periodStart);
-  
-  if (!limits) {
-    const [created] = await db
-      .insert(usageLimits)
-      .values({
-        id: crypto.randomUUID(),
-        userId,
-        periodStart,
-        resumeCount: 0,
-        jobCount: 0,
-        coverLetterCount: 0,
-      })
-      .returning();
-    return created;
+  const maxRetries = 3;
+  let lastError: any;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      let limits = await getUsageLimits(userId, periodStart);
+
+      if (!limits) {
+        const [created] = await db
+          .insert(usageLimits)
+          .values({
+            id: crypto.randomUUID(),
+            userId,
+            periodStart,
+            resumeCount: 0,
+            jobCount: 0,
+            coverLetterCount: 0,
+          })
+          .returning();
+        return created;
+      }
+
+      return limits;
+    } catch (error: any) {
+      lastError = error;
+      console.warn(`createOrGetUsageLimits attempt ${attempt}/${maxRetries} failed:`, error.message);
+
+      if (attempt === maxRetries) {
+        break;
+      }
+
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
   }
-  
-  return limits;
+
+  console.error('All createOrGetUsageLimits attempts failed:', lastError);
+  throw lastError;
 }
 
 export async function incrementUsageLimit(
-  userId: string, 
+  userId: string,
   type: 'resume' | 'job' | 'coverLetter',
   periodStart: Date
 ) {
-  // Ensure limits record exists
-  const current = await createOrGetUsageLimits(userId, periodStart);
-  
-  const updateData: any = {
-    updatedAt: new Date(),
-  };
-  
-  if (type === 'resume') {
-    updateData.resumeCount = current.resumeCount + 1;
-  } else if (type === 'job') {
-    updateData.jobCount = current.jobCount + 1;
-  } else {
-    updateData.coverLetterCount = current.coverLetterCount + 1;
+  const maxRetries = 3;
+  let lastError: any;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      // Ensure limits record exists
+      const current = await createOrGetUsageLimits(userId, periodStart);
+
+      const updateData: any = {
+        updatedAt: new Date(),
+      };
+
+      if (type === 'resume') {
+        updateData.resumeCount = current.resumeCount + 1;
+      } else if (type === 'job') {
+        updateData.jobCount = current.jobCount + 1;
+      } else {
+        updateData.coverLetterCount = current.coverLetterCount + 1;
+      }
+
+      const [updated] = await db
+        .update(usageLimits)
+        .set(updateData)
+        .where(
+          and(
+            eq(usageLimits.userId, userId),
+            eq(usageLimits.periodStart, periodStart)
+          )
+        )
+        .returning();
+
+      return updated;
+    } catch (error: any) {
+      lastError = error;
+      console.warn(`incrementUsageLimit attempt ${attempt}/${maxRetries} failed:`, error.message);
+
+      if (attempt === maxRetries) {
+        break;
+      }
+
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
   }
-  
-  const [updated] = await db
-    .update(usageLimits)
-    .set(updateData)
-    .where(
-      and(
-        eq(usageLimits.userId, userId),
-        eq(usageLimits.periodStart, periodStart)
-      )
-    )
-    .returning();
-  
-  return updated;
+
+  console.error('All incrementUsageLimit attempts failed:', lastError);
+  throw lastError;
 }
 
 export async function resetUsageLimits(userId: string, newPeriodStart: Date) {

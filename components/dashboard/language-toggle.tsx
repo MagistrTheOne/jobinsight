@@ -45,30 +45,38 @@ export function LanguageToggle() {
     );
   }
 
+  const handleLanguageChange = (newLanguage: Language) => {
+    console.log('Changing language to:', newLanguage);
+    setLanguage(newLanguage);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
           className="h-9 w-9 bg-white/5 border border-white/10 hover:bg-white/10 text-white"
+          title={`Текущий язык: ${language === 'ru' ? 'Русский' : 'English'}`}
         >
           <Languages className="h-4 w-4" />
           <span className="sr-only">Toggle language</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-black/95 backdrop-blur-xl border-white/10">
-        <DropdownMenuItem 
-          onClick={() => setLanguage('ru')}
-          className={`text-white hover:bg-white/10 cursor-pointer ${language === 'ru' ? 'bg-white/10' : ''}`}
+        <DropdownMenuItem
+          onClick={() => handleLanguageChange('ru')}
+          className={`text-white hover:bg-white/10 cursor-pointer transition-colors ${language === 'ru' ? 'bg-white/10' : ''}`}
         >
           <span>🇷🇺 Русский</span>
+          {language === 'ru' && <span className="ml-auto text-xs">✓</span>}
         </DropdownMenuItem>
-        <DropdownMenuItem 
-          onClick={() => setLanguage('en')}
-          className={`text-white hover:bg-white/10 cursor-pointer ${language === 'en' ? 'bg-white/10' : ''}`}
+        <DropdownMenuItem
+          onClick={() => handleLanguageChange('en')}
+          className={`text-white hover:bg-white/10 cursor-pointer transition-colors ${language === 'en' ? 'bg-white/10' : ''}`}
         >
           <span>🇬🇧 English</span>
+          {language === 'en' && <span className="ml-auto text-xs">✓</span>}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
