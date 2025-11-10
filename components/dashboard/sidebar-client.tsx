@@ -441,18 +441,18 @@ export function DashboardSidebar() {
       )}
 
       {/* Footer - Hidden when collapsed */}
-      {!isCollapsed && (
+        {!isCollapsed && (
         <div className="border-t border-white/5 p-2.5 space-y-2">
           {/* Usage Limits */}
           <div className="hidden sm:block">
             <UsageLimits />
           </div>
-
-          {/* User Button */}
+        
+        {/* User Button */}
           <div className="flex justify-start">
-            <UserButton />
-          </div>
+          <UserButton />
         </div>
+      </div>
       )}
 
       {/* Collapsed Footer - Just User Button */}
@@ -470,35 +470,35 @@ export function DashboardSidebar() {
     <>
       {/* Desktop Sidebar */}
       {mounted && (
-        <aside
-          className={cn(
-            "hidden lg:flex h-screen flex-col bg-black/60 backdrop-blur-2xl border-r border-white/5 fixed left-0 top-0 z-40 transition-all duration-300",
-            isCollapsed ? "w-16" : "w-64"
-          )}
-        >
-          <SidebarContent />
-        </aside>
+      <aside 
+        className={cn(
+          "hidden lg:flex h-screen flex-col bg-black/60 backdrop-blur-2xl border-r border-white/5 fixed left-0 top-0 z-40 transition-all duration-300",
+          isCollapsed ? "w-16" : "w-64"
+        )}
+      >
+        <SidebarContent />
+      </aside>
       )}
 
       {/* Mobile Sidebar - Sheet */}
       <div className="lg:hidden">
         {mounted ? (
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="fixed top-4 left-4 z-50 lg:hidden bg-black/60 backdrop-blur-sm border border-neutral-800/50 hover:bg-neutral-800/50"
-              >
-                <Menu className="h-5 w-5 text-white" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[280px] sm:w-64 p-0 bg-black/95 backdrop-blur-xl border-neutral-800/50">
-              <div className="flex flex-col h-full">
-                <SidebarContent />
-              </div>
-            </SheetContent>
-          </Sheet>
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="fixed top-4 left-4 z-50 lg:hidden bg-black/60 backdrop-blur-sm border border-neutral-800/50 hover:bg-neutral-800/50"
+            >
+              <Menu className="h-5 w-5 text-white" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[280px] sm:w-64 p-0 bg-black/95 backdrop-blur-xl border-neutral-800/50">
+            <div className="flex flex-col h-full">
+              <SidebarContent />
+            </div>
+          </SheetContent>
+        </Sheet>
         ) : (
           <Button
             variant="ghost"

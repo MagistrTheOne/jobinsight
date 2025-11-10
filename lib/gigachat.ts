@@ -293,10 +293,10 @@ class GigaChatAPI {
         jsonString = codeBlockMatch[1];
       } else {
         // Try to find JSON object
-        const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          jsonString = jsonMatch[0];
-        }
+      const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        jsonString = jsonMatch[0];
+      }
       }
       
       // Clean up common issues

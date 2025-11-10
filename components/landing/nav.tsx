@@ -6,6 +6,7 @@ import { Briefcase, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { UserButton } from '@/components/auth/user-button';
 import { useAuthStore } from '@/store/auth-store';
+import { ThemeToggle } from '@/components/dashboard/theme-toggle';
 
 export function LandingNav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -36,6 +37,7 @@ export function LandingNav() {
 
           {/* Auth Section */}
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+            <ThemeToggle />
             {isAuthenticated ? (
               <div className="hidden sm:block">
                 <UserButton />
@@ -74,7 +76,10 @@ export function LandingNav() {
             isMobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
-          <div className="pb-4 pt-3 space-y-1 border-t border-neutral-800/50 mt-2">
+          <div className="pb-4 pt-3 space-y-3 border-t border-neutral-800/50 mt-2">
+            <div className="px-3">
+              <ThemeToggle />
+            </div>
             <Link 
               href="#features" 
               className="block px-3 py-2.5 text-sm text-neutral-300 hover:text-white hover:bg-neutral-800/30 rounded-md transition-colors"

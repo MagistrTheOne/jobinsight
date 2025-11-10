@@ -75,7 +75,7 @@ export function AIChat() {
       if (cachedChat?.messages) {
         setError("Используются сохраненные сообщения (офлайн)")
       } else {
-        setError(e.message || "Ошибка загрузки чата")
+      setError(e.message || "Ошибка загрузки чата")
       }
     } finally {
       setLoading(false)
@@ -157,10 +157,10 @@ export function AIChat() {
           chatStorage.saveCurrentChatId(data.chatId)
           // Update URL if chat changed
           if (data.chatId !== currentChatId) {
-            const newUrl = new URL(window.location.href);
-            newUrl.searchParams.set('chatId', data.chatId);
-            window.history.pushState({}, '', newUrl.toString());
-            window.dispatchEvent(new CustomEvent("chat-updated", { detail: { chatId: data.chatId } }));
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.set('chatId', data.chatId);
+          window.history.pushState({}, '', newUrl.toString());
+          window.dispatchEvent(new CustomEvent("chat-updated", { detail: { chatId: data.chatId } }));
           }
           
           // Update chat in localStorage
@@ -297,27 +297,27 @@ export function AIChat() {
 
         {/* Main Chat Area */}
         <div className="flex flex-col h-full min-h-0 bg-black">
-          {error && renderAlert("error", error)}
-          {upgradeRequired &&
-            renderAlert(
-              "upgrade",
-              "Достигнут лимит использования. Обновитесь до Pro для неограниченного доступа.",
-            )}
+        {error && renderAlert("error", error)}
+        {upgradeRequired &&
+          renderAlert(
+            "upgrade",
+            "Достигнут лимит использования. Обновитесь до Pro для неограниченного доступа.",
+          )}
 
           {/* Messages Area */}
           <div className="flex-1 overflow-hidden relative">
-            <ChatMessages messages={messages} isLoading={loading} />
-          </div>
+          <ChatMessages messages={messages} isLoading={loading} />
+        </div>
 
           {/* Input Area */}
           <div className="border-t border-white/5 bg-black/90 backdrop-blur-2xl">
-            <div className="mx-auto w-full max-w-4xl px-4 py-3">
-              <ChatInput
-                onSend={handleSendMessage}
-                isLoading={loading}
-                disabled={upgradeRequired}
-              />
-            </div>
+          <div className="mx-auto w-full max-w-4xl px-4 py-3">
+            <ChatInput
+              onSend={handleSendMessage}
+              isLoading={loading}
+              disabled={upgradeRequired}
+            />
+          </div>
           </div>
         </div>
       </div>
