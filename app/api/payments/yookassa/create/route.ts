@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { plan } = body;
+    const { plan, billingCycle = 'monthly' } = body;
 
     if (!plan || !['pro', 'enterprise'].includes(plan)) {
       return NextResponse.json(
@@ -24,22 +24,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (billingCycle && !['monthly', 'yearly'].includes(billingCycle)) {
+      return NextResponse.json(
+        { error: 'Invalid billing cycle. Must be "monthly" or "yearly"' },
+        { status: 400 }
+      );
+    }
+
     // Определяем цену (в рублях)
-    const prices: Record<string, { value: string; description: string }> = {
+    const prices: Record<string, { monthly: { value: string; description: string }; yearly?: { value: string; description: string } }> = {
       pro: {
-        value: '749.00', // ~$9 USD по курсу
-        description: 'JobInsight Pro подписка на месяц',
+        monthly: {
+          value: '3990.00', // ~$50 USD по курсу
+          description: 'JobInsight Pro подписка на месяц',
+        },
+        yearly: {
+          value: '38300.00', // ~$480 USD по курсу (20% скидка)
+          description: 'JobInsight Pro подписка на год',
+        },
       },
       enterprise: {
-        value: '4990.00', // Custom цена
-        description: 'JobInsight Enterprise подписка',
+        monthly: {
+          value: '4990.00', // Custom цена
+          description: 'JobInsight Enterprise подписка на месяц',
+        },
+        yearly: {
+          value: '47900.00', // Custom цена с скидкой
+          description: 'JobInsight Enterprise подписка на год',
+        },
       },
     };
 
-    const price = prices[plan];
-    if (!price) {
+    const selectedPrice = prices[plan][billingCycle as keyof typeof prices[typeof plan]];
+    if (!selectedPrice) {
       return NextResponse.json(
-        { error: 'Invalid plan' },
+        { error: 'Invalid plan or billing cycle combination' },
         { status: 400 }
       );
     }
@@ -59,14 +78,15 @@ export async function POST(request: NextRequest) {
     
     const payment = await yookassa.createSubscription({
       amount: {
-        value: price.value,
+        value: selectedPrice.value,
         currency: 'RUB',
       },
-      description: price.description,
+      description: selectedPrice.description,
       metadata: {
         userId: user.id,
         email: user.email || '',
         plan: plan,
+        billingCycle: billingCycle,
       },
     });
 

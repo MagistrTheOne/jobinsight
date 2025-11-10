@@ -8,10 +8,11 @@ import { useRouter } from 'next/navigation';
 
 interface CheckoutButtonProps {
   plan: 'pro' | 'enterprise';
+  billingCycle?: 'monthly' | 'yearly';
   className?: string;
 }
 
-export function CheckoutButton({ plan, className }: CheckoutButtonProps) {
+export function CheckoutButton({ plan, billingCycle = 'monthly', className }: CheckoutButtonProps) {
   const [selectedMethod, setSelectedMethod] = useState<'polar' | 'yookassa' | null>(null);
   const [isCreatingPayment, setIsCreatingPayment] = useState(false);
   const router = useRouter();
@@ -35,7 +36,7 @@ export function CheckoutButton({ plan, className }: CheckoutButtonProps) {
         const response = await fetch('/api/payments/yookassa/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ plan }),
+          body: JSON.stringify({ plan, billingCycle }),
         });
 
         const data = await response.json();

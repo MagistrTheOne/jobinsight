@@ -37,6 +37,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('🔄 Starting resume generation for user:', userId);
+
     // Step 1: Generate resume structure from first prompt
     let structurePrompt = `Ты профессиональный карьерный консультант. На основе следующей информации о соискателе, создай структуру резюме в формате JSON:
 
@@ -79,35 +81,97 @@ ${prompt1}`;
 
 Если информации недостаточно, используй разумные предположения, но отметь это в комментариях.`;
 
-    const structureResponse = await gigachatAPI.sendMessage([
-      { role: 'user', content: structurePrompt }
-    ]);
+    console.log('📤 Step 1: Sending structure request to GigaChat');
+
+    let structureResponse;
+    try {
+      structureResponse = await gigachatAPI.sendMessage([
+        { role: 'user', content: structurePrompt }
+      ]);
+    } catch (apiError: any) {
+      console.error('❌ Step 1: GigaChat API error:', apiError);
+      return NextResponse.json(
+        {
+          error: 'Failed to generate resume structure from AI',
+          details: apiError.message || 'AI service unavailable',
+          type: 'api_error'
+        },
+        { status: 500 }
+      );
+    }
+
+    console.log('📥 Step 1: Received structure response, length:', structureResponse.length);
 
     // Parse structure
     let structure;
     try {
+      console.log('🔍 Step 1: Parsing JSON structure');
       let jsonString = structureResponse.trim();
-      const codeBlockMatch = jsonString.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+
+      // More robust JSON extraction
+      // First try to find JSON in code blocks
+      const codeBlockMatch = jsonString.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/i);
       if (codeBlockMatch) {
         jsonString = codeBlockMatch[1];
       } else {
-        const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+        // Try to find JSON object in the text
+        const jsonMatch = jsonString.match(/\{[\s\S]*?\}(?=\s*$|\s*[^}])/);
         if (jsonMatch) {
           jsonString = jsonMatch[0];
+        } else {
+          // Last resort: try to extract anything that looks like JSON
+          const startIndex = jsonString.indexOf('{');
+          const endIndex = jsonString.lastIndexOf('}');
+          if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+            jsonString = jsonString.substring(startIndex, endIndex + 1);
+          }
         }
       }
-      jsonString = jsonString.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+
+      // Clean up the JSON string
+      jsonString = jsonString
+        .replace(/,\s*}/g, '}')
+        .replace(/,\s*]/g, ']')
+        .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":') // Quote unquoted keys
+        .replace(/:\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*([,}\]])/g, ':"$1"$2'); // Quote unquoted string values
+
+      console.log('🔧 Cleaned JSON string length:', jsonString.length);
+      console.log('🔧 JSON preview:', jsonString.substring(0, 200) + '...');
+
       structure = JSON.parse(jsonString);
-    } catch (error) {
+      console.log('✅ Step 1: JSON parsed successfully');
+
+      // Validate structure has required fields
+      if (!structure || typeof structure !== 'object') {
+        throw new Error('Parsed structure is not a valid object');
+      }
+
+      // Ensure required fields exist with defaults
+      structure.personalInfo = structure.personalInfo || {};
+      structure.experience = structure.experience || [];
+      structure.education = structure.education || [];
+      structure.skills = structure.skills || [];
+      structure.languages = structure.languages || [];
+      structure.certifications = structure.certifications || [];
+
+    } catch (error: any) {
+      console.error('❌ Step 1: JSON parsing failed:', error);
+      console.error('❌ Full response:', structureResponse);
+      console.error('❌ Error details:', error.message);
       return NextResponse.json(
-        { error: 'Failed to parse resume structure', details: error },
+        {
+          error: 'Failed to parse resume structure from AI response',
+          details: error.message,
+          responsePreview: structureResponse.substring(0, 300)
+        },
         { status: 500 }
       );
     }
 
     // Step 2: Generate final resume from structure and second prompt
+    console.log('📤 Step 2: Generating final resume');
     let finalPrompt = '';
-    
+
     if (jobAnalysis && jobContent) {
       // Оптимизация под вакансию
       finalPrompt = `На основе структуры резюме и требований вакансии, создай оптимизированное резюме в формате Markdown:
@@ -157,25 +221,58 @@ ${JSON.stringify(structure, null, 2)}
 5. Подчеркивает уникальную ценность кандидата`;
     }
 
-    const finalResponse = await gigachatAPI.sendMessage([
-      { role: 'user', content: finalPrompt }
-    ]);
+    console.log('📤 Step 2: Sending final resume request to GigaChat');
+
+    let finalResponse;
+    try {
+      finalResponse = await gigachatAPI.sendMessage([
+        { role: 'user', content: finalPrompt }
+      ]);
+    } catch (apiError: any) {
+      console.error('❌ Step 2: GigaChat API error:', apiError);
+      return NextResponse.json(
+        {
+          error: 'Failed to generate final resume from AI',
+          details: apiError.message || 'AI service unavailable',
+          type: 'api_error'
+        },
+        { status: 500 }
+      );
+    }
+
+    console.log('📥 Step 2: Received final resume response, length:', finalResponse.length);
 
     // Save resume version
-    const resumeTitle = structure.personalInfo?.name 
+    console.log('💾 Saving resume to database');
+    const resumeTitle = structure.personalInfo?.name
       ? `Резюме ${structure.personalInfo.name}`
       : 'Новое резюме';
 
-    const resume = await createResumeVersion({
-      id: crypto.randomUUID(),
-      userId,
-      title: resumeTitle,
-      content: finalResponse,
-      template: 'modern',
-      isDefault: 0,
-      optimizedFor: null,
-      tags: null,
-    });
+    let resume;
+    try {
+      resume = await createResumeVersion({
+        id: crypto.randomUUID(),
+        userId,
+        title: resumeTitle,
+        content: finalResponse,
+        template: 'modern',
+        isDefault: 0,
+        optimizedFor: null,
+        tags: null,
+      });
+
+      console.log('✅ Resume saved successfully, ID:', resume.id);
+    } catch (dbError: any) {
+      console.error('❌ Database save error:', dbError);
+      return NextResponse.json(
+        {
+          error: 'Failed to save resume to database',
+          details: dbError.message,
+          type: 'database_error'
+        },
+        { status: 500 }
+      );
+    }
 
     // Increment usage counter
     const periodStart = getCurrentPeriodStart();

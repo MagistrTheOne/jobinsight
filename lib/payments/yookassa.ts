@@ -76,6 +76,7 @@ interface CreateSubscriptionRequest {
     userId: string;
     email: string;
     plan: string;
+    billingCycle?: string;
   };
 }
 
