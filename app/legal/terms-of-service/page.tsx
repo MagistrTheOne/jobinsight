@@ -42,7 +42,7 @@ export default function TermsOfService() {
               {/* Section 1 */}
               <section>
                 <div className="flex items-start gap-3 mb-4">
-                  <FileText className="h-6 w-6 text-blue-400 mt-1 flex-shrink-0" />
+                  <FileText className="h-6 w-6 text-blue-400 mt-1 shrink-0" />
                   <div>
                     <h2 className="text-xl font-semibold mb-3">1. Принятие условий</h2>
                     <div className="space-y-4 text-neutral-300 leading-relaxed">
@@ -61,7 +61,7 @@ export default function TermsOfService() {
               {/* Section 2 */}
               <section>
                 <div className="flex items-start gap-3 mb-4">
-                  <CheckCircle className="h-6 w-6 text-green-400 mt-1 flex-shrink-0" />
+                  <CheckCircle className="h-6 w-6 text-green-400 mt-1 shrink-0" />
                   <div>
                     <h2 className="text-xl font-semibold mb-3">2. Описание сервиса</h2>
                     <div className="space-y-4 text-neutral-300 leading-relaxed">
@@ -87,7 +87,7 @@ export default function TermsOfService() {
               {/* Section 3 */}
               <section>
                 <div className="flex items-start gap-3 mb-4">
-                  <AlertTriangle className="h-6 w-6 text-yellow-400 mt-1 flex-shrink-0" />
+                  <AlertTriangle className="h-6 w-6 text-yellow-400 mt-1 shrink-0" />
                   <div>
                     <h2 className="text-xl font-semibold mb-3">3. Пользовательские обязательства</h2>
                     <div className="space-y-4 text-neutral-300 leading-relaxed">

@@ -42,7 +42,7 @@ export default function CookiePolicy() {
               {/* Section 1 */}
               <section>
                 <div className="flex items-start gap-3 mb-4">
-                  <Cookie className="h-6 w-6 text-orange-400 mt-1 flex-shrink-0" />
+                  <Cookie className="h-6 w-6 text-orange-400 mt-1 shrink-0" />
                   <div>
                     <h2 className="text-xl font-semibold mb-3">1. Что такое cookies</h2>
                     <div className="space-y-4 text-neutral-300 leading-relaxed">
@@ -61,7 +61,7 @@ export default function CookiePolicy() {
               {/* Section 2 */}
               <section>
                 <div className="flex items-start gap-3 mb-4">
-                  <Settings className="h-6 w-6 text-blue-400 mt-1 flex-shrink-0" />
+                  <Settings className="h-6 w-6 text-blue-400 mt-1 shrink-0" />
                   <div>
                     <h2 className="text-xl font-semibold mb-3">2. Типы cookies, которые мы используем</h2>
                     <div className="space-y-6 text-neutral-300 leading-relaxed">

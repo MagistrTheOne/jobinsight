@@ -42,7 +42,7 @@ export default function PrivacyPolicy() {
               {/* Section 1 */}
               <section>
                 <div className="flex items-start gap-3 mb-4">
-                  <Eye className="h-6 w-6 text-blue-400 mt-1 flex-shrink-0" />
+                  <Eye className="h-6 w-6 text-blue-400 mt-1 shrink-0" />
                   <div>
                     <h2 className="text-xl font-semibold mb-3">1. Информация, которую мы собираем</h2>
                     <div className="space-y-4 text-neutral-300 leading-relaxed">
@@ -77,7 +77,7 @@ export default function PrivacyPolicy() {
               {/* Section 2 */}
               <section>
                 <div className="flex items-start gap-3 mb-4">
-                  <Database className="h-6 w-6 text-green-400 mt-1 flex-shrink-0" />
+                  <Database className="h-6 w-6 text-green-400 mt-1 shrink-0" />
                   <div>
                     <h2 className="text-xl font-semibold mb-3">2. Как мы используем вашу информацию</h2>
                     <div className="space-y-4 text-neutral-300 leading-relaxed">
@@ -99,7 +99,7 @@ export default function PrivacyPolicy() {
               {/* Section 3 */}
               <section>
                 <div className="flex items-start gap-3 mb-4">
-                  <Users className="h-6 w-6 text-purple-400 mt-1 flex-shrink-0" />
+                  <Users className="h-6 w-6 text-purple-400 mt-1 shrink-0" />
                   <div>
                     <h2 className="text-xl font-semibold mb-3">3. Передача информации третьим лицам</h2>
                     <div className="space-y-4 text-neutral-300 leading-relaxed">
@@ -119,7 +119,7 @@ export default function PrivacyPolicy() {
               {/* Section 4 */}
               <section>
                 <div className="flex items-start gap-3 mb-4">
-                  <Lock className="h-6 w-6 text-orange-400 mt-1 flex-shrink-0" />
+                  <Lock className="h-6 w-6 text-orange-400 mt-1 shrink-0" />
                   <div>
                     <h2 className="text-xl font-semibold mb-3">4. Безопасность данных</h2>
                     <div className="space-y-4 text-neutral-300 leading-relaxed">
@@ -141,7 +141,7 @@ export default function PrivacyPolicy() {
               {/* Section 5 */}
               <section>
                 <div className="flex items-start gap-3 mb-4">
-                  <Globe className="h-6 w-6 text-cyan-400 mt-1 flex-shrink-0" />
+                  <Globe className="h-6 w-6 text-cyan-400 mt-1 shrink-0" />
                   <div>
                     <h2 className="text-xl font-semibold mb-3">5. Международные передачи данных</h2>
                     <div className="space-y-4 text-neutral-300 leading-relaxed">
@@ -159,7 +159,7 @@ export default function PrivacyPolicy() {
               {/* Section 6 */}
               <section>
                 <div className="flex items-start gap-3 mb-4">
-                  <Mail className="h-6 w-6 text-pink-400 mt-1 flex-shrink-0" />
+                  <Mail className="h-6 w-6 text-pink-400 mt-1 shrink-0" />
                   <div>
                     <h2 className="text-xl font-semibold mb-3">6. Ваши права</h2>
                     <div className="space-y-4 text-neutral-300 leading-relaxed">
