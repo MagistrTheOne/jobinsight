@@ -31,7 +31,6 @@ export function ThemeToggle() {
   const isDark = currentTheme === 'dark'
 
   const handleThemeChange = (newTheme: string) => {
-    console.log('Switching theme from', currentTheme, 'to', newTheme)
     setTheme(newTheme)
   }
 

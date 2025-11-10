@@ -10,9 +10,10 @@ export function ThemeProvider({
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="system"
+      defaultTheme="dark"
       enableSystem={true}
       disableTransitionOnChange={false}
+      storageKey="jobinsight-theme"
       {...props}
     >
       {children}
