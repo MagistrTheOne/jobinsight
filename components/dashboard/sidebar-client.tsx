@@ -258,12 +258,12 @@ export function DashboardSidebar() {
             <UsageLimits />
           </div>
           <div className="flex justify-start">
-            <UserButton />
+            <UserButton collapsed={false} />
           </div>
         </div>
       ) : (
         <div className="border-t border-white/5 p-2 flex justify-center">
-          <UserButton />
+          <UserButton collapsed={true} />
         </div>
       )}
     </>
