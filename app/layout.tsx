@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google';
 import { SessionProvider } from '@/components/providers/session-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { CommandProvider } from '@/components/command-provider';
-import { Analytics } from '@vercel/analytics/next';
+import { Analytics } from '@/components/analytics';
 
 const inter = Inter({ 
   subsets: ['latin', 'cyrillic'],
