@@ -5,9 +5,6 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import Link from "next/link";
-import { useAuthStore } from "@/store/auth-store";
-import { useRouter } from "next/navigation";
-import { CheckoutButton } from "@/components/payments/checkout-button";
 import { useTranslations } from "@/lib/i18n/use-translations";
 
 const plans = [
@@ -73,15 +70,12 @@ const plans = [
 
 export function Pricing() {
   const { t } = useTranslations();
-  const { isAuthenticated } = useAuthStore();
-  const router = useRouter();
   const [isYearly, setIsYearly] = useState(false);
 
-  const handleProClick = () => {
-    if (!isAuthenticated) {
-      router.push("/auth/signup?redirect=checkout");
-      return;
-    }
+  const TELEGRAM_LINK = "https://t.me/MagistrTheOne";
+
+  const handleSubscribeClick = () => {
+    window.open(TELEGRAM_LINK, "_blank");
   };
 
   return (
@@ -167,27 +161,21 @@ export function Pricing() {
             </ul>
 
             <div className="mt-8">
-              {index === 1 ? (
-                isAuthenticated ? (
-                  <CheckoutButton
-                    plan="pro"
-                    billingCycle={isYearly ? "yearly" : "monthly"}
-                    className="w-full bg-neutral-800 hover:bg-neutral-700 text-white"
-                  />
-                ) : (
-                  <Button
-                    onClick={handleProClick}
-                    className="w-full bg-neutral-800 hover:bg-neutral-700 text-white"
-                  >
-                    {plan.cta}
-                  </Button>
-                )
-              ) : (
+              {index === 0 ? (
+                // Free plan - остаётся как есть
                 <Link href="/auth/signup">
                   <Button className="w-full bg-neutral-800/80 hover:bg-neutral-700 text-white">
                     {plan.cta}
                   </Button>
                 </Link>
+              ) : (
+                // Pro и Enterprise - ведут на Telegram
+                <Button
+                  onClick={handleSubscribeClick}
+                  className="w-full bg-neutral-800 hover:bg-neutral-700 text-white"
+                >
+                  {plan.cta}
+                </Button>
               )}
             </div>
           </GlassCard>
